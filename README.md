@@ -17,11 +17,11 @@ O projeto **Rei dos Piratas** consiste em desenvolver um **e-commerce de mangás
 
 ## 👥 Integrantes do Grupo – CATECH
 
-| Nome Completo                          | Matrícula | Função |
-|----------------------------------------|-----------|--------|
-| Wendell Nascimento Dourado             |[RM559336] | DEV    |
-| Daniel Santana Corrêa Batista          |[RM559336] | HOM    |
-| Jonas de Jesus Campos de Oliveira      |[RM561144] | PRD    |
+| Nome Completo                          | Função |
+|----------------------------------------|--------|
+| Wendell Nascimento Dourado             | DEV    |
+| Daniel Santana Corrêa Batista          | HOM    |
+| Jonas de Jesus Campos de Oliveira      | PRD    |
 
 ---
 
@@ -137,3 +137,4 @@ Leitores e colecionadores de mangás, principalmente **jovens e adultos de class
 ---
 
 ✍️ **Observação:** Este repositório será avaliado como parte do Checkpoint 1, valendo até **1 ponto**.  
+
