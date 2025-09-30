@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
@@ -33,6 +34,8 @@ public abstract class Usuario {
 
     private boolean usuarioAtivo;
 
+    @Past
+    @NotNull(message = "A data de cadastro do usuário não pode ser nula")
     private LocalDate dataCadastro;
 
     public Usuario(String userName, String email, String senha, Long id) {

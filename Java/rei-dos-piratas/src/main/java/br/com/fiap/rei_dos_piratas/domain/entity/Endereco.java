@@ -14,4 +14,16 @@ public class Endereco {
     private String estadoSigla;
     private String paisNome;
     private String paisSigla;
+
+    @Override
+    public String toString() {
+        return logradouro + ","
+                + bairro + ","
+                + cidade + " - "
+                + estadoNome
+                + "/"
+                + estadoSigla
+                + " - "
+                + paisNome;
+    }
 }
