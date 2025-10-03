@@ -27,22 +27,24 @@ public class Cliente extends Usuario{
 
     public Cliente(
             String userName,
+            String nomeCompleto,
             String email,
             String senha,
-            Long id,
             Date dataNascimento,
             SexoEnum sexo,
             Endereco endereco,
             String cpf) {
-        super(userName, email, senha, id);
+        super(userName, nomeCompleto, email, senha);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.endereco = endereco;
         this.cpf = cpf;
     }
 
-    public Cliente(String userName,
-                   Long id, String nomeCompleto,
+    public Cliente(
+                   Long id,
+                   String userName,
+                   String nomeCompleto,
                    String email, String senha,
                    boolean usuarioAtivo,
                    LocalDate dataCadastro,

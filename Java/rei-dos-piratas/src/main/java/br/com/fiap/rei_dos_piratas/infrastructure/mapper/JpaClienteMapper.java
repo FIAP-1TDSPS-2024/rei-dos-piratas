@@ -26,8 +26,8 @@ public class JpaClienteMapper {
     public static Cliente toEntity(JpaClienteEntity jpaCliente) {
         if (jpaCliente == null) return null;
         return new Cliente(
-                jpaCliente.getUserName(),
                 jpaCliente.getId(),
+                jpaCliente.getUserName(),
                 jpaCliente.getNomeCompleto(),
                 jpaCliente.getEmail(),
                 jpaCliente.getSenha(),

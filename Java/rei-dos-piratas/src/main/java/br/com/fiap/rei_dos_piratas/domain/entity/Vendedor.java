@@ -15,11 +15,11 @@ public class Vendedor extends Usuario{
     private Role role;
 
     public Vendedor(String userName,
+                    String nomeCompleto,
                     String email,
                     String senha,
-                    Long id,
                     Role role) {
-        super(userName, email, senha, id);
+        super(userName, nomeCompleto, email, senha);
         if(role == null){
             this.role = Role.USER;
         }

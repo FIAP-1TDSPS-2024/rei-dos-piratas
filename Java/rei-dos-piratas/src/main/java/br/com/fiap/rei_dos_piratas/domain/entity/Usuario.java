@@ -38,15 +38,15 @@ public abstract class Usuario {
     @NotNull(message = "A data de cadastro do usuário não pode ser nula")
     private LocalDate dataCadastro;
 
-    public Usuario(String userName, String email, String senha, Long id) {
+    public Usuario(String userName, String nomeCompleto, String email, String senha) {
 
         this.usuarioAtivo = true;
         this.dataCadastro = LocalDate.now();
 
         this.userName = userName;
+        this.nomeCompleto = nomeCompleto;
         this.email = email;
         this.senha = senha;
-        this.id = id;
     }
 
     public Usuario(String userName, Long id, String nomeCompleto, String email, String senha, boolean usuarioAtivo, LocalDate dataCadastro) {
