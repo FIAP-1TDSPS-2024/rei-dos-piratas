@@ -1,7 +1,10 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 
+
+@Data
 @AllArgsConstructor
 public class Endereco {
     private Long id;
@@ -9,9 +12,12 @@ public class Endereco {
     private String cep;
     private String logradouro;
     private String bairro;
+    private Long cidadeId;
     private String cidade;
+    private Long estadoId;
     private String estadoNome;
     private String estadoSigla;
+    private Long paisId;
     private String paisNome;
     private String paisSigla;
 
