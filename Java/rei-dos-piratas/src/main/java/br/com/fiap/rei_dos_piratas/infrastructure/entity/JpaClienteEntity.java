@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -48,10 +49,13 @@ public class JpaClienteEntity {
     @Column(nullable = false)
     private SexoEnum sexo;
 
-    @JoinColumn(name = "endereco_id")
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
     private JpaEnderecoEntity endereco;
 
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
+
+    public JpaClienteEntity(Long clienteId) {
+        this.id = clienteId;
+    }
 }

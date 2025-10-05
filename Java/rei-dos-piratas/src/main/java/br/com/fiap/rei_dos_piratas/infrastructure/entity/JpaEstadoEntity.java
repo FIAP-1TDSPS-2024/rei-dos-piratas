@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class JpaEstadoEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, length = 30)
@@ -20,7 +21,4 @@ public class JpaEstadoEntity {
 
     @Column(nullable = false, length = 2)
     private String estadoSigla;
-
-    @ManyToOne
-    private JpaPaisEntity pais;
 }

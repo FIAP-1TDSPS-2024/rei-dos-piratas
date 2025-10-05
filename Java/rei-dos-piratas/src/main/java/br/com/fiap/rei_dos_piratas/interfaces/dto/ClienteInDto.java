@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.interfaces.dto;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -35,6 +36,7 @@ public record ClienteInDto(
         @NotNull(message = "O sexo do usuário não pode ser nulo")
         SexoEnum sexo,
 
+        @Valid
         @NotNull(message = "O endereço do usuário não pode ser nulo")
         Endereco endereco,
 

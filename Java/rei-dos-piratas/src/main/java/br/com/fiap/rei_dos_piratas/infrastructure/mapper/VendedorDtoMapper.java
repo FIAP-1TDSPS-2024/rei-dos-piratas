@@ -10,6 +10,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.VendedorOutDto;
 public class VendedorDtoMapper {
 
     public static Vendedor toEntity(VendedorInDto dto){
+        if(dto == null) return null;
         return new Vendedor(
                 dto.userName(),
                 dto.nomeCompleto(),
@@ -19,6 +20,7 @@ public class VendedorDtoMapper {
     }
 
     public static VendedorOutDto toDto(Vendedor vendedor){
+        if(vendedor == null) return null;
         return new VendedorOutDto(
                 vendedor.getId(),
                 vendedor.getUserName(),

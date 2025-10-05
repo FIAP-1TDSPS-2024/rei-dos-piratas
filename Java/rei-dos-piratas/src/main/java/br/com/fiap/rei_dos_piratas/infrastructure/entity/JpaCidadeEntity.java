@@ -21,6 +21,6 @@ public class JpaCidadeEntity {
     @Column(nullable = false, length = 50)
     private String cidadeNome;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private JpaEstadoEntity estado;
 }

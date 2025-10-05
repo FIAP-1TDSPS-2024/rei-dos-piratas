@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.Date;
 import java.util.Locale;
 
 @Getter
+@NoArgsConstructor
 public abstract class Usuario {
 
     private Long id;

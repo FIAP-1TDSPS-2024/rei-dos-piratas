@@ -1,9 +1,11 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @AllArgsConstructor
@@ -27,9 +29,9 @@ public class JpaEnderecoEntity {
     @Column(nullable = false, length = 50)
     private String bairro;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private JpaCidadeEntity cidade;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     private JpaClienteEntity cliente;
 }

@@ -7,6 +7,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto;
 public class ClienteDtoMapper {
 
     public static Cliente toEntity(ClienteInDto dto){
+        if (dto == null) return null;
         return new Cliente(
                 dto.userName(),
                 dto.nomeCompleto(),
@@ -19,6 +20,7 @@ public class ClienteDtoMapper {
     }
 
     public static ClienteOutDto toDto(Cliente cliente){
+        if (cliente == null) return null;
         return new ClienteOutDto(
                 cliente.getId(),
                 cliente.getUserName(),

@@ -4,12 +4,14 @@ package br.com.fiap.rei_dos_piratas.domain.entity;
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
+@NoArgsConstructor
 public class Vendedor extends Usuario{
 
     private Role role;
