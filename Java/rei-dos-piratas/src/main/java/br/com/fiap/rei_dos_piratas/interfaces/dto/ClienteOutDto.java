@@ -36,7 +36,7 @@ public record ClienteOutDto(
 
         @Past
         @NotNull(message = "A data de nascimento não pode ser nula")
-        Date dataNascimento,
+        LocalDate dataNascimento,
 
         @NotNull(message = "O sexo do usuário não pode ser nulo")
         SexoEnum sexo,

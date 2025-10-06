@@ -14,7 +14,7 @@ public class Cliente extends Usuario{
 
     @Past
     @NotNull(message = "A data de nascimento não pode ser nula")
-    private Date dataNascimento;
+    private LocalDate dataNascimento;
 
     @NotNull(message = "O sexo do usuário não pode ser nulo")
     private SexoEnum sexo;
@@ -30,7 +30,7 @@ public class Cliente extends Usuario{
             String nomeCompleto,
             String email,
             String senha,
-            Date dataNascimento,
+            LocalDate dataNascimento,
             SexoEnum sexo,
             Endereco endereco,
             String cpf) {
@@ -48,7 +48,7 @@ public class Cliente extends Usuario{
                    String email, String senha,
                    boolean usuarioAtivo,
                    LocalDate dataCadastro,
-                   Date dataNascimento,
+                   LocalDate dataNascimento,
                    SexoEnum sexo,
                    Endereco endereco,
                    String cpf) {

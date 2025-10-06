@@ -9,33 +9,22 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor
 @Entity
 @Table(name = "VENDEDORES")
 @NoArgsConstructor
-public class JpaVendedorEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 30, unique = true)
-    private String userName;
-
-    @Column(nullable = false, length = 50)
-    private String nomeCompleto;
-
-    @Column(nullable = false, length = 40, unique = true)
-    private String email;
-
-    @Column(nullable = false, length = 20)
-    private String senha;
-
-    @Column(nullable = false)
-    private boolean usuarioAtivo;
-
-    @Column(nullable = false)
-    private LocalDate dataCadastro;
-
+public class JpaVendedorEntity extends JpaUsuarioEntity{
     @Column(nullable = false, length = 11)
     private Role role;
+
+    public JpaVendedorEntity(Long id,
+                             String userName,
+                             String nomeCompleto,
+                             String email,
+                             String senha,
+                             boolean usuarioAtivo,
+                             LocalDate dataCadastro,
+                             Role role) {
+        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro);
+        this.role = role;
+    }
 }

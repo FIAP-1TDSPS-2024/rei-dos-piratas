@@ -7,55 +7,48 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Pattern;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 import java.util.Date;
 
-@Data
-@AllArgsConstructor
+@Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "CLIENTES")
-public class JpaClienteEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 30, unique = true)
-    private String userName;
-
-    @Column(nullable = false, length = 50)
-    private String nomeCompleto;
-
-    @Column(nullable = false, length = 40, unique = true)
-    private String email;
-
-    @Column(nullable = false, length = 20)
-    private String senha;
-
+public class JpaClienteEntity extends JpaUsuarioEntity{
+    @Setter
     @Column(nullable = false)
-    private boolean usuarioAtivo;
+    private LocalDate dataNascimento;
 
-    @Column(nullable = false)
-    private LocalDate dataCadastro;
-
-    @Column(nullable = false)
-    private Date dataNascimento;
-
+    @Setter
     @Column(nullable = false)
     private SexoEnum sexo;
 
+    @Setter
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
     private JpaEnderecoEntity endereco;
 
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
 
-    public JpaClienteEntity(Long clienteId) {
-        this.id = clienteId;
+    public JpaClienteEntity(Long id,
+                            String userName,
+                            String nomeCompleto,
+                            String email,
+                            String senha,
+                            boolean usuarioAtivo,
+                            LocalDate dataCadastro,
+                            LocalDate dataNascimento,
+                            SexoEnum sexo,
+                            JpaEnderecoEntity endereco,
+                            String cpf) {
+        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro);
+        this.dataNascimento = dataNascimento;
+        this.sexo = sexo;
+        this.endereco = endereco;
+        this.cpf = cpf;
     }
 }
