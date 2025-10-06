@@ -3,5 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/Java/rei-dos-piratas/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Java/rei-dos-piratas/src/main/resources" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/Java/rei-dos-piratas/src/test/java/resources/application.properties" charset="ISO-8859-1" />
   </component>
 </project>
