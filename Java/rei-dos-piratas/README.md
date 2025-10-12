@@ -85,6 +85,10 @@ mvn spring-boot:run
 | DELETE | /vendedores/{id} | Remove vendedor existente    |
 ---
 
+## Coleção POSTMAN
+
+[Link do arquivo JSON da coleção POSTMAN para teste dos END-POINTS](API Rei dos Piratas.postman_collection.json)
+
 ## Tecnologias Utilizadas
 
 * Java 17 (ou versão utilizada)
