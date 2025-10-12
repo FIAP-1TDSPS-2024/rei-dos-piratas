@@ -72,16 +72,16 @@ mvn spring-boot:run
 ## Endpoints Disponíveis
 
 | Método | Endpoint         | Descrição                    | 
-| ------ | ---------------- | ---------------------------- |
+| ------ |------------------| ---------------------------- |
 | GET    | /clientes        | Retorna lista de clientes    |
-| GET    | /clientes        | Retorna cliente por ID       |
+| GET    | /clientes/{id}   | Retorna cliente por ID       |
 | POST   | /clientes        | Cria um novo clientes        |
-| PUT    | /clientes/{id}   | Atualiza clientes existente  |
+| PUT    | /clientes        | Atualiza clientes existente  |
 | DELETE | /clientes/{id}   | Remove clientes existente    |
 | GET    | /vendedores      | Retorna lista de vendedores  |
-| GET    | /vendedores      | Retorna vendedor por ID      |
+| GET    | /vendedores/{id} | Retorna vendedor por ID      |
 | POST   | /vendedores      | Cria um novo vendedor        |
-| PUT    | /vendedores/{id} | Atualiza vendedor existente  |
+| PUT    | /vendedores      | Atualiza vendedor existente  |
 | DELETE | /vendedores/{id} | Remove vendedor existente    |
 ---
 
