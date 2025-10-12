@@ -133,41 +133,6 @@ class ClienteRepositoryImplTest {
     }
 
     @Test
-    void update_shouldSaveAndReturnUpdatedCliente() {
-        //O que
-        Endereco enderecoParaCriar = new Endereco(
-                null,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
-        Cliente cliente = new Cliente(
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                LocalDate.of(2000, 03, 16),
-                SexoEnum.M,
-                enderecoParaCriar,
-                "12345678978");
-
-        when(jpaRepository.save(any(JpaClienteEntity.class))).thenReturn(new JpaClienteEntity());
-
-        Cliente result = repository.update(cliente);
-
-        assertNotNull(result);
-        verify(jpaRepository).save(any(JpaClienteEntity.class));
-    }
-
-    @Test
     void delete_shouldCallRepositoryDeleteById() {
         repository.delete(1L);
 

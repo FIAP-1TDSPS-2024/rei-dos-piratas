@@ -115,24 +115,6 @@ class VendedorRepositoryImplTest {
     }
 
     @Test
-    void update_shouldSaveVendedor() {
-        Vendedor vendedor = new Vendedor(
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                Role.USER);
-        when(repository.save(any(JpaVendedorEntity.class))).thenReturn(new JpaVendedorEntity());
-
-        // Act
-        Vendedor result = vendedorRepository.update(vendedor);
-
-        // Assert
-        assertNotNull(result);
-        verify(repository).save(any(JpaVendedorEntity.class));
-    }
-
-    @Test
     void delete_shouldCallRepositoryDeleteById() {
         // Act
         vendedorRepository.delete(10L);

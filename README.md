@@ -9,20 +9,24 @@
 ---
 
 ## 📌 Projeto
-Este repositório faz parte do **3º Exercício para o Checkpoint 1 – DevOps Tools e Cloud Computing** (Turma 2TDSPS-2025).  
+Este repositório faz parte do **CHALLENGE ORACLE - FIAP** (Turma 2TDSPS-2025).  
 
 O projeto **Rei dos Piratas** consiste em desenvolver um **e-commerce de mangás novos e usados**, com possibilidade de expansão futura para outros segmentos.  
 
 ---
 
+## Vídeo explicativo da solução
+
+> Acesse o Link abaixo para assistir ao vídeo explicativo da solução.
+
+[Vídeo Explicativo no YouTube](https://www.youtube.com/watch?v=wSOUlz6PsAY)
+
+
 ## 👥 Integrantes do Grupo – CATECH
 
-| Nome Completo                          | Função |
-|----------------------------------------|--------|
-| Wendell Nascimento Dourado             | DEV    |
-| Daniel Santana Corrêa Batista          | HOM    |
-| Jonas de Jesus Campos de Oliveira      | PRD    |
-
+* **RM561144**: Jonas Oliveira - Responsável por Java e banco de dados
+* **RM559336**: Wendell Dourado - Responsável por Mobile e Devops
+* **RM559622**: Daniel Batista - Responsável por .NET, IoT e QA
 ---
 
 ## 🎯 Objetivo
@@ -89,10 +93,10 @@ Leitores e colecionadores de mangás, principalmente **jovens e adultos de class
 - Shield (segurança)  
 
 ### Back-End
-- **Java 21** + **Spring Framework** (API REST)  
+- **Java 21** + **Spring Framework** (API REST)  para pedidos e clientes
+- [Readme da aplicação Java (Back-End)](Java/rei-dos-piratas/README.md)
 
-### Front-End
-- **Next.js** (versão 14)  
+- **C# + .NET** para gerenciamento de funcionarios e produtos
 
 ### Mobile
 - **React Native**  
