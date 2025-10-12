@@ -1,12 +1,11 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.VendedorService;
+import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Usuario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Vendedor;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.VendedorRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl.VendedorRepositoryImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
@@ -43,7 +42,13 @@ public class VendedorServiceImpl implements VendedorService {
     @Override
     @Transactional
     public Vendedor update(Vendedor vendedor) {
-        return this.repository.update(vendedor);
+        Vendedor vendedorAtualizado = this.repository.update(vendedor);
+
+        if (vendedorAtualizado == null){
+            throw new ResourceNotFoundException("Não foi possível encontrar um cliente com o id " + vendedor.getId() + ". Crie um novo cliente.");
+        }
+
+        return vendedorAtualizado;
     }
 
     @Override

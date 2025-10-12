@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,5 +34,6 @@ public class JpaEnderecoEntity {
     private JpaCidadeEntity cidade;
 
     @OneToOne
+    @JsonIgnore
     private JpaClienteEntity cliente;
 }

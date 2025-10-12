@@ -5,10 +5,14 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Usuario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Vendedor;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
 import br.com.fiap.rei_dos_piratas.domain.repository.VendedorRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaClienteEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaVendedorEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaVendedorMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaVendedorEntityRepository;
 import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 
 public class VendedorRepositoryImpl implements VendedorRepository {
 
@@ -54,9 +58,17 @@ public class VendedorRepositoryImpl implements VendedorRepository {
 
     @Override
     public Vendedor update(Vendedor vendedor) {
-        return JpaVendedorMapper.toEntity(
-                this.repository.save(
-                        JpaVendedorMapper.toJpaEntity(vendedor)));
+
+        Optional<JpaVendedorEntity> vendedorExistente = this.repository.findById(vendedor.getId());
+
+        if (vendedorExistente.isPresent()) {
+            return JpaVendedorMapper.toEntity(
+                    this.repository.save(
+                            JpaVendedorMapper.toJpaEntity(vendedor)));
+        }
+        else{
+            return null;
+        }
     }
 
     @Override

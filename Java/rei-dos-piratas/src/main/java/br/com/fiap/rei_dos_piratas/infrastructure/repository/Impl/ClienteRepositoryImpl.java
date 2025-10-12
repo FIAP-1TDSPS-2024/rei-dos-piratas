@@ -12,6 +12,8 @@ import br.com.fiap.rei_dos_piratas.infrastructure.mapper.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaClienteEntityRepository;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 public class ClienteRepositoryImpl implements ClienteRepository {
 
     private final JpaClienteEntityRepository repository;
@@ -79,11 +81,18 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     @Override
     public Cliente update(Cliente cliente) {
 
-        JpaEnderecoEntity jpaEndereco = JpaEnderecoMapper.toJpaEntity(cliente.getEndereco());
+        Optional<JpaClienteEntity> clienteExistente = this.repository.findById(cliente.getId());
 
-        return JpaClienteMapper.toEntity(
-                this.repository
-                        .save(JpaClienteMapper.toJpaEntity(cliente, jpaEndereco)));
+        if (clienteExistente.isPresent()) {
+            JpaEnderecoEntity jpaEndereco = JpaEnderecoMapper.toJpaEntity(cliente.getEndereco());
+
+            return JpaClienteMapper.toEntity(
+                    this.repository
+                            .save(JpaClienteMapper.toJpaEntity(cliente, jpaEndereco)));
+        }
+        else {
+            return null;
+        }
     }
 
     @Override

@@ -36,7 +36,7 @@ public abstract class Usuario {
 
     private boolean usuarioAtivo;
 
-    @Past
+    @PastOrPresent
     @NotNull(message = "A data de cadastro do usuário não pode ser nula")
     private LocalDate dataCadastro;
 

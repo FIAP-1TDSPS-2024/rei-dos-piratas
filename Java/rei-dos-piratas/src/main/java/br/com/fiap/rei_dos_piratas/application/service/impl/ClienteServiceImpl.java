@@ -42,7 +42,13 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public Cliente update(Cliente cliente) {
-        return this.repository.update(cliente);
+        Cliente clienteAtualizado = this.repository.update(cliente);
+
+        if (clienteAtualizado == null){
+            throw new ResourceNotFoundException("Não foi possível encontrar um cliente com o id " + cliente.getId() + ". Crie um novo cliente.");
+        }
+
+        return clienteAtualizado;
     }
 
     @Override
