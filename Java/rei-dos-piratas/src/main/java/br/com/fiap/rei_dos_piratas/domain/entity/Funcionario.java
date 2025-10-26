@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Funcionario extends Usuario{
 
-
+    
 
     public Funcionario(String userName,
                        String nomeCompleto,

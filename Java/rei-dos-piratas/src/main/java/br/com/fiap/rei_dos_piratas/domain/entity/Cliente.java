@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -36,7 +37,7 @@ public class Cliente extends Usuario{
             SexoEnum sexo,
             Endereco endereco,
             String cpf) {
-        super(userName, nomeCompleto, email, senha);
+        super(userName, nomeCompleto, email, senha, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.endereco = endereco;
@@ -55,7 +56,7 @@ public class Cliente extends Usuario{
                    SexoEnum sexo,
                    Endereco endereco,
                    String cpf) {
-        super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro);
+        super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.endereco = endereco;
