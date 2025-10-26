@@ -1,31 +1,31 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Vendedor;
-import br.com.fiap.rei_dos_piratas.interfaces.controller.VendedorController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.VendedorInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.VendedorOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/vendedores")
-public class VendedorRestController {
+@RequestMapping("/funcionarios")
+public class FuncionarioRestController {
 
-    private final VendedorController controller;
+    private final FuncionarioController controller;
 
-    public VendedorRestController(VendedorController controller) {
+    public FuncionarioRestController(FuncionarioController controller) {
         this.controller = controller;
     }
 
     @GetMapping
-    public ResponseEntity<Page<VendedorOutDto>> findAll(
+    public ResponseEntity<Page<FuncionarioOutDto>> findAll(
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
             @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber) {
 
-        Page<VendedorOutDto> vendedores = this.controller.listAll(pageNumber, pageSize);
+        Page<FuncionarioOutDto> vendedores = this.controller.listAll(pageNumber, pageSize);
 
         if (vendedores.numberOfPages() > 0){
             return ResponseEntity.ok(vendedores);
@@ -34,20 +34,20 @@ public class VendedorRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VendedorOutDto> findById(@PathVariable("id") Long id) {
-        VendedorOutDto vendedor = this.controller.findById(id);
+    public ResponseEntity<FuncionarioOutDto> findById(@PathVariable("id") Long id) {
+        FuncionarioOutDto vendedor = this.controller.findById(id);
         return ResponseEntity.ok(vendedor);
     }
 
     @PostMapping
-    public ResponseEntity<VendedorOutDto> create(@Valid @RequestBody VendedorInDto vendedor) {
-        VendedorOutDto novoVendedor = this.controller.create(vendedor);
+    public ResponseEntity<FuncionarioOutDto> create(@Valid @RequestBody FuncionarioInDto vendedor) {
+        FuncionarioOutDto novoVendedor = this.controller.create(vendedor);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoVendedor);
     }
 
     @PutMapping
-    public ResponseEntity<VendedorOutDto> update(@Valid @RequestBody Vendedor vendedor) {
-        VendedorOutDto novoVendedor = this.controller.update(vendedor);
+    public ResponseEntity<FuncionarioOutDto> update(@Valid @RequestBody Funcionario funcionario) {
+        FuncionarioOutDto novoVendedor = this.controller.update(funcionario);
         return ResponseEntity.ok(novoVendedor);
     }
 

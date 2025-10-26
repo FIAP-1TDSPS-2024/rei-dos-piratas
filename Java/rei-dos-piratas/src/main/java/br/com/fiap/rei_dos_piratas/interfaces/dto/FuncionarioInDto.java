@@ -3,12 +3,9 @@ package br.com.fiap.rei_dos_piratas.interfaces.dto;
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import org.hibernate.validator.constraints.Length;
 
-import java.time.LocalDate;
-
-public record VendedorInDto(
+public record FuncionarioInDto(
         @NotNull(message = "O nome não pode ser nulo")
         @Length(max=30, message = "O nome de usuário deve ter de 3 a 30 caracteres")
         String userName,

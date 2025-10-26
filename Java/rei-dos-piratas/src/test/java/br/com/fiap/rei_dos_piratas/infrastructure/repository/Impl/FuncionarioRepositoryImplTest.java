@@ -1,12 +1,11 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
+import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Vendedor;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaVendedorEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaVendedorMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaVendedorEntityRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaFuncionarioEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaFuncionarioEntityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
@@ -18,26 +17,26 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class VendedorRepositoryImplTest {
+class FuncionarioRepositoryImplTest {
 
-    private JpaVendedorEntityRepository repository;
-    private VendedorRepositoryImpl vendedorRepository;
+    private JpaFuncionarioEntityRepository repository;
+    private FuncionarioRepositoryImpl vendedorRepository;
 
     @BeforeEach
     void setUp() {
-        repository = mock(JpaVendedorEntityRepository.class);
-        vendedorRepository = new VendedorRepositoryImpl(repository);
+        repository = mock(JpaFuncionarioEntityRepository.class);
+        vendedorRepository = new FuncionarioRepositoryImpl(repository);
     }
 
     @Test
     void listAll_shouldReturnMappedPage() {
         // Arrange
-        JpaVendedorEntity jpaEntity = new JpaVendedorEntity();
+        JpaFuncionarioEntity jpaEntity = new JpaFuncionarioEntity();
         when(repository.findAll(any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(jpaEntity)));
 
         // Act
-        Page<Vendedor> result = vendedorRepository.listAll(0, 10);
+        Page<Funcionario> result = vendedorRepository.listAll(0, 10);
 
         // Assert
         assertNotNull(result);
@@ -48,11 +47,11 @@ class VendedorRepositoryImplTest {
     @Test
     void findById_shouldReturnMappedVendedor() {
         // Arrange
-        JpaVendedorEntity jpaEntity = new JpaVendedorEntity();
+        JpaFuncionarioEntity jpaEntity = new JpaFuncionarioEntity();
         when(repository.findById(1L)).thenReturn(Optional.of(jpaEntity));
 
         // Act
-        Vendedor result = vendedorRepository.findById(1L);
+        Funcionario result = vendedorRepository.findById(1L);
 
         // Assert
         assertNotNull(result);
@@ -62,7 +61,7 @@ class VendedorRepositoryImplTest {
     @Test
     void create_shouldSaveWhenNoDuplicates() {
         // Arrange
-        Vendedor vendedor = new Vendedor(
+        Funcionario funcionario = new Funcionario(
                 "jonasdasneves",
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
@@ -71,35 +70,35 @@ class VendedorRepositoryImplTest {
 
         when(repository.findFirstByUserName("jonasdasneves")).thenReturn(null);
         when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(null);
-        when(repository.save(any(JpaVendedorEntity.class))).thenReturn(new JpaVendedorEntity());
+        when(repository.save(any(JpaFuncionarioEntity.class))).thenReturn(new JpaFuncionarioEntity());
 
         // Act
-        Vendedor result = vendedorRepository.create(vendedor);
+        Funcionario result = vendedorRepository.create(funcionario);
 
         // Assert
         assertNotNull(result);
-        verify(repository).save(any(JpaVendedorEntity.class));
+        verify(repository).save(any(JpaFuncionarioEntity.class));
     }
 
     @Test
     void create_shouldThrowWhenUserNameExists() {
-        Vendedor vendedor = new Vendedor(
+        Funcionario funcionario = new Funcionario(
                 "duplicado",
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
                 Role.USER);
 
-        when(repository.findFirstByUserName("duplicado")).thenReturn(new JpaVendedorEntity());
+        when(repository.findFirstByUserName("duplicado")).thenReturn(new JpaFuncionarioEntity());
 
         //Assert
-        assertThrows(UniqueKeyDuplicatedException.class, () -> vendedorRepository.create(vendedor));
+        assertThrows(UniqueKeyDuplicatedException.class, () -> vendedorRepository.create(funcionario));
         verify(repository, never()).save(any());
     }
 
     @Test
     void create_shouldThrowWhenEmailExists() {
-        Vendedor vendedor = new Vendedor(
+        Funcionario funcionario = new Funcionario(
                 "jonasdasneves",
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
@@ -107,10 +106,10 @@ class VendedorRepositoryImplTest {
                 Role.USER);
 
         when(repository.findFirstByUserName("jonasdasneves")).thenReturn(null);
-        when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(new JpaVendedorEntity());
+        when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(new JpaFuncionarioEntity());
 
         // Act & Assert
-        assertThrows(UniqueKeyDuplicatedException.class, () -> vendedorRepository.create(vendedor));
+        assertThrows(UniqueKeyDuplicatedException.class, () -> vendedorRepository.create(funcionario));
         verify(repository, never()).save(any());
     }
 

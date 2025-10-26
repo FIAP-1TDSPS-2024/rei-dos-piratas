@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -40,7 +41,9 @@ public abstract class Usuario {
     @NotNull(message = "A data de cadastro do usuário não pode ser nula")
     private LocalDate dataCadastro;
 
-    public Usuario(String userName, String nomeCompleto, String email, String senha) {
+    private Role role;
+
+    public Usuario(String userName, String nomeCompleto, String email, String senha, Role role) {
 
         this.usuarioAtivo = true;
         this.dataCadastro = LocalDate.now();
@@ -49,9 +52,16 @@ public abstract class Usuario {
         this.nomeCompleto = nomeCompleto;
         this.email = email;
         this.senha = senha;
+
+        if(role == null){
+            this.role = Role.USER;
+        }
+        else{
+            this.role = role;
+        }
     }
 
-    public Usuario(String userName, Long id, String nomeCompleto, String email, String senha, boolean usuarioAtivo, LocalDate dataCadastro) {
+    public Usuario(String userName, Long id, String nomeCompleto, String email, String senha, boolean usuarioAtivo, LocalDate dataCadastro, Role role) {
         this.userName = userName;
         this.id = id;
         this.nomeCompleto = nomeCompleto;
@@ -59,5 +69,12 @@ public abstract class Usuario {
         this.senha = senha;
         this.usuarioAtivo = usuarioAtivo;
         this.dataCadastro = dataCadastro;
+
+        if(role == null){
+            this.role = Role.USER;
+        }
+        else{
+            this.role = role;
+        }
     }
 }

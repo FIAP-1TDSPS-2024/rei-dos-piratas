@@ -2,11 +2,11 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Vendedor;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.VendedorDtoMapper;
-import br.com.fiap.rei_dos_piratas.interfaces.controller.VendedorController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.VendedorInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.VendedorOutDto;
+import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.FuncionarioDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -35,19 +35,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Import(GlobalExceptionHandler.class)
 @AutoConfigureMockMvc(addFilters = false)
-@WebMvcTest(VendedorRestController.class)
-class VendedorRestControllerTest {
+@WebMvcTest(FuncionarioRestController.class)
+class FuncionarioRestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private VendedorController vendedorController;
+    private FuncionarioController funcionarioController;
 
     @Test
     void findAll() throws Exception {
         //O que
-        Vendedor vendedor = new Vendedor(
+        Funcionario funcionario = new Funcionario(
                 "jonasdasneves",
                 1L,
                 "Jonas da Silva Campos Melo",
@@ -57,12 +57,12 @@ class VendedorRestControllerTest {
                 LocalDate.now(),
                 Role.USER);
 
-        List<VendedorOutDto> vendedores = new ArrayList<VendedorOutDto>();
-        vendedores.add(VendedorDtoMapper.toDto(vendedor));
+        List<FuncionarioOutDto> vendedores = new ArrayList<FuncionarioOutDto>();
+        vendedores.add(FuncionarioDtoMapper.toDto(funcionario));
 
-        Page<VendedorOutDto> vendedoresPage = new Page<VendedorOutDto>(1, 0, vendedores);
+        Page<FuncionarioOutDto> vendedoresPage = new Page<FuncionarioOutDto>(1, 0, vendedores);
 
-        when(this.vendedorController.listAll(0,10)).thenReturn(vendedoresPage);
+        when(this.funcionarioController.listAll(0,10)).thenReturn(vendedoresPage);
 
         this.mockMvc.perform(get("/vendedores")
                         .param("pageNumber", "0")
@@ -78,7 +78,7 @@ class VendedorRestControllerTest {
     @Test
     void findById() throws Exception {
         //O que
-        Vendedor vendedor = new Vendedor(
+        Funcionario funcionario = new Funcionario(
                 "jonasdasneves",
                 1L,
                 "Jonas da Silva Campos Melo",
@@ -88,9 +88,9 @@ class VendedorRestControllerTest {
                 LocalDate.now(),
                 Role.USER);
 
-        VendedorOutDto vendedorDto = VendedorDtoMapper.toDto(vendedor);
+        FuncionarioOutDto vendedorDto = FuncionarioDtoMapper.toDto(funcionario);
 
-        when(this.vendedorController.findById(1L)).thenReturn(vendedorDto);
+        when(this.funcionarioController.findById(1L)).thenReturn(vendedorDto);
 
         this.mockMvc.perform(get("/vendedores/{id}", 1L))
                 .andExpect(status().isOk())
@@ -103,15 +103,15 @@ class VendedorRestControllerTest {
     @Test
     void create() throws Exception {
         //O que
-        VendedorInDto vendedor = new VendedorInDto(
+        FuncionarioInDto vendedor = new FuncionarioInDto(
                 "jonasdasneves",
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
                 Role.USER);
 
-        VendedorOutDto vendedorOutDto = VendedorDtoMapper.toDto(VendedorDtoMapper.toEntity(vendedor));
-        when(this.vendedorController.create(vendedor)).thenReturn(vendedorOutDto);
+        FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(FuncionarioDtoMapper.toEntity(vendedor));
+        when(this.funcionarioController.create(vendedor)).thenReturn(funcionarioOutDto);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule()); // para LocalDate
@@ -132,7 +132,7 @@ class VendedorRestControllerTest {
     @Test
     void update() throws Exception {
         //O que
-        Vendedor vendedor = new Vendedor(
+        Funcionario funcionario = new Funcionario(
                 "jonasdasneves",
                 1L,
                 "Jonas da Silva Campos Melo",
@@ -142,13 +142,13 @@ class VendedorRestControllerTest {
                 LocalDate.now(),
                 Role.USER);
 
-        VendedorOutDto vendedorOutDto = VendedorDtoMapper.toDto(vendedor);
-        when(vendedorController.update(any(Vendedor.class))).thenReturn(vendedorOutDto);
+        FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
+        when(funcionarioController.update(any(Funcionario.class))).thenReturn(funcionarioOutDto);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String vendedorJson = mapper.writeValueAsString(vendedor);
+        String vendedorJson = mapper.writeValueAsString(funcionario);
 
         mockMvc.perform(put("/vendedores")
                         .contentType(MediaType.APPLICATION_JSON)

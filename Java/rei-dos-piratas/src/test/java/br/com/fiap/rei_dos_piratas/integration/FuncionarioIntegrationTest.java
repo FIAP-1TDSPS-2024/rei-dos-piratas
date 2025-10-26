@@ -1,9 +1,8 @@
 package br.com.fiap.rei_dos_piratas.integration;
 
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
+import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Vendedor;
-import br.com.fiap.rei_dos_piratas.domain.repository.VendedorRepository;
+import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +21,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
-public class VendedorIntegrationTest {
+public class FuncionarioIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private VendedorRepository vendedorRepository;
+    private FuncionarioRepository funcionarioRepository;
 
     @Test
     void createCliente_shouldPersistAndReturnAuthor() throws Exception {
@@ -48,7 +47,7 @@ public class VendedorIntegrationTest {
                 .andExpect(jsonPath("$.userName", is("jonasDasNeves")))
                 .andExpect(jsonPath("$.email", is("jonas@example.com")));
 
-        Page<Vendedor> vendedores = vendedorRepository.listAll(0,10);
+        Page<Funcionario> vendedores = funcionarioRepository.listAll(0,10);
         assert vendedores.pageItems().get(0).getUserName().equals("jonasDasNeves");
     }
 }

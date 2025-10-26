@@ -40,7 +40,7 @@ O desenvolvimento seguirá a metodologia **SCRUM**, permitindo entregas incremen
 ---
 
 ## 💡 Proposta de Valor
-- Fortalecer o **relacionamento direto** entre vendedor e cliente.  
+- Fortalecer o **relacionamento direto** entre funcionario e cliente.  
 - Garantir **preços competitivos** de mangás novos e usados.  
 - Oferecer **busca eficiente** e experiência otimizada de compra.  
 

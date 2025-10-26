@@ -1,11 +1,11 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config;
 
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
-import br.com.fiap.rei_dos_piratas.domain.repository.VendedorRepository;
+import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl.ClienteRepositoryImpl;
-import br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl.VendedorRepositoryImpl;
+import br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl.FuncionarioRepositoryImpl;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaClienteEntityRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaVendedorEntityRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaFuncionarioEntityRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,7 +18,7 @@ public class UsuarioRepositoryConfig {
     }
 
     @Bean
-    public VendedorRepository vendedorRepository(JpaVendedorEntityRepository jpaVendedorEntityRepository) {
-        return new VendedorRepositoryImpl(jpaVendedorEntityRepository);
+    public FuncionarioRepository vendedorRepository(JpaFuncionarioEntityRepository jpaFuncionarioEntityRepository) {
+        return new FuncionarioRepositoryImpl(jpaFuncionarioEntityRepository);
     }
 }

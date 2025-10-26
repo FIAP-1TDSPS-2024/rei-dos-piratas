@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 
-public record VendedorOutDto(
+public record FuncionarioOutDto(
         @NotNull(message = "O ID não deve estar nulo para exibição ao usuário")
         Long id,
 

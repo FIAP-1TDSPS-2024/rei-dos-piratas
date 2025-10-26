@@ -79,10 +79,10 @@ mvn spring-boot:run
 | PUT    | /clientes        | Atualiza clientes existente  |
 | DELETE | /clientes/{id}   | Remove clientes existente    |
 | GET    | /vendedores      | Retorna lista de vendedores  |
-| GET    | /vendedores/{id} | Retorna vendedor por ID      |
-| POST   | /vendedores      | Cria um novo vendedor        |
-| PUT    | /vendedores      | Atualiza vendedor existente  |
-| DELETE | /vendedores/{id} | Remove vendedor existente    |
+| GET    | /vendedores/{id} | Retorna funcionario por ID      |
+| POST   | /vendedores      | Cria um novo funcionario        |
+| PUT    | /vendedores      | Atualiza funcionario existente  |
+| DELETE | /vendedores/{id} | Remove funcionario existente    |
 ---
 
 ## Coleção POSTMAN
