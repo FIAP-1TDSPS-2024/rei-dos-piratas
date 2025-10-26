@@ -12,8 +12,11 @@ import java.time.LocalDate;
 @Table(name = "FUNCIONARIOS")
 @NoArgsConstructor
 public class JpaFuncionarioEntity extends JpaUsuarioEntity{
-    @Column(nullable = false, length = 11)
-    private Role role;
+
+    private LocalDate dataDemissao;
+
+    @Column(precision = 8, scale = 2)
+    private float salario;
 
     public JpaFuncionarioEntity(Long id,
                                 String userName,
@@ -22,8 +25,11 @@ public class JpaFuncionarioEntity extends JpaUsuarioEntity{
                                 String senha,
                                 boolean usuarioAtivo,
                                 LocalDate dataCadastro,
-                                Role role) {
-        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro);
-        this.role = role;
+                                Role role,
+                                LocalDate dataDemissao,
+                                float salario) {
+        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, role);
+        this.dataDemissao = dataDemissao;
+        this.salario = salario;
     }
 }

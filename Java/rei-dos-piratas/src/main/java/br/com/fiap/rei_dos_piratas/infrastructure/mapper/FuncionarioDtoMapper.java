@@ -13,7 +13,8 @@ public class FuncionarioDtoMapper {
                 dto.nomeCompleto(),
                 dto.email(),
                 dto.senha(),
-                dto.role());
+                dto.role(),
+                dto.salario());
     }
 
     public static FuncionarioOutDto toDto(Funcionario funcionario){
@@ -25,7 +26,9 @@ public class FuncionarioDtoMapper {
                 funcionario.getEmail(),
                 funcionario.isUsuarioAtivo(),
                 funcionario.getDataCadastro(),
-                funcionario.getRole());
+                funcionario.getRole(),
+                funcionario.getDataDemissao(),
+                funcionario.getSalario());
     }
 
     private FuncionarioDtoMapper() {

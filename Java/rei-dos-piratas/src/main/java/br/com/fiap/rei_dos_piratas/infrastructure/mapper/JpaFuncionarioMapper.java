@@ -15,7 +15,9 @@ public class JpaFuncionarioMapper {
                 funcionario.getSenha(),
                 funcionario.isUsuarioAtivo(),
                 funcionario.getDataCadastro(),
-                funcionario.getRole()
+                funcionario.getRole(),
+                funcionario.getDataDemissao(),
+                funcionario.getSalario()
         );
     }
 
@@ -29,7 +31,9 @@ public class JpaFuncionarioMapper {
                 jpaVendedor.getSenha(),
                 jpaVendedor.isUsuarioAtivo(),
                 jpaVendedor.getDataCadastro(),
-                jpaVendedor.getRole()
+                jpaVendedor.getRole(),
+                jpaVendedor.getDataDemissao(),
+                jpaVendedor.getSalario()
         );
     }
 

@@ -1,9 +1,7 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
@@ -26,10 +24,17 @@ public record FuncionarioOutDto(
 
         boolean usuarioAtivo,
 
-        @Past
+        @PastOrPresent
         @NotNull(message = "A data de cadastro do usuário não pode ser nula")
         LocalDate dataCadastro,
 
         @NotNull(message = "O Role do vendedor não pode ser nulo na exibição para o usuário")
-        Role role
+        Role role,
+
+        @PastOrPresent(message = "A data de demissao deve ser passada")
+        LocalDate dataDemissao,
+
+        @Digits(fraction = 2, integer = 6, message = "O salario deve ter até 8 digitos com 2 dígitos após a vírgula")
+        @DecimalMin(value = "0.0", inclusive = false, message = "O salario não pode ser negativo")
+        float salario
 ) {}

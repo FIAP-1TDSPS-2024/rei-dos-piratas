@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,4 +42,7 @@ public class JpaUsuarioEntity {
     @Setter
     @Column(nullable = false)
     private LocalDate dataCadastro;
+
+    @Column(nullable = false, length = 11)
+    private Role role;
 }

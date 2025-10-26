@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -45,7 +46,7 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
                             SexoEnum sexo,
                             JpaEnderecoEntity endereco,
                             String cpf) {
-        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro);
+        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.endereco = endereco;
