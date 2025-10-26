@@ -38,7 +38,7 @@ public record ClienteInDto(
 
         @Valid
         @NotNull(message = "O endereço do usuário não pode ser nulo")
-        Endereco endereco,
+        EnderecoInDto endereco,
 
         @Pattern(regexp = "[0-9]{11}", message = "O CPF do usuário deve ter 11 dígitos, sendo apenas números")
         String cpf

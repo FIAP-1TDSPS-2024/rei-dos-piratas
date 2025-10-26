@@ -8,6 +8,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.mapper.ClienteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.EnderecoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -140,19 +141,14 @@ class ClienteRestControllerTest {
     @Test
     void create() throws Exception {
         //O que
-        Endereco endereco = new Endereco(
-                1L,
+        EnderecoInDto endereco = new EnderecoInDto(
                 12345,
                 "12345678",
                 "Avenida Paulista",
                 "Bela Vista",
-                10L,
                 "São Paulo",
-                20L,
                 "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+                "SP");
 
         ClienteInDto cliente = new ClienteInDto(
                 "jonasdasneves",

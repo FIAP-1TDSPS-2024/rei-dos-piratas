@@ -15,7 +15,7 @@ public class ClienteDtoMapper {
                 dto.senha(),
                 dto.dataNascimento(),
                 dto.sexo(),
-                dto.endereco(),
+                EnderecoDtoMapper.toEntity(dto.endereco()),
                 dto.cpf());
     }
 
