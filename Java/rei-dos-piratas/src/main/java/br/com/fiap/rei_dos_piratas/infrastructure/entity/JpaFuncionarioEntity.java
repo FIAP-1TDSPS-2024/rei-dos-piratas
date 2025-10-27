@@ -15,7 +15,6 @@ public class JpaFuncionarioEntity extends JpaUsuarioEntity{
 
     private LocalDate dataDemissao;
 
-    @Column(precision = 8, scale = 2)
     private float salario;
 
     public JpaFuncionarioEntity(Long id,

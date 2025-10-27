@@ -30,7 +30,7 @@ public class JpaPedidoEntity {
 
     private LocalDate dataCancelamento;
 
-    @Column(nullable = false, precision = 6, scale = 2)
+    @Column(nullable = false)
     private float valorTotal;
 
     @Column(nullable = false, length = 50)

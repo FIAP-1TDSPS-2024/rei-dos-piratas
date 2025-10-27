@@ -27,19 +27,16 @@ public class JpaProdutoEntity {
     @Column(nullable = false, length = 500)
     private String descricao;
 
-    @Column(nullable = false, precision = 8, scale = 2)
+    @Column(nullable = false)
     private float preco;
 
-    @Column(nullable = false, precision = 6)
+    @Column(nullable = false)
     private int estoque;
 
-    @Column(precision = 6, scale = 2)
     private float altura;
 
-    @Column(precision = 6, scale = 2)
     private float largura;
 
-    @Column(precision = 6, scale = 2)
     private float profundidade;
 
     @Column(nullable = false, length = 255)

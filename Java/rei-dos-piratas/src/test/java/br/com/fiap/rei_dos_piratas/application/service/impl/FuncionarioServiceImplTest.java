@@ -38,7 +38,9 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         List<Funcionario> vendedores = new ArrayList<Funcionario>();
         vendedores.add(funcionario);
@@ -63,7 +65,9 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         //Quando
         when(this.funcionarioRepository.findById(1L)).thenReturn(funcionario);
@@ -79,10 +83,15 @@ class FuncionarioServiceImplTest {
         //O que
         Funcionario funcionarioParaCriar = new Funcionario(
                 "jonasdasneves",
+                1L,
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
-                Role.USER);
+                true,
+                LocalDate.now(),
+                Role.USER,
+                null,
+                1000.00F);
 
         Funcionario funcionarioCriado = new Funcionario(
                 "jonasdasneves",
@@ -92,7 +101,9 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         //Quando
         when(this.funcionarioRepository.create(funcionarioParaCriar)).thenReturn(funcionarioCriado);
@@ -115,7 +126,9 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         Funcionario funcionarioNovo = new Funcionario(
                 "jonasdasneves",
@@ -125,7 +138,9 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         //Quando
         when(this.funcionarioRepository.findById(1L)).thenReturn(funcionarioAntigo);

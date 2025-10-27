@@ -27,7 +27,7 @@ public record FuncionarioInDto(
         Role role,
 
         @Digits(fraction = 2, integer = 6, message = "O salario deve ter até 8 digitos com 2 dígitos após a vírgula")
-        @DecimalMin(value = "0.0", inclusive = false, message = "O salario não pode ser negativo")
+        @DecimalMin(value = "0.0", message = "O salario não pode ser negativo")
         float salario
 ) {
 }

@@ -38,7 +38,9 @@ class FuncionarioControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         List<Funcionario> vendedores = new ArrayList<Funcionario>();
         vendedores.add(funcionario);
@@ -63,7 +65,9 @@ class FuncionarioControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         //Quando
         when(this.funcionarioService.findById(1L)).thenReturn(funcionario);
@@ -82,7 +86,8 @@ class FuncionarioControllerImplTest {
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
-                Role.USER);
+                Role.USER,
+                1000.00F);
 
         Funcionario funcionarioCriado = new Funcionario(
                 "jonasdasneves",
@@ -92,7 +97,9 @@ class FuncionarioControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         //Quando
         when(this.funcionarioService.create(funcionarioParaCriar)).thenReturn(funcionarioCriado);
@@ -115,7 +122,9 @@ class FuncionarioControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         Funcionario funcionarioNovo = new Funcionario(
                 "jonasdasneves",
@@ -125,7 +134,9 @@ class FuncionarioControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         //Quando
         when(this.funcionarioService.findById(1L)).thenReturn(funcionarioAntigo);

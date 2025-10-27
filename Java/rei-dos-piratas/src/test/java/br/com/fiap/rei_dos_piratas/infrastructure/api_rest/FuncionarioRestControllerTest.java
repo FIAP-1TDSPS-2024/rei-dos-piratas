@@ -55,16 +55,18 @@ class FuncionarioRestControllerTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
-        List<FuncionarioOutDto> vendedores = new ArrayList<FuncionarioOutDto>();
-        vendedores.add(FuncionarioDtoMapper.toDto(funcionario));
+        List<FuncionarioOutDto> funcionarios = new ArrayList<FuncionarioOutDto>();
+        funcionarios.add(FuncionarioDtoMapper.toDto(funcionario));
 
-        Page<FuncionarioOutDto> vendedoresPage = new Page<FuncionarioOutDto>(1, 0, vendedores);
+        Page<FuncionarioOutDto> funcionariosPage = new Page<FuncionarioOutDto>(1, 0, funcionarios);
 
-        when(this.funcionarioController.listAll(0,10)).thenReturn(vendedoresPage);
+        when(this.funcionarioController.listAll(0,10)).thenReturn(funcionariosPage);
 
-        this.mockMvc.perform(get("/vendedores")
+        this.mockMvc.perform(get("/funcionarios")
                         .param("pageNumber", "0")
                         .param("sizeSize", "10"))
                 .andExpect(status().isOk())
@@ -86,13 +88,15 @@ class FuncionarioRestControllerTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         FuncionarioOutDto vendedorDto = FuncionarioDtoMapper.toDto(funcionario);
 
         when(this.funcionarioController.findById(1L)).thenReturn(vendedorDto);
 
-        this.mockMvc.perform(get("/vendedores/{id}", 1L))
+        this.mockMvc.perform(get("/funcionarios/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.userName", is("jonasdasneves")))
@@ -108,7 +112,8 @@ class FuncionarioRestControllerTest {
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
-                Role.USER);
+                Role.USER,
+                1000.00F);
 
         FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(FuncionarioDtoMapper.toEntity(vendedor));
         when(this.funcionarioController.create(vendedor)).thenReturn(funcionarioOutDto);
@@ -120,7 +125,7 @@ class FuncionarioRestControllerTest {
         String clienteJson = mapper.writeValueAsString(vendedor);
 
 
-        this.mockMvc.perform(post("/vendedores")
+        this.mockMvc.perform(post("/funcionarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(clienteJson))
                 .andExpect(status().isCreated())
@@ -140,7 +145,9 @@ class FuncionarioRestControllerTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER);
+                Role.USER,
+                null,
+                1000.00F);
 
         FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
         when(funcionarioController.update(any(Funcionario.class))).thenReturn(funcionarioOutDto);
@@ -150,7 +157,7 @@ class FuncionarioRestControllerTest {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String vendedorJson = mapper.writeValueAsString(funcionario);
 
-        mockMvc.perform(put("/vendedores")
+        mockMvc.perform(put("/funcionarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(vendedorJson))
                 .andExpect(status().isOk())
@@ -162,7 +169,7 @@ class FuncionarioRestControllerTest {
 
     @Test
     void delete() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.delete("/vendedores/{id}", 1L))
+        this.mockMvc.perform(MockMvcRequestBuilders.delete("/funcionarios/{id}", 1L))
                 .andExpect(status().isNoContent());
     }
 }

@@ -66,7 +66,8 @@ class FuncionarioRepositoryImplTest {
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
-                Role.USER);
+                Role.USER,
+                1000.00F);
 
         when(repository.findFirstByUserName("jonasdasneves")).thenReturn(null);
         when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(null);
@@ -87,7 +88,8 @@ class FuncionarioRepositoryImplTest {
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
-                Role.USER);
+                Role.USER,
+                1000.00F);
 
         when(repository.findFirstByUserName("duplicado")).thenReturn(new JpaFuncionarioEntity());
 
@@ -103,7 +105,8 @@ class FuncionarioRepositoryImplTest {
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
                 "SenhaSegura123",
-                Role.USER);
+                Role.USER,
+                1000.00F);
 
         when(repository.findFirstByUserName("jonasdasneves")).thenReturn(null);
         when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(new JpaFuncionarioEntity());

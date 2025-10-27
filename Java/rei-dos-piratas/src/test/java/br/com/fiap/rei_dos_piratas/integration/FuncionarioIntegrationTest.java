@@ -31,7 +31,7 @@ public class FuncionarioIntegrationTest {
 
     @Test
     void createCliente_shouldPersistAndReturnAuthor() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.post("/vendedores")
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/funcionarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -39,7 +39,8 @@ public class FuncionarioIntegrationTest {
                                     "nomeCompleto": "Jonas da Silva Souza",
                                     "email": "jonas@example.com",
                                     "senha": "SenhaSegura1",
-                                    "role": "ADMIN"
+                                    "role": "ADMIN",
+                                    "salario": 1000
                                   }
                                 """))
                 .andExpect(status().isCreated())
