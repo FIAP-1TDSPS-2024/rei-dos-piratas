@@ -14,6 +14,7 @@ import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -34,6 +35,9 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
 
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.PERSIST)
+    private List<JpaPedidoEntity> pedidos;
 
     public JpaClienteEntity(Long id,
                             String userName,

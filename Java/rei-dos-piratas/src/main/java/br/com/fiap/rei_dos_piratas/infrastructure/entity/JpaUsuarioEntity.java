@@ -2,10 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 

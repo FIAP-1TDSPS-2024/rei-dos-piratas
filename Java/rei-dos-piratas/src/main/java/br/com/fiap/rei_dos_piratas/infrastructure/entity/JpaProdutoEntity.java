@@ -1,0 +1,51 @@
+package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+
+import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
+
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "PRODUTOS")
+public class JpaProdutoEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 150, unique = true)
+    private String nome;
+
+    @Column(nullable = false, length = 500)
+    private String descricao;
+
+    @Column(nullable = false, precision = 8, scale = 2)
+    private float preco;
+
+    @Column(nullable = false, precision = 6)
+    private int estoque;
+
+    @Column(precision = 6, scale = 2)
+    private float altura;
+
+    @Column(precision = 6, scale = 2)
+    private float largura;
+
+    @Column(precision = 6, scale = 2)
+    private float profundidade;
+
+    @Column(nullable = false, length = 255)
+    private CondicaoEnum condicao;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "funcionario_id", nullable = false)
+    private JpaFuncionarioEntity funcionario;
+}
