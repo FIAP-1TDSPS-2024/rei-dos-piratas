@@ -29,6 +29,9 @@ public class JpaProdutoEntity {
     private String descricao;
 
     @Column(nullable = false)
+    private String enderecoImagem;
+
+    @Column(nullable = false)
     private float preco;
 
     @Column(nullable = false)
