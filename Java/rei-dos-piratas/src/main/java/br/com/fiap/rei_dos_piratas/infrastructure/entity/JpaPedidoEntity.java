@@ -6,13 +6,14 @@ import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity

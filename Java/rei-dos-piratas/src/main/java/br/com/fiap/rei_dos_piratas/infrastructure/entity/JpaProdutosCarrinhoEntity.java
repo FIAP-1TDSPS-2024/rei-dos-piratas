@@ -4,10 +4,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -22,7 +23,7 @@ public class JpaProdutosCarrinhoEntity {
     private JpaProdutoEntity produto;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "carrinho_id", nullable = false)
+    @JoinColumn(name = "carrinho_id")
     private JpaCarrinhoEntity carrinho;
 
     @Min(value = 1, message = "A quantidade deve ser pelo menos 1")

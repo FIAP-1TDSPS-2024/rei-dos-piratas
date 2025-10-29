@@ -2,11 +2,17 @@ package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Pedido {
     private Long id;
 

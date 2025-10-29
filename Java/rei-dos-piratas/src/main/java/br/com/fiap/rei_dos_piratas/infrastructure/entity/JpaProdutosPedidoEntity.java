@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -25,7 +25,7 @@ public class JpaProdutosPedidoEntity {
     private JpaProdutoEntity produto;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "pedido_id", nullable = false)
+    @JoinColumn(name = "pedido_id")
     private JpaPedidoEntity pedido;
 
     @Min(value = 1, message = "A quantidade deve ser pelo menos 1")
