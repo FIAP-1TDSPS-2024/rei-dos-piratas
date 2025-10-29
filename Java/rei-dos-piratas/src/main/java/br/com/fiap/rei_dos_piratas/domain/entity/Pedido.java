@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,4 +39,15 @@ public class Pedido {
 
     @Size(min = 1, message = "O pedido deve ter pelo menos um produto")
     private List<ItemProduto> produtosAdicionados;
+
+    public Pedido(Cliente cliente, List<ItemProduto> produtosAdicionados) {
+        this.dataPedido = LocalDate.now();
+        this.status = StatusEnum.AGUARDANDO_PAGAMENTO;
+        this.valorTotal = (float) produtosAdicionados
+                .stream()
+                .mapToDouble(item -> item.getQuantidade() * item.getProduto().getPreco())
+                .sum();
+        this.cliente = cliente;
+        this.produtosAdicionados = produtosAdicionados;
+    }
 }
