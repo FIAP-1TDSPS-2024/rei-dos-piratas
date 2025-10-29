@@ -4,8 +4,10 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaCarrinhoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaClienteEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaEnderecoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaCarrinhoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaClienteMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaEnderecoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.PageMapper;
@@ -56,6 +58,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
 
         //Consulta por cidade e estado existentes para evitar duplicaçãp
         JpaEnderecoEntity jpaEndereco = JpaEnderecoMapper.toJpaEntity(cliente.getEndereco());
+        JpaCarrinhoEntity jpaCarrinho = JpaCarrinhoMapper.toJpaEntity(cliente.getCarrinho());
         JpaClienteEntity jpaCidadeExistente = this.repository.findFirstByEndereco_Cidade_CidadeNome(cliente.getEndereco().getCidade());
 
         if (jpaCidadeExistente != null) {
@@ -75,7 +78,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
 
         return JpaClienteMapper.toEntity(
                 this.repository
-                        .save(JpaClienteMapper.toJpaEntity(cliente, jpaEndereco)));
+                        .save(JpaClienteMapper.toJpaEntity(cliente, jpaEndereco, jpaCarrinho)));
     }
 
     @Override
@@ -85,10 +88,11 @@ public class ClienteRepositoryImpl implements ClienteRepository {
 
         if (clienteExistente.isPresent()) {
             JpaEnderecoEntity jpaEndereco = JpaEnderecoMapper.toJpaEntity(cliente.getEndereco());
+            JpaCarrinhoEntity jpaCarrinho = JpaCarrinhoMapper.toJpaEntity(cliente.getCarrinho());
 
             return JpaClienteMapper.toEntity(
                     this.repository
-                            .save(JpaClienteMapper.toJpaEntity(cliente, jpaEndereco)));
+                            .save(JpaClienteMapper.toJpaEntity(cliente, jpaEndereco, jpaCarrinho)));
         }
         else {
             return null;

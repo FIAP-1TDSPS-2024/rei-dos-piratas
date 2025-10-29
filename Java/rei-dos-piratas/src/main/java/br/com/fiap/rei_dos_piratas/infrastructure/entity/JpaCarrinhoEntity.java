@@ -2,12 +2,13 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -18,7 +19,7 @@ public class JpaCarrinhoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "carrinho")
     @JoinColumn(name = "cliente_id")
     private JpaClienteEntity cliente;
 

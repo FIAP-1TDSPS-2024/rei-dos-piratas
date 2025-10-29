@@ -39,7 +39,11 @@ public class JpaPedidoMapper {
                         JpaEnderecoMapper
                                 .toJpaEntity(pedido
                                         .getCliente()
-                                        .getEndereco())),
+                                        .getEndereco()),
+                        JpaCarrinhoMapper
+                                .toJpaEntity(pedido
+                                        .getCliente()
+                                        .getCarrinho())),
                 pedido.getProdutosAdicionados()
                         .stream()
                         .map(JpaItemProdutoMapper::toJpaProdutosPedidosEntity)

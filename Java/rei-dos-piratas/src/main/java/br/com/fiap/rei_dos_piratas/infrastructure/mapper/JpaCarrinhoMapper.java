@@ -8,8 +8,6 @@ public class JpaCarrinhoMapper {
     public static Carrinho toEntity(JpaCarrinhoEntity jpaCarrinhoEntity) {
         return new Carrinho(
                 jpaCarrinhoEntity.getId(),
-                JpaClienteMapper
-                        .toEntity(jpaCarrinhoEntity.getCliente()),
                 jpaCarrinhoEntity
                         .getProdutosAdicionados()
                         .stream()
@@ -21,12 +19,7 @@ public class JpaCarrinhoMapper {
     public static JpaCarrinhoEntity toJpaEntity(Carrinho carrinho) {
         JpaCarrinhoEntity jpaCarrinho = new JpaCarrinhoEntity(
                 carrinho.getId(),
-                JpaClienteMapper.toJpaEntity(
-                                carrinho.getCliente(),
-                                JpaEnderecoMapper
-                                        .toJpaEntity(carrinho
-                                                        .getCliente()
-                                                        .getEndereco())),
+                null,
                 carrinho.getProdutosAdicionados()
                         .stream()
                         .map(JpaItemProdutoMapper::toJpaProdutosCarrinhoEntity)
@@ -35,7 +28,7 @@ public class JpaCarrinhoMapper {
 
         jpaCarrinho
                 .getProdutosAdicionados()
-                .forEach(produtosPedido -> produtosPedido.setCarrinho(jpaCarrinho));
+                .forEach(produtosCarrinho -> produtosCarrinho.setCarrinho(jpaCarrinho));
 
         return jpaCarrinho;
     }

@@ -2,12 +2,13 @@ package br.com.fiap.rei_dos_piratas.infrastructure.mapper;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaCarrinhoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaClienteEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaEnderecoEntity;
 
 public class JpaClienteMapper {
 
-    public static JpaClienteEntity toJpaEntity(Cliente cliente, JpaEnderecoEntity jpaEndereco) {
+    public static JpaClienteEntity toJpaEntity(Cliente cliente, JpaEnderecoEntity jpaEndereco, JpaCarrinhoEntity jpaCarrinho) {
         if (cliente == null) return null;
         JpaClienteEntity clienteJpa = new JpaClienteEntity(
                 cliente.getId(),
@@ -20,10 +21,13 @@ public class JpaClienteMapper {
                 cliente.getDataNascimento(),
                 cliente.getSexo(),
                 jpaEndereco,
-                cliente.getCpf()
+                cliente.getCpf(),
+                jpaCarrinho
         );
 
         clienteJpa.getEndereco().setCliente(clienteJpa);
+
+        clienteJpa.getCarrinho().setCliente(clienteJpa);
 
         return clienteJpa;
     }
@@ -41,7 +45,8 @@ public class JpaClienteMapper {
                 jpaCliente.getDataNascimento(),
                 jpaCliente.getSexo(),
                 JpaEnderecoMapper.toEntity(jpaCliente.getEndereco()),
-                jpaCliente.getCpf()
+                jpaCliente.getCpf(),
+                JpaCarrinhoMapper.toEntity(jpaCliente.getCarrinho())
         );
     }
 

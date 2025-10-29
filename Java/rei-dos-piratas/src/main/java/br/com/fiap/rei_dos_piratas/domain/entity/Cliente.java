@@ -28,6 +28,9 @@ public class Cliente extends Usuario{
     @Pattern(regexp = "[0-9]{11}", message = "O CPF do usuário deve ter 11 dígitos, sendo apenas números")
     private String cpf;
 
+    @NotNull(message = "O cliente deve possuir um carrinho")
+    private Carrinho carrinho;
+
     public Cliente(
             String userName,
             String nomeCompleto,
@@ -42,6 +45,7 @@ public class Cliente extends Usuario{
         this.sexo = sexo;
         this.endereco = endereco;
         this.cpf = cpf;
+        this.carrinho = new Carrinho();
     }
 
     public Cliente(
@@ -55,11 +59,13 @@ public class Cliente extends Usuario{
                    LocalDate dataNascimento,
                    SexoEnum sexo,
                    Endereco endereco,
-                   String cpf) {
+                   String cpf,
+                   Carrinho carrinho) {
         super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.endereco = endereco;
         this.cpf = cpf;
+        this.carrinho = carrinho;
     }
 }

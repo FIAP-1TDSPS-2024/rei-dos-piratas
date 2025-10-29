@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -36,6 +37,9 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private JpaCarrinhoEntity carrinho;
+
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.PERSIST)
     private List<JpaPedidoEntity> pedidos;
 
@@ -49,11 +53,13 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
                             LocalDate dataNascimento,
                             SexoEnum sexo,
                             JpaEnderecoEntity endereco,
-                            String cpf) {
+                            String cpf,
+                            JpaCarrinhoEntity carrinho) {
         super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.endereco = endereco;
         this.cpf = cpf;
+        this.carrinho = carrinho;
     }
 }
