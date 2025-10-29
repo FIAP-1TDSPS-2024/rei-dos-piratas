@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Getter
@@ -45,7 +46,10 @@ public class Cliente extends Usuario{
         this.sexo = sexo;
         this.endereco = endereco;
         this.cpf = cpf;
-        this.carrinho = new Carrinho();
+        this.carrinho = new Carrinho(
+                null,
+                new ArrayList<ItemProduto>()
+        );
     }
 
     public Cliente(

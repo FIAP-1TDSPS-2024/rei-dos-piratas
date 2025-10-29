@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -43,5 +44,8 @@ public record ClienteOutDto(
 
         @Valid
         @NotNull(message = "O endereço do usuário não pode ser nulo")
-        Endereco endereco
+        Endereco endereco,
+
+        @NotNull(message = "O carrinho deve ser exibido ao usuário")
+        Carrinho carrinho
 ) {}

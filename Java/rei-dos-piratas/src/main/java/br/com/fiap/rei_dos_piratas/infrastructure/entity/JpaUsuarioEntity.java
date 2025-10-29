@@ -40,6 +40,7 @@ public class JpaUsuarioEntity {
     @Column(nullable = false)
     private LocalDate dataCadastro;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 11)
     private Role role;
 }
