@@ -13,4 +13,6 @@ public interface ClienteService {
     Cliente update(Cliente cliente);
 
     void delete(Long id);
+
+    Cliente adicionarProdutoCarrinho(Long clienteId, Long produtoId, int quantidade);
 }

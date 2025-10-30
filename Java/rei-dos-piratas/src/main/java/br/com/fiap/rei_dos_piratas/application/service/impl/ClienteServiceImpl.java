@@ -1,11 +1,14 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
+import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl.ClienteRepositoryImpl;
+import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
@@ -14,8 +17,11 @@ public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository repository;
 
-    public ClienteServiceImpl(ClienteRepository repository) {
+    private final ProdutoService produtoService;
+
+    public ClienteServiceImpl(ClienteRepository repository, ProdutoService produtoService) {
         this.repository = repository;
+        this.produtoService = produtoService;
     }
 
     @Override
@@ -54,5 +60,18 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public void delete(Long id) {
         this.repository.delete(id);
+    }
+
+    @Override
+    public Cliente adicionarProdutoCarrinho(Long clienteId, Long produtoId, int quantidade) {
+
+        Produto produto = this.produtoService.findById(produtoId);
+        Cliente cliente = this.findById(clienteId);
+
+        cliente.getCarrinho().getProdutosAdicionados().add(
+                new ItemProduto(produto, quantidade)
+        );
+
+        return this.repository.update(cliente);
     }
 }
