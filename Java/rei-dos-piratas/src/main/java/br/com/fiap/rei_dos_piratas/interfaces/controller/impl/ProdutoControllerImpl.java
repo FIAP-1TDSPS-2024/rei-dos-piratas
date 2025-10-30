@@ -1,0 +1,65 @@
+package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
+
+import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
+import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.FuncionarioDtoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.ProdutoDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.ProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.ProdutoOutDto;
+
+import java.util.List;
+
+public class ProdutoControllerImpl implements ProdutoController {
+
+    private final ProdutoService service;
+
+    public ProdutoControllerImpl(ProdutoService service) {
+        this.service = service;
+    }
+
+    @Override
+    public ProdutoOutDto findById(Long id) {
+        Produto produto = this.service.findById(id);
+        return ProdutoDtoMapper.toDto(produto);
+    }
+
+    @Override
+    public Page<ProdutoOutDto> findAll(int pageNumber, int pageSize) {
+
+        Page<Produto> produtosPage = this.service.findAll(pageNumber, pageSize);
+
+        List<ProdutoOutDto> produtos = this.service
+                .findAll(pageNumber, pageSize)
+                .pageItems()
+                .stream()
+                .map(ProdutoDtoMapper::toDto)
+                .toList();
+
+        return new Page<ProdutoOutDto>(
+                produtosPage.numberOfPages(),
+                produtosPage.pageNumber(),
+                produtos);
+    }
+
+    @Override
+    public ProdutoOutDto create(ProdutoInDto produto) {
+        Produto produtoEntity = ProdutoDtoMapper.toEntity(produto);
+        Produto novoProduto = this.service.create(produtoEntity);
+        return ProdutoDtoMapper.toDto(novoProduto);
+    }
+
+    @Override
+    public ProdutoOutDto update(Produto produto) {
+        Produto produtoAtualizado = this.service.create(produto);
+        return ProdutoDtoMapper.toDto(produtoAtualizado);
+    }
+
+    @Override
+    public void delete(Long id) {
+        this.service.delete(id);
+    }
+}
