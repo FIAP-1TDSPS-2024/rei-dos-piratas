@@ -131,6 +131,17 @@ public class PedidoServiceImpl implements PedidoService {
             throw new WrongStatusException("O pedido já está cancelado.");
         }
         else {
+            //Retorna os produtos para estoque
+            pedido.getProdutosAdicionados()
+                    .forEach(produto -> {
+                        produto
+                                .getProduto()
+                                .setEstoque(
+                                        produto.getProduto().getEstoque() +
+                                        produto.getQuantidade());
+
+                        this.produtoRepository.update(produto.getProduto());
+                    });
             pedido.setStatus(StatusEnum.CANCELADO);
             return this.repository.update(pedido);
         }
