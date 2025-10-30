@@ -50,10 +50,10 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.getProdutosAdicionados()
                 .forEach(produto -> {
                     if (produto.getProduto().getEstoque() < produto.getQuantidade()) {
-                        //Faz subtração do estoque se for possível
-                        produto.getProduto().setEstoque(produto.getProduto().getEstoque() - produto.getQuantidade());
-                        //Salva novo estoque em banco
-                        this.produtoRepository.update(produto.getProduto());
+                        throw new EstoqueInsuficienteException("Estoque insuficiente! O produto " +
+                                produto.getProduto().getNome() + " de ID " +
+                                produto.getProduto().getId() + " tem apenas " +
+                                produto.getProduto().getEstoque() + " unidades em estoque.");
                     }
                 });
 
