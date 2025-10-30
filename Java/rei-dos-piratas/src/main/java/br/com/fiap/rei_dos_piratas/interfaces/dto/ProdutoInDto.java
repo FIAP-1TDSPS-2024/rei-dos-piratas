@@ -40,5 +40,8 @@ public record ProdutoInDto(
         float profundidade,
 
         @NotNull(message = "A condição do produto é obrigatória(NOVO ou USADO)")
-        CondicaoEnum condicao
+        CondicaoEnum condicao,
+
+        @NotNull(message = "O ID do funcionário é obrigatório")
+        Long funcionarioId
 ) {}

@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
+import br.com.fiap.rei_dos_piratas.application.service.FuncionarioService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
@@ -17,8 +18,11 @@ public class ProdutoControllerImpl implements ProdutoController {
 
     private final ProdutoService service;
 
-    public ProdutoControllerImpl(ProdutoService service) {
+    private final FuncionarioService funcionarioService;
+
+    public ProdutoControllerImpl(ProdutoService service, FuncionarioService funcionarioService) {
         this.service = service;
+        this.funcionarioService = funcionarioService;
     }
 
     @Override
@@ -46,7 +50,12 @@ public class ProdutoControllerImpl implements ProdutoController {
 
     @Override
     public ProdutoOutDto create(ProdutoInDto produto) {
+
         Produto produtoEntity = ProdutoDtoMapper.toEntity(produto);
+
+        Funcionario funcionario = this.funcionarioService.findById(produto.funcionarioId());
+        produtoEntity.setFuncionario(funcionario);
+
         Produto novoProduto = this.service.create(produtoEntity);
         return ProdutoDtoMapper.toDto(novoProduto);
     }

@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ProdutoControllerConfig {
     @Bean
-    public ProdutoController produtoController(ProdutoService service) {
-        return new ProdutoControllerImpl(service);
+    public ProdutoController produtoController(ProdutoService service, FuncionarioService funcionarioService) {
+        return new ProdutoControllerImpl(service, funcionarioService);
     }
 }

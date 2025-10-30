@@ -14,7 +14,7 @@ public class ProdutoDtoMapper {
         return new Produto(
                 produtoDto.nome(),
                 produtoDto.descricao(),
-                produtoDto.enderecoImagem(), 
+                produtoDto.enderecoImagem(),
                 produtoDto.preco(),
                 produtoDto.estoque(),
                 produtoDto.altura(),
@@ -22,7 +22,7 @@ public class ProdutoDtoMapper {
                 produtoDto.profundidade(),
                 produtoDto.condicao(),
                 null
-        );
+                );
     }
 
     public static ProdutoOutDto toDto(Produto produto) {
