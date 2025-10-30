@@ -7,8 +7,8 @@ public interface PedidoService {
     public Page<Pedido> findAllByCliente(int pageNumber, int pageSize, Long clienteId);
     public Pedido findById(Long id);
     public Pedido fazerPedido(Pedido pedido);
-    public Pedido pagarPedido(Pedido pedido);
-    public Pedido enviarPedido(Pedido pedido);
-    public Pedido entregarPedido(Pedido pedido);
-    public Pedido cancelarPedido(Pedido pedido);
+    public Pedido pagarPedido(Long id);
+    public Pedido enviarPedido(Long id);
+    public Pedido entregarPedido(Long id);
+    public Pedido cancelarPedido(Long id);
 }

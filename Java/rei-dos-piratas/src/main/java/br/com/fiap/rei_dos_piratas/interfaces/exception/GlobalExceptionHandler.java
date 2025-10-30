@@ -1,7 +1,9 @@
 package br.com.fiap.rei_dos_piratas.interfaces.exception;
 
+import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
 import jakarta.validation.ConstraintDefinitionException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -47,6 +49,18 @@ public class GlobalExceptionHandler {
                 .forEach( error -> errors.put(error.getField(), error.getDefaultMessage()));
 
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(EstoqueInsuficienteException.class)
+    public ResponseEntity<ErrorResponse> handleEstoqueInsuficienteException(EstoqueInsuficienteException e) {
+        final ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(WrongStatusException.class)
+    public ResponseEntity<ErrorResponse> handleWrongStatusException(WrongStatusException e) {
+        final ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
