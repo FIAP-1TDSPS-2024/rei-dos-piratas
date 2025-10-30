@@ -5,6 +5,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
 
 public class PedidoDtoMapper {
 
@@ -15,6 +16,18 @@ public class PedidoDtoMapper {
                         .stream()
                         .map(ItemProdutoDtoMapper::toEntity)
                         .toList()
+        );
+    }
+
+    public static PedidoOutDto toDto(Pedido pedido) {
+        return new PedidoOutDto(
+                pedido.getId(),
+                pedido.getDataPedido(),
+                pedido.getDataEntrega(),
+                pedido.getDataCancelamento(),
+                pedido.getValorTotal(),
+                pedido.getStatus(),
+                pedido.getProdutosAdicionados()
         );
     }
 

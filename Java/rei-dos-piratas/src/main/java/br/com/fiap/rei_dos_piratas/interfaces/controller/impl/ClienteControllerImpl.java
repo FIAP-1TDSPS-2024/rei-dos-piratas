@@ -26,8 +26,7 @@ public class ClienteControllerImpl implements ClienteController {
 
         Page<Cliente> clientesPage = this.service.listAll(pageNumber, pageSize);
 
-        List<ClienteOutDto> clientes = this.service
-                .listAll(pageNumber, pageSize)
+        List<ClienteOutDto> clientes = clientesPage
                 .pageItems()
                 .stream()
                 .map(ClienteDtoMapper::toDto)

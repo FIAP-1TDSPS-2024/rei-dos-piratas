@@ -23,8 +23,7 @@ public class FuncionarioControllerImpl implements FuncionarioController {
 
         Page<Funcionario> vendedoresPage = this.service.listAll(pageNumber, pageSize);
 
-        List<FuncionarioOutDto> vendedores = this.service
-                .listAll(pageNumber, pageSize)
+        List<FuncionarioOutDto> vendedores = vendedoresPage
                 .pageItems()
                 .stream()
                 .map(FuncionarioDtoMapper::toDto)

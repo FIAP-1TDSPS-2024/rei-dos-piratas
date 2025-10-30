@@ -32,8 +32,7 @@ public class ProdutoControllerImpl implements ProdutoController {
 
         Page<Produto> produtosPage = this.service.findAll(pageNumber, pageSize);
 
-        List<ProdutoOutDto> produtos = this.service
-                .findAll(pageNumber, pageSize)
+        List<ProdutoOutDto> produtos = produtosPage
                 .pageItems()
                 .stream()
                 .map(ProdutoDtoMapper::toDto)

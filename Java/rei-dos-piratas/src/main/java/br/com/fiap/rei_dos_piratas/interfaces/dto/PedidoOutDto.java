@@ -2,12 +2,14 @@ package br.com.fiap.rei_dos_piratas.interfaces.dto;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
+import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record PedidoOutDto(
         Long id,
@@ -27,6 +29,9 @@ public record PedidoOutDto(
         float valorTotal,
 
         @NotNull(message = "O status do pedido não pode ser nulo")
-        StatusEnum status
+        StatusEnum status,
+
+        @NotNull(message = "Os produtos adicionados do pedido não pode ser nulo")
+        List<ItemProduto> produtosAdicionados
 ) {
 }

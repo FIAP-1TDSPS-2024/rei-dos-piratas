@@ -1,0 +1,79 @@
+package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
+
+import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
+import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
+import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.PedidoDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
+
+import java.util.List;
+
+public class PedidoControllerImpl implements PedidoController {
+
+    private final PedidoService service;
+
+    private final ClienteService clienteService;
+
+    public PedidoControllerImpl(PedidoService service, ClienteService clienteService) {
+        this.service = service;
+        this.clienteService = clienteService;
+    }
+
+    @Override
+    public Page<PedidoOutDto> findAllByCliente(int pageNumber, int pageSize, Long clienteId) {
+        Page<Pedido> pedidosPage = this.service.findAllByCliente(pageNumber, pageSize, clienteId);
+
+        List<PedidoOutDto> pedidos = pedidosPage
+                .pageItems()
+                .stream()
+                .map(PedidoDtoMapper::toDto)
+                .toList();
+
+        return new Page<PedidoOutDto>(
+                pedidosPage.numberOfPages(),
+                pedidosPage.pageNumber(),
+                pedidos);
+    }
+
+    @Override
+    public PedidoOutDto findById(Long id) {
+        Pedido pedido = this.service.findById(id);
+        return PedidoDtoMapper.toDto(pedido);
+    }
+
+    @Override
+    public PedidoOutDto fazerPedido(PedidoInDto pedido, Long clienteId) {
+        Cliente cliente = this.clienteService.findById(clienteId);
+        Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, pedido);
+        return PedidoDtoMapper.toDto(
+                this.service.fazerPedido(pedidoEntity));
+    }
+
+    @Override
+    public PedidoOutDto pagarPedido(Long id) {
+        return PedidoDtoMapper.toDto(
+                this.service.pagarPedido(id));
+    }
+
+    @Override
+    public PedidoOutDto enviarPedido(Long id) {
+        return PedidoDtoMapper.toDto(
+                this.service.entregarPedido(id));
+    }
+
+    @Override
+    public PedidoOutDto entregarPedido(Long id) {
+        return PedidoDtoMapper.toDto(
+                this.service.entregarPedido(id));
+    }
+
+    @Override
+    public PedidoOutDto cancelarPedido(Long id) {
+        return PedidoDtoMapper.toDto(
+                this.service.cancelarPedido(id));
+    }
+}

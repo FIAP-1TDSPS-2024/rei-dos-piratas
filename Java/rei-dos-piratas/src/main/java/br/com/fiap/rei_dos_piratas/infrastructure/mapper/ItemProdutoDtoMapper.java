@@ -8,7 +8,7 @@ public class ItemProdutoDtoMapper {
 
     public static ItemProduto toEntity(ItemProdutoInDto dto){
         return new ItemProduto(
-                new Produto(dto.produtoId()),
+                dto.produto(),
                 dto.quantidade()
         );
     }
