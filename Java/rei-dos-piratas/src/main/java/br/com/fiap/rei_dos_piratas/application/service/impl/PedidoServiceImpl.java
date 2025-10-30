@@ -46,21 +46,24 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     @Override
     public Pedido fazerPedido(Pedido pedido) {
-        //Verificar se os produtos tem estoque suficiente para realizar o pedido
+        //Verificar se os todos os produtos tem estoque suficiente para lançar exceção se não
         pedido.getProdutosAdicionados()
                 .forEach(produto -> {
-                    if ((produto.getQuantidade() - produto.getProduto().getEstoque()) >= 0){
+                    if (produto.getProduto().getEstoque() < produto.getQuantidade()) {
                         //Faz subtração do estoque se for possível
                         produto.getProduto().setEstoque(produto.getProduto().getEstoque() - produto.getQuantidade());
                         //Salva novo estoque em banco
                         this.produtoRepository.update(produto.getProduto());
                     }
-                    else {
-                        throw new EstoqueInsuficienteException("Estoque insuficiente! O produto " +
-                                produto.getProduto().getNome() + " de ID " +
-                                produto.getProduto().getId() + " tem apenas " +
-                                produto.getProduto().getEstoque() + " unidades em estoque.");
-                    }
+                });
+
+        //Se todos os itens estiverem OK, o estoque é editado
+        pedido.getProdutosAdicionados()
+                .forEach(produto -> {
+                    //Faz subtração do estoque se for possível
+                    produto.getProduto().setEstoque(produto.getProduto().getEstoque() - produto.getQuantidade());
+                    //Salva novo estoque em banco
+                    this.produtoRepository.update(produto.getProduto());
                 });
 
         return this.repository.create(pedido);
