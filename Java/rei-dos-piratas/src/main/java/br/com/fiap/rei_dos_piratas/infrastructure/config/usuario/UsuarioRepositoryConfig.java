@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.config;
+package br.com.fiap.rei_dos_piratas.infrastructure.config.usuario;
 
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
