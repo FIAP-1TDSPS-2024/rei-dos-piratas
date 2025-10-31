@@ -7,16 +7,12 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
 
+import java.util.List;
+
 public class PedidoDtoMapper {
 
-    public static Pedido toEntity(Cliente cliente, PedidoInDto pedidoDto) {
-        return new Pedido(
-                cliente,
-                pedidoDto.produtosAdicionados()
-                        .stream()
-                        .map(ItemProdutoDtoMapper::toEntity)
-                        .toList()
-        );
+    public static Pedido toEntity(Cliente cliente, List<ItemProduto> produtos) {
+        return new Pedido(cliente, produtos);
     }
 
     public static PedidoOutDto toDto(Pedido pedido) {

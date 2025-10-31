@@ -46,7 +46,7 @@ public class JpaProdutoEntity {
     @Column(nullable = false, length = 255)
     private CondicaoEnum condicao;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funcionario_id")
     private JpaFuncionarioEntity funcionario;
 }

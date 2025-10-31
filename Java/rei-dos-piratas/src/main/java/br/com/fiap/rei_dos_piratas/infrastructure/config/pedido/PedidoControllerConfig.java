@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PedidoControllerConfig {
     @Bean
-    public PedidoController pedidoController(PedidoService service, ClienteService clienteService) {
-        return new PedidoControllerImpl(service, clienteService);
+    public PedidoController pedidoController(PedidoService service, ClienteService clienteService, ProdutoService produtoService) {
+        return new PedidoControllerImpl(service, clienteService, produtoService);
     }
 }

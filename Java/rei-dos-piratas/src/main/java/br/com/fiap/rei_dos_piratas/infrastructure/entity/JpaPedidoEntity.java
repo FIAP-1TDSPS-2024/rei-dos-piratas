@@ -41,6 +41,6 @@ public class JpaPedidoEntity {
     @JoinColumn(name = "cliente_id", nullable = false)
     private JpaClienteEntity cliente;
 
-    @OneToMany(mappedBy = "pedido")
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<JpaProdutosPedidoEntity> produtosAdicionados;
 }
