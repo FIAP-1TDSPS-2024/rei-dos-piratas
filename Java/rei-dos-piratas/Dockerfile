@@ -14,8 +14,8 @@ RUN chmod +x mvnw && ./mvnw dependency:go-offline
 # Copy source code
 COPY --link src ./src/
 
-# Build the application (skip tests for faster build)
-RUN ./mvnw package -DskipTests
+# Build the application (skip tests compilation and execution for faster build)
+RUN ./mvnw package -DskipTests -Dmaven.test.skip=true
 
 # --- Runtime stage ---
 FROM eclipse-temurin:17-jre
