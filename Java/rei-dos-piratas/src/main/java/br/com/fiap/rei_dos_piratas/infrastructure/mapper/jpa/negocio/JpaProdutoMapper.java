@@ -1,7 +1,8 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaProdutoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaProdutoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaFuncionarioMapper;
 
 public class JpaProdutoMapper {
 

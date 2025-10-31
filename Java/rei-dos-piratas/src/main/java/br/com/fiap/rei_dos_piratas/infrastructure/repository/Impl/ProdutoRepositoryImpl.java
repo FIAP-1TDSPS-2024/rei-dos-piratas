@@ -3,10 +3,9 @@ package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaProdutoEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaFuncionarioMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaProdutoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaProdutoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaProdutoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaProdutoEntityRepository;
 import org.springframework.data.domain.Pageable;
 

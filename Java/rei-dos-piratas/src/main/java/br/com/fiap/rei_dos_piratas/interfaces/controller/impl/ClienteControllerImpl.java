@@ -1,15 +1,12 @@
 package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
-import br.com.fiap.rei_dos_piratas.application.service.impl.ClienteServiceImpl;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Usuario;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.ClienteDtoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto;
-import jakarta.validation.Valid;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.EnderecoInDto;

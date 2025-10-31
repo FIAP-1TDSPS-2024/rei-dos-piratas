@@ -1,14 +1,11 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaPedidoEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaProdutoEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaPedidoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaProdutoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaPedidoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaPedidoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaPedidoEntityRepository;
 import org.springframework.data.domain.Pageable;
 

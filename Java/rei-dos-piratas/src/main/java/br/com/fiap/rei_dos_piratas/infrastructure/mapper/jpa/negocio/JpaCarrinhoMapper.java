@@ -1,7 +1,7 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaCarrinhoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaCarrinhoEntity;
 
 public class JpaCarrinhoMapper {
 

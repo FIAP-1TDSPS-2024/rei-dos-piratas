@@ -1,13 +1,10 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
-import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;

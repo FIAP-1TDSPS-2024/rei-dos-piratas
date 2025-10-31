@@ -1,15 +1,11 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaFuncionarioEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 
 @Data
 @AllArgsConstructor

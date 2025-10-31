@@ -1,8 +1,9 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios;
 
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.*;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaCidadeEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEnderecoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEstadoEntity;
 
 public class JpaEnderecoMapper {
 

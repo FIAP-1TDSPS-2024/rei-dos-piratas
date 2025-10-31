@@ -1,11 +1,9 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @AllArgsConstructor

@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.FuncionarioDtoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.FuncionarioDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;

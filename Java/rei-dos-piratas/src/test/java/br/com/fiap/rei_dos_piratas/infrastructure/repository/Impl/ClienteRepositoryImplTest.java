@@ -5,15 +5,10 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaClienteEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaEnderecoEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaClienteMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.JpaEnderecoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaClienteEntityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 

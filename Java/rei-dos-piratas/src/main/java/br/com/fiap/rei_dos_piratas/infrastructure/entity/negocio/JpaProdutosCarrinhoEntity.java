@@ -1,11 +1,11 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaCarrinhoEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Data

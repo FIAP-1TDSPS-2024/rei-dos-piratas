@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.persistence.*;

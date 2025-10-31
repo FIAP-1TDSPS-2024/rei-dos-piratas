@@ -1,9 +1,9 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaProdutosCarrinhoEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;

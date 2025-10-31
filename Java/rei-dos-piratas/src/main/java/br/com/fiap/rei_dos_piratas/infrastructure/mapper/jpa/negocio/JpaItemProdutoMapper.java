@@ -1,10 +1,8 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
-import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaProdutosCarrinhoEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.JpaProdutosPedidoEntity;
-import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaProdutosCarrinhoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaProdutosPedidoEntity;
 
 public class JpaItemProdutoMapper {
 

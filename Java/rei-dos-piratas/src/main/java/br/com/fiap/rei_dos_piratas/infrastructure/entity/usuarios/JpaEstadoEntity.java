@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

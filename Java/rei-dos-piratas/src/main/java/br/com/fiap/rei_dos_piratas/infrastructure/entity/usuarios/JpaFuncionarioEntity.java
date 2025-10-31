@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.persistence.*;
@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "FUNCIONARIOS")
 @NoArgsConstructor
-public class JpaFuncionarioEntity extends JpaUsuarioEntity{
+public class JpaFuncionarioEntity extends JpaUsuarioEntity {
 
     private LocalDate dataDemissao;
 
