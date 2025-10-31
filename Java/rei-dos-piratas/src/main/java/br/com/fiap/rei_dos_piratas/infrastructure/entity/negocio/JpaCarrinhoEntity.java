@@ -1,6 +1,6 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaProdutosCarrinhoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

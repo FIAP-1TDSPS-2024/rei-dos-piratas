@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaCarrinhoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaPedidoEntity;
 import jakarta.persistence.*;
 import lombok.*;
