@@ -6,7 +6,6 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,7 @@ public class ClienteRestController {
 
         Page<ClienteOutDto> clientes = this.controller.listAll(pageNumber, pageSize);
 
-        if (clientes.numberOfPages() > 0){
+        if (clientes.numberOfPages() > 0) {
             return ResponseEntity.ok(clientes);
         }
         return ResponseEntity.noContent().build();
