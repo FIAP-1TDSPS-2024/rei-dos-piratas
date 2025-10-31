@@ -101,7 +101,7 @@ public class PedidoServiceImpl implements PedidoService {
         else {
             throw new WrongStatusException(
                     "O pedido deve estar no estado " + StatusEnum.PREPARANDO_ENVIO +
-                    "para ser enviado para entrega, mas ele está no estado " + pedido.getStatus());
+                    " para ser enviado para entrega, mas ele está no estado " + pedido.getStatus());
         }
     }
 
@@ -119,7 +119,7 @@ public class PedidoServiceImpl implements PedidoService {
         else {
             throw new WrongStatusException(
                     "O pedido deve estar no estado " + StatusEnum.EM_TRANSITO +
-                    "para ser entregue, mas ele está no estado " + pedido.getStatus());
+                    " para ser entregue, mas ele está no estado " + pedido.getStatus());
         }
     }
 
@@ -133,7 +133,9 @@ public class PedidoServiceImpl implements PedidoService {
         if (pedido.getStatus() == StatusEnum.CANCELADO){
             throw new WrongStatusException("O pedido já está cancelado.");
         }
-        else {
+        else if (pedido.getStatus() == StatusEnum.ENTREGUE) {
+            throw new WrongStatusException("O pedido já foi entregue");
+        } else {
             //Retorna os produtos para estoque
             pedido.getProdutosAdicionados()
                     .forEach(produto -> {

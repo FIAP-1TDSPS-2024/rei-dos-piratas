@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
 
@@ -24,6 +25,9 @@ public class PedidoDtoMapper {
                 pedido.getValorTotal(),
                 pedido.getStatus(),
                 pedido.getProdutosAdicionados()
+                        .stream()
+                        .map(ItemProdutoDtoMapper::toDto)
+                        .toList()
         );
     }
 

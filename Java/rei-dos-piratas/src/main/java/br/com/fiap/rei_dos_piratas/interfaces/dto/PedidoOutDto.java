@@ -32,6 +32,6 @@ public record PedidoOutDto(
         StatusEnum status,
 
         @NotNull(message = "Os produtos adicionados do pedido não pode ser nulo")
-        List<ItemProduto> produtosAdicionados
+        List<ItemProdutoOutDto> produtosAdicionados
 ) {
 }

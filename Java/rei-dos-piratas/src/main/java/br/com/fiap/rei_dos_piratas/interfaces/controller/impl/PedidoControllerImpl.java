@@ -78,7 +78,7 @@ public class PedidoControllerImpl implements PedidoController {
     @Override
     public PedidoOutDto enviarPedido(Long id) {
         return PedidoDtoMapper.toDto(
-                this.service.entregarPedido(id));
+                this.service.enviarPedido(id));
     }
 
     @Override
