@@ -110,9 +110,13 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         }
 
         List<ItemProduto> produtosAdicionados = carrinho.getProdutosAdicionados();
-
         Pedido pedido = new Pedido(cliente, produtosAdicionados);
 
-        return this.pedidoService.fazerPedido(pedido);
+        Pedido pedidoFinalizado = this.pedidoService.fazerPedido(pedido);
+
+        //Se a operação de criação de pedido for um sucesso, o carrinho é limpo
+        limparCarrinho(clienteId);
+
+        return pedidoFinalizado;
     }
 }
