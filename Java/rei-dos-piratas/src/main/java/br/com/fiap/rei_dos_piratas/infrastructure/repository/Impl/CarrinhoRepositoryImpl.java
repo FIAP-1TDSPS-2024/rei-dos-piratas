@@ -14,12 +14,6 @@ public class CarrinhoRepositoryImpl implements CarrinhoRepository {
     }
 
     @Override
-    public Carrinho findByCliente(Long clienteId) {
-        return JpaCarrinhoMapper
-                .toEntity(this.repository.findByCliente_Id(clienteId));
-    }
-
-    @Override
     public Carrinho update(Carrinho carrinho) {
         return JpaCarrinhoMapper
                 .toEntity(this.repository

@@ -61,17 +61,4 @@ public class ClienteServiceImpl implements ClienteService {
     public void delete(Long id) {
         this.repository.delete(id);
     }
-
-    @Override
-    public Cliente adicionarProdutoCarrinho(Long clienteId, Long produtoId, int quantidade) {
-
-        Produto produto = this.produtoService.findById(produtoId);
-        Cliente cliente = this.findById(clienteId);
-
-        cliente.getCarrinho().getProdutosAdicionados().add(
-                new ItemProduto(produto, quantidade)
-        );
-
-        return this.repository.update(cliente);
-    }
 }

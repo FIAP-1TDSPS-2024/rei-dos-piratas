@@ -4,6 +4,4 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaCarrinhoEnti
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaCarrinhoEntityRepository extends JpaRepository<JpaCarrinhoEntity, Long> {
-
-    JpaCarrinhoEntity findByCliente_Id(Long id);
 }
