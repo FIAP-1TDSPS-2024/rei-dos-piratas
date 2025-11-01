@@ -17,14 +17,22 @@ sudo apt-get install docker-compose -y
 docker-compose --version
 
 # Clonando o repositório
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas.git
 
 # Acessando api java
 cd rei-dos-piratas/Java/rei-dos-piratas
 
 # Definindo variáveis de ambiente
-echo "DB_USER=user" > .env
-echo "DB_PASSWORD=password" > .env
+echo -e "DB_USER=user\nDB_PASSWORD=pass" > .env
 
 # Execudando docker
 docker-compose up -d
+
+# Verificando se o container foi criado
+docker ps
+
+# Acessando API localmente no container
+curl http://localhost:8080/health && echo \n
+
+# Acessando api via IP
+curl http://ippublico:8080/health
