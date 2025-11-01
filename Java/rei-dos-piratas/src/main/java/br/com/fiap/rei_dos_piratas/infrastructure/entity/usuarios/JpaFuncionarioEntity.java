@@ -3,11 +3,14 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "FUNCIONARIOS")
 @NoArgsConstructor

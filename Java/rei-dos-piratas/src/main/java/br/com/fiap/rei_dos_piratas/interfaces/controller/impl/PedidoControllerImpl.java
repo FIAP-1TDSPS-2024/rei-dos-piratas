@@ -4,7 +4,7 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
-import br.com.fiap.rei_dos_piratas.domain.entity.ItemProduto;
+import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
@@ -55,11 +55,11 @@ public class PedidoControllerImpl implements PedidoController {
 
         Cliente cliente = this.clienteService.findById(clienteId);
 
-        List<ItemProduto> items = pedido
+        List<ItemProdutoPedido> items = pedido
                 .produtosAdicionados()
                 .stream()
                 .map(item ->
-                        new ItemProduto(
+                        new ItemProdutoPedido(
                                 this.produtoService.findById(item.produtoId()),
                                 item.quantidade())).toList();
 

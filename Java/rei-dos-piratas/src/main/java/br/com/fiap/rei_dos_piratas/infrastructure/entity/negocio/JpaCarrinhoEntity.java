@@ -2,13 +2,12 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -23,6 +22,6 @@ public class JpaCarrinhoEntity {
     @JoinColumn(name = "cliente_id")
     private JpaClienteEntity cliente;
 
-    @OneToMany(mappedBy = "carrinho")
+    @OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JpaProdutosCarrinhoEntity> produtosAdicionados;
 }

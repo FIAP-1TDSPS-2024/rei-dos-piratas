@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ItemProduto {
+public class ItemProdutoCarrinho {
     private Long id;
 
     @NotNull(message = "O produto não pode ser nulo")
@@ -16,7 +16,7 @@ public class ItemProduto {
     @Min(value = 1, message = "A quantidade deve ser pelo menos 1")
     private int quantidade;
 
-    public ItemProduto(Produto produto, int quantidade) {
+    public ItemProdutoCarrinho(Produto produto, int quantidade) {
         this.produto = produto;
         this.quantidade = quantidade;
     }

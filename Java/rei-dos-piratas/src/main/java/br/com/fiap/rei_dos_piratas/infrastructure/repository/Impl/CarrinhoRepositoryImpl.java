@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaCarrinhoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaCarrinhoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaCarrinhoEntityRepository;
 
@@ -15,8 +16,10 @@ public class CarrinhoRepositoryImpl implements CarrinhoRepository {
 
     @Override
     public Carrinho update(Carrinho carrinho) {
-        return JpaCarrinhoMapper
-                .toEntity(this.repository
-                        .save(JpaCarrinhoMapper.toJpaEntity(carrinho)));
+
+        JpaCarrinhoEntity JpaCarrinhoEntity = JpaCarrinhoMapper.toJpaEntity(carrinho);
+        JpaCarrinhoEntity novoCarrinhoJpa = this.repository.save(JpaCarrinhoEntity);
+        Carrinho novoCarrinho = JpaCarrinhoMapper.toEntity(novoCarrinhoJpa);
+        return novoCarrinho;
     }
 }

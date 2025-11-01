@@ -3,14 +3,13 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -38,6 +37,6 @@ public class JpaPedidoEntity {
     @JoinColumn(name = "cliente_id", nullable = false)
     private JpaClienteEntity cliente;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<JpaProdutosPedidoEntity> produtosAdicionados;
 }

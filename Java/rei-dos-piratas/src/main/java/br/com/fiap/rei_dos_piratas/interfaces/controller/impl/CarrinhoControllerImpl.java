@@ -1,33 +1,46 @@
 package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
+import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
+import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
+import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.CarrinhoDtoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.ItemProdutoDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.CarrinhoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
 
 public class CarrinhoControllerImpl implements CarrinhoController {
 
     private final CarrinhoService service;
 
-    public CarrinhoControllerImpl(CarrinhoService service) {
+    private final ProdutoService produtoService;
+
+    public CarrinhoControllerImpl(CarrinhoService service, ProdutoService produtoService) {
         this.service = service;
+        this.produtoService = produtoService;
     }
 
     @Override
-    public CarrinhoOutDto adicionarProduto(Long clienteId, Long produtoId, int quantidade) {
+    public CarrinhoOutDto adicionarProduto(Long clienteId, ItemProdutoInDto itemProduto) {
 
-        Carrinho carrinho = this.service.adicionarProduto(clienteId, produtoId, quantidade);
+        Produto produto = this.produtoService.findById(itemProduto.produtoId());
+        ItemProdutoPedido item = new ItemProdutoPedido(produto, itemProduto.quantidade());
+
+        Carrinho carrinho = this.service.adicionarProduto(clienteId, item);
         return CarrinhoDtoMapper.toDto(carrinho);
     }
 
     @Override
-    public CarrinhoOutDto removerProduto(Long clienteId, Long produtoId, int quantidade) {
-        Carrinho carrinho = this.service.removerProduto(clienteId, produtoId, quantidade);
+    public CarrinhoOutDto removerProduto(Long clienteId, ItemProdutoInDto itemProduto) {
+
+        Produto produto = this.produtoService.findById(itemProduto.produtoId());
+        ItemProdutoPedido item = new ItemProdutoPedido(produto, itemProduto.quantidade());
+
+        Carrinho carrinho = this.service.removerProduto(clienteId, item);
         return CarrinhoDtoMapper.toDto(carrinho);
     }
 

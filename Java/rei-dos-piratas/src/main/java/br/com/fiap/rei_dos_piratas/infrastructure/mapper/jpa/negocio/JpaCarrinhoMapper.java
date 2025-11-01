@@ -3,16 +3,19 @@ package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio;
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaCarrinhoEntity;
 
+import java.util.stream.Collectors;
+
 public class JpaCarrinhoMapper {
 
     public static Carrinho toEntity(JpaCarrinhoEntity jpaCarrinhoEntity) {
+
         return new Carrinho(
                 jpaCarrinhoEntity.getId(),
                 jpaCarrinhoEntity
                         .getProdutosAdicionados()
                         .stream()
                         .map(JpaItemProdutoMapper::toEntity)
-                        .toList()
+                        .collect(Collectors.toList())
         );
     }
 
