@@ -1,0 +1,727 @@
+package br.com.fiap.rei_dos_piratas.application.service.impl;
+
+import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
+import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
+import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
+import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.*;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
+import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+class CarrinhoServiceImplTest {
+
+    private CarrinhoService carrinhoService;
+    private CarrinhoRepository carrinhoRepository;
+    private PedidoService pedidoService;
+    private ProdutoService produtoService;
+    private ClienteService clienteService;
+
+    @BeforeEach
+    void setUp() {
+        this.carrinhoRepository = mock(CarrinhoRepository.class);
+        this.pedidoService = mock(PedidoService.class);
+        this.produtoService = mock(ProdutoService.class);
+        this.clienteService = mock(ClienteService.class);
+        this.carrinhoService = new CarrinhoServiceImpl(carrinhoRepository, pedidoService, produtoService, clienteService);
+    }
+
+    @Test
+    void adicionarProduto_DeveAdicionarProdutoAoCarrinho() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto = new Produto(
+                1L,
+                "Produto Teste para Carrinho",
+                "Descrição do produto teste",
+                "http://imagem.com/produto.jpg",
+                100.0f,
+                10,
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 2);
+
+        Carrinho carrinhoAtualizado = new Carrinho(1L, new ArrayList<>());
+        carrinhoAtualizado.getProdutosAdicionados().add(new ItemProdutoCarrinho(produto, 2));
+
+        when(produtoService.findById(1L)).thenReturn(produto);
+        when(clienteService.findById(1L)).thenReturn(cliente);
+        when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoAtualizado);
+
+        // Act
+        Carrinho resultado = carrinhoService.adicionarProduto(1L, itemProdutoPedido);
+
+        // Assert
+        verify(produtoService, times(1)).findById(1L);
+        verify(clienteService, times(1)).findById(1L);
+        verify(carrinhoRepository, times(1)).update(any(Carrinho.class));
+        assertThat(resultado.getProdutosAdicionados()).hasSize(1);
+        assertThat(resultado.getProdutosAdicionados().get(0).getProduto()).isEqualTo(produto);
+        assertThat(resultado.getProdutosAdicionados().get(0).getQuantidade()).isEqualTo(2);
+    }
+
+    @Test
+    void adicionarProduto_DeveLancarExcecaoQuandoEstoqueInsuficiente() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto = new Produto(
+                1L,
+                "Produto Teste Estoque Baixo",
+                "Descrição do produto teste",
+                "http://imagem.com/produto.jpg",
+                100.0f,
+                2, // Estoque baixo
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 5); // Quantidade maior que estoque
+
+        when(produtoService.findById(1L)).thenReturn(produto);
+        when(clienteService.findById(1L)).thenReturn(cliente);
+
+        // Act & Assert
+        assertThatThrownBy(() -> carrinhoService.adicionarProduto(1L, itemProdutoPedido))
+                .isInstanceOf(EstoqueInsuficienteException.class)
+                .hasMessageContaining("Estoque insuficiente");
+
+        verify(produtoService, times(1)).findById(1L);
+        verify(clienteService, times(1)).findById(1L);
+        verify(carrinhoRepository, never()).update(any(Carrinho.class));
+    }
+
+    @Test
+    void removerProduto_DeveRemoverProdutoDoCarrinho() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto = new Produto(
+                1L,
+                "Produto Teste para Remover",
+                "Descrição do produto teste",
+                "http://imagem.com/produto.jpg",
+                100.0f,
+                10,
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
+        produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 5));
+
+        Carrinho carrinho = new Carrinho(1L, produtosNoCarrinho);
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 2);
+
+        Carrinho carrinhoAtualizado = new Carrinho(1L, produtosNoCarrinho);
+
+        when(produtoService.findById(1L)).thenReturn(produto);
+        when(clienteService.findById(1L)).thenReturn(cliente);
+        when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoAtualizado);
+
+        // Act
+        Carrinho resultado = carrinhoService.removerProduto(1L, itemProdutoPedido);
+
+        // Assert
+        verify(produtoService, times(1)).findById(1L);
+        verify(clienteService, times(1)).findById(1L);
+        verify(carrinhoRepository, times(1)).update(any(Carrinho.class));
+        assertThat(resultado.getProdutosAdicionados()).hasSize(1);
+        assertThat(resultado.getProdutosAdicionados().get(0).getQuantidade()).isEqualTo(3);
+    }
+
+    @Test
+    void removerProduto_DeveRemoverProdutoCompletoQuandoQuantidadeIgualOuMaior() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto = new Produto(
+                1L,
+                "Produto Teste para Remover",
+                "Descrição do produto teste",
+                "http://imagem.com/produto.jpg",
+                100.0f,
+                10,
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
+        produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 3));
+
+        Carrinho carrinho = new Carrinho(1L, produtosNoCarrinho);
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 5);
+
+        List<ItemProdutoCarrinho> carrinhoVazio = new ArrayList<>();
+        Carrinho carrinhoAtualizado = new Carrinho(1L, carrinhoVazio);
+
+        when(produtoService.findById(1L)).thenReturn(produto);
+        when(clienteService.findById(1L)).thenReturn(cliente);
+        when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoAtualizado);
+
+        // Act
+        Carrinho resultado = carrinhoService.removerProduto(1L, itemProdutoPedido);
+
+        // Assert
+        verify(produtoService, times(1)).findById(1L);
+        verify(clienteService, times(1)).findById(1L);
+        verify(carrinhoRepository, times(1)).update(any(Carrinho.class));
+        assertThat(resultado.getProdutosAdicionados()).isEmpty();
+    }
+
+    @Test
+    void removerProduto_DeveLancarExcecaoQuandoProdutoNaoEstaNoCarrinho() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto = new Produto(
+                1L,
+                "Produto Teste Inexistente",
+                "Descrição do produto teste",
+                "http://imagem.com/produto.jpg",
+                100.0f,
+                10,
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 1);
+
+        when(produtoService.findById(1L)).thenReturn(produto);
+        when(clienteService.findById(1L)).thenReturn(cliente);
+
+        // Act & Assert
+        assertThatThrownBy(() -> carrinhoService.removerProduto(1L, itemProdutoPedido))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessageContaining("Esse produto não foi incluído no carrinho");
+
+        verify(produtoService, times(1)).findById(1L);
+        verify(clienteService, times(1)).findById(1L);
+        verify(carrinhoRepository, never()).update(any(Carrinho.class));
+    }
+
+    @Test
+    void limparCarrinho_DeveLimparTodosOsProdutosDoCarrinho() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto1 = new Produto(
+                1L,
+                "Produto Teste 1",
+                "Descrição do produto teste 1",
+                "http://imagem.com/produto1.jpg",
+                100.0f,
+                10,
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Produto produto2 = new Produto(
+                2L,
+                "Produto Teste 2",
+                "Descrição do produto teste 2",
+                "http://imagem.com/produto2.jpg",
+                150.0f,
+                5,
+                15.0f,
+                25.0f,
+                35.0f,
+                CondicaoEnum.USADO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
+        produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto1, 2));
+        produtosNoCarrinho.add(new ItemProdutoCarrinho(2L, produto2, 3));
+
+        Carrinho carrinho = new Carrinho(1L, produtosNoCarrinho);
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        Carrinho carrinhoLimpo = new Carrinho(1L, new ArrayList<>());
+
+        when(clienteService.findById(1L)).thenReturn(cliente);
+        when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoLimpo);
+
+        // Act
+        Carrinho resultado = carrinhoService.limparCarrinho(1L);
+
+        // Assert
+        verify(clienteService, times(1)).findById(1L);
+        verify(carrinhoRepository, times(1)).update(any(Carrinho.class));
+        assertThat(resultado.getProdutosAdicionados()).isEmpty();
+    }
+
+    @Test
+    void visualizarCarrinho_DeveRetornarCarrinhoDoCliente() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto = new Produto(
+                1L,
+                "Produto Teste",
+                "Descrição do produto teste",
+                "http://imagem.com/produto.jpg",
+                100.0f,
+                10,
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
+        produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 2));
+
+        Carrinho carrinho = new Carrinho(1L, produtosNoCarrinho);
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        when(clienteService.findById(1L)).thenReturn(cliente);
+
+        // Act
+        Carrinho resultado = carrinhoService.visualizarCarrinho(1L);
+
+        // Assert
+        verify(clienteService, times(1)).findById(1L);
+        assertThat(resultado).isSameAs(carrinho);
+        assertThat(resultado.getProdutosAdicionados()).hasSize(1);
+        assertThat(resultado.getProdutosAdicionados().get(0).getProduto()).isEqualTo(produto);
+    }
+
+    @Test
+    void finalizarCompra_DeveCriarPedidoELimparCarrinho() {
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "admin",
+                1L,
+                "Admin User",
+                "admin@example.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.ADMIN,
+                null,
+                5000.0f);
+
+        Produto produto = new Produto(
+                1L,
+                "Produto Teste para Pedido",
+                "Descrição do produto teste",
+                "http://imagem.com/produto.jpg",
+                100.0f,
+                10,
+                10.0f,
+                20.0f,
+                30.0f,
+                CondicaoEnum.NOVO,
+                funcionario);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
+        produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 2));
+
+        Carrinho carrinho = new Carrinho(1L, produtosNoCarrinho);
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinho);
+
+        List<ItemProdutoPedido> produtosPedido = new ArrayList<>();
+        produtosPedido.add(new ItemProdutoPedido(1L, produto, 2));
+
+        Pedido pedidoEsperado = new Pedido(
+                1L,
+                LocalDate.now(),
+                null,
+                null,
+                200.0f,
+                StatusEnum.AGUARDANDO_PAGAMENTO,
+                cliente,
+                produtosPedido);
+
+        Carrinho carrinhoLimpo = new Carrinho(1L, new ArrayList<>());
+
+        when(clienteService.findById(1L)).thenReturn(cliente);
+        when(pedidoService.fazerPedido(any(Pedido.class))).thenReturn(pedidoEsperado);
+        when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoLimpo);
+
+        // Act
+        Pedido resultado = carrinhoService.finalizarCompra(1L);
+
+        // Assert
+        verify(clienteService, times(2)).findById(1L); // Uma para finalizar e outra para limpar
+        verify(pedidoService, times(1)).fazerPedido(any(Pedido.class));
+        verify(carrinhoRepository, times(1)).update(any(Carrinho.class));
+        assertThat(resultado).isEqualTo(pedidoEsperado);
+        assertThat(resultado.getCliente()).isEqualTo(cliente);
+        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
+    }
+
+    @Test
+    void finalizarCompra_DeveLancarExcecaoQuandoCarrinhoVazio() {
+        // Arrange
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                10L,
+                "São Paulo",
+                20L,
+                "São Paulo",
+                "SP",
+                "Brasil",
+                "BR");
+
+        Carrinho carrinhoVazio = new Carrinho(1L, new ArrayList<>());
+
+        Cliente cliente = new Cliente(
+                1L,
+                "joaosilva",
+                "João Silva",
+                "joao@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 5, 15),
+                SexoEnum.M,
+                endereco,
+                "12345678900",
+                carrinhoVazio);
+
+        when(clienteService.findById(1L)).thenReturn(cliente);
+
+        // Act & Assert
+        assertThatThrownBy(() -> carrinhoService.finalizarCompra(1L))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessageContaining("O carrinho está vazio");
+
+        verify(clienteService, times(1)).findById(1L);
+        verify(pedidoService, never()).fazerPedido(any(Pedido.class));
+        verify(carrinhoRepository, never()).update(any(Carrinho.class));
+    }
+}
+
