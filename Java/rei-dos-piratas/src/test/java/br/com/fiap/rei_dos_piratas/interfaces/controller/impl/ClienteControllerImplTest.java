@@ -3,6 +3,7 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.impl.ClienteServiceImpl;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
@@ -59,7 +60,8 @@ class ClienteControllerImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 endereco,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         List<Cliente> clientes = new ArrayList<Cliente>();
         clientes.add(cliente);
@@ -102,7 +104,8 @@ class ClienteControllerImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 endereco,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         //Quando
         when(this.clienteService.findById(1L)).thenReturn(cliente);
@@ -165,7 +168,8 @@ class ClienteControllerImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 enderecoCriado,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         //Quando
         when(this.clienteService.create(clienteParaCriar)).thenReturn(clienteCriado);
@@ -205,7 +209,8 @@ class ClienteControllerImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 enderecoAntigo,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         Endereco enderecoNovo = new Endereco(
                 1L,
@@ -232,7 +237,8 @@ class ClienteControllerImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 enderecoNovo,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         //Quando
         when(this.clienteService.findById(1L)).thenReturn(clienteAntigo);

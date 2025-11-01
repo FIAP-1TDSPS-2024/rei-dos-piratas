@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
@@ -73,7 +74,8 @@ class ClienteRestControllerTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 endereco,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         List<ClienteOutDto> clientes = new ArrayList<ClienteOutDto>();
         clientes.add(ClienteDtoMapper.toDto(cliente));
@@ -121,7 +123,8 @@ class ClienteRestControllerTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 endereco,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         ClienteOutDto clienteDto = ClienteDtoMapper.toDto(cliente);
 
@@ -204,8 +207,8 @@ class ClienteRestControllerTest {
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
                 endereco,
-                "12345678978"
-        );
+                "12345678978",
+                new Carrinho());
 
         ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(cliente);
         when(clienteController.update(any(Cliente.class))).thenReturn(clienteOutDto);

@@ -1,7 +1,9 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
@@ -25,11 +27,13 @@ class ClienteServiceImplTest {
 
     private ClienteService clienteService;
     private ClienteRepository clienteRepository;
+    private ProdutoService produtoService;
 
     @BeforeEach
     void setUp() {
         this.clienteRepository = mock(ClienteRepository.class);
-        this.clienteService = new ClienteServiceImpl(clienteRepository);
+        this.produtoService = mock(ProdutoService.class);
+        this.clienteService = new ClienteServiceImpl(clienteRepository, produtoService);
     }
 
     @Test
@@ -60,7 +64,8 @@ class ClienteServiceImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 endereco,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         List<Cliente> clientes = new ArrayList<Cliente>();
         clientes.add(cliente);
@@ -103,7 +108,8 @@ class ClienteServiceImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 endereco,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
         
         //Quando
         when(this.clienteRepository.findById(1L)).thenReturn(cliente);
@@ -166,7 +172,8 @@ class ClienteServiceImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 enderecoCriado,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         //Quando
         when(this.clienteRepository.create(clienteParaCriar)).thenReturn(clienteCriado);
@@ -206,7 +213,8 @@ class ClienteServiceImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 enderecoAntigo,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         Endereco enderecoNovo = new Endereco(
                 1L,
@@ -233,7 +241,8 @@ class ClienteServiceImplTest {
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 enderecoNovo,
-                "12345678978");
+                "12345678978",
+                new Carrinho());
 
         //Quando
         when(this.clienteRepository.findById(1L)).thenReturn(clienteAntigo);
