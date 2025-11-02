@@ -148,7 +148,3 @@ Leitores e colecionadores de mangás, principalmente **jovens e adultos de class
 - [Oracle Database](https://docs.oracle.com/en/database/)
 - [PagBank API](https://developer.pagbank.com.br/docs/apis-pagbank)
 - [Melhor Envio API](https://docs.melhorenvio.com.br/)
-
----
-
-✍️ **Observação:** Este repositório será avaliado como parte do Checkpoint 1, valendo até **1 ponto**.
