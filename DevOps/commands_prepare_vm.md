@@ -1,7 +1,14 @@
-# Criando o grupo de recurso
-az group create --name "ReiDosPiratas" --location canadacentral
+# Comandos Azure VM - Rei dos Piratas
 
-# Criando a máquina virtual
+## Criando o grupo de recurso
+
+```bash
+az group create --name "ReiDosPiratas" --location canadacentral
+```
+
+## Criando a máquina virtual
+
+```bash
 az vm create \
 --resource-group "ReiDosPiratas" \
 --name "VMReiDosPiratas" \
@@ -14,15 +21,28 @@ az vm create \
 --nsg nsgr-linux \
 --public-ip-address pip-linux \
 --tags "owner=CaTech"
+```
 
-# Abrindo portas 80 e 8080
+## Abrindo portas 80 e 8080
+
+```bash
 az vm open-port --resource-group "ReiDosPiratas" --name VMReiDosPiratas --port 80 --priority 1001
 az vm open-port --resource-group "ReiDosPiratas" --name VMReiDosPiratas --port 8080 --priority 1002
+```
 
-# Alerta para monitoramento de CPU
+## Alerta para monitoramento de CPU
+
+```bash
 az monitor metrics alert create \
 -n Alert-CPU-High \
 -g ReiDosPiratas \
 --scopes $(az vm show -g ReiDosPiratas -n VMReiDosPiratas --query id -o tsv) \
 --description "CPU acima de 90% por 5min" \
 --condition "avg Percentage CPU > 90"
+```
+
+## Deletando grupo de recursos
+
+```bash
+az group delete --name ReiDosPiratas --yes --no-wait
+```
