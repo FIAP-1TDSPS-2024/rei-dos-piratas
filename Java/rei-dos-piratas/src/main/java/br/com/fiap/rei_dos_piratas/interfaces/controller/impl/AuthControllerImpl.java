@@ -25,7 +25,7 @@ public class AuthControllerImpl implements AuthController {
     @Override
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.password(), request.password())
+                new UsernamePasswordAuthenticationToken(request.username(), request.username())
         );
 
         String token = jwtUtil.generateToken(authentication);
@@ -34,6 +34,6 @@ public class AuthControllerImpl implements AuthController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        return new AuthResponse(token, request.password(), null, roles);
+        return new AuthResponse(token, request.username(), null, roles);
     }
 }
