@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetails;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -8,14 +9,18 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 @Getter
 @NoArgsConstructor
-public abstract class Usuario {
+public abstract class Usuario implements UsuarioDetails {
 
     private Long id;
 
@@ -42,6 +47,21 @@ public abstract class Usuario {
     private LocalDate dataCadastro;
 
     private Role role;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.senha;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.userName;
+    }
 
     public Usuario(String userName, String nomeCompleto, String email, String senha, Role role) {
 
