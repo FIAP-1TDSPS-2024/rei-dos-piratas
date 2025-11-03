@@ -103,4 +103,16 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     public void delete(Long id) {
         this.repository.deleteById(id);
     }
+
+    @Override
+    public Cliente findByUsername(String username) {
+
+        JpaClienteEntity cliente = this.repository.findFirstByUserName(username);
+
+        if (cliente != null) {
+            return JpaClienteMapper.toEntity(cliente);
+        } else {
+            return null;
+        }
+    }
 }

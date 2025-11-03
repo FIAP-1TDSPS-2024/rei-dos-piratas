@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintDefinitionException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -71,6 +72,12 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         final ErrorResponse errorResponse = new ErrorResponse("Ops.. ocorreu um error inesperado!");
         return ResponseEntity.internalServerError().body(errorResponse);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String,String>> handleBadCredentialException(BadCredentialsException e) {
+        Map<String, String> errorResult = Map.of("error", "Usuário e/ou senha inválidos");
+        return ResponseEntity.badRequest().body(errorResult);
     }
 
     @Getter

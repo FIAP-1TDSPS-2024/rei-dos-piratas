@@ -9,4 +9,5 @@ public interface FuncionarioRepository {
     Funcionario create(Funcionario funcionario);
     Funcionario update(Funcionario funcionario);
     void delete(Long id);
+    Funcionario findByUsername(String username);
 }
