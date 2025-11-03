@@ -30,7 +30,7 @@ public class JpaUsuarioEntity {
     private String email;
 
     @Setter
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String senha;
 
     @Setter

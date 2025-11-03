@@ -31,10 +31,10 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private JpaCarrinhoEntity carrinho;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JpaPedidoEntity> pedidos;
 
     public JpaClienteEntity(Long id,

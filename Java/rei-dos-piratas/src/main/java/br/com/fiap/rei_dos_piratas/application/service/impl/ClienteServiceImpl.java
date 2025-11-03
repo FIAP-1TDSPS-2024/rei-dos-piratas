@@ -6,6 +6,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
@@ -16,9 +18,12 @@ public class ClienteServiceImpl implements ClienteService {
 
     private final ProdutoService produtoService;
 
-    public ClienteServiceImpl(ClienteRepository repository, ProdutoService produtoService) {
+    private final PasswordEncoder passwordEncoder;
+
+    public ClienteServiceImpl(ClienteRepository repository, ProdutoService produtoService, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.produtoService = produtoService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -39,6 +44,10 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public Cliente create(Cliente cliente) {
+        //Encriptar senha para salvar em banco
+        String encryptedPassword = this.passwordEncoder.encode(cliente.getPassword());
+        cliente.setSenha(encryptedPassword);
+
         return this.repository.create(cliente);
     }
 

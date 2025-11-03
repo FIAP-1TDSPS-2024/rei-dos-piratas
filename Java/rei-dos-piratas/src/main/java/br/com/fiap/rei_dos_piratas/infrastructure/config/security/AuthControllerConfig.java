@@ -1,5 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.security;
 
+import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.impl.AuthControllerImpl;
@@ -11,7 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 public class AuthControllerConfig {
 
     @Bean
-    public AuthController authController(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
-        return new AuthControllerImpl(authenticationManager, jwtUtil);
+    public AuthController authController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, ClienteService clienteService) {
+        return new AuthControllerImpl(authenticationManager, jwtUtil, clienteService);
     }
 }
