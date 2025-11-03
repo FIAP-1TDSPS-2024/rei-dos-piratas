@@ -9,7 +9,7 @@ public class JpaFuncionarioMapper {
         if (funcionario == null) return null;
         return new JpaFuncionarioEntity(
                 funcionario.getId(),
-                funcionario.getUserName(),
+                funcionario.getUsername(),
                 funcionario.getNomeCompleto(),
                 funcionario.getEmail(),
                 funcionario.getSenha(),

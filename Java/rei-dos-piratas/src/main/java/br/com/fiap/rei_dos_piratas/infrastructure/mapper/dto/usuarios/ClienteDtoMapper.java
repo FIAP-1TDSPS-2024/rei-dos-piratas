@@ -23,7 +23,7 @@ public class ClienteDtoMapper {
         if (cliente == null) return null;
         return new ClienteOutDto(
                 cliente.getId(),
-                cliente.getUserName(),
+                cliente.getUsername(),
                 cliente.getNomeCompleto(),
                 cliente.getEmail(),
                 cliente.isUsuarioAtivo(),

@@ -46,7 +46,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     public Cliente create(Cliente cliente) {
 
         //Verificação para evitar userNames, e-mail ou cpfs duplicados em banco
-        if (this.repository.findFirstByUserName(cliente.getUserName()) != null) {
+        if (this.repository.findFirstByUserName(cliente.getUsername()) != null) {
             throw new UniqueKeyDuplicatedException("Já existe um cliente registrado com esse nome de usuário. Insira um novo nome de usuário válido");
         }
         if (this.repository.findFirstByCpf(cliente.getCpf()) != null) {

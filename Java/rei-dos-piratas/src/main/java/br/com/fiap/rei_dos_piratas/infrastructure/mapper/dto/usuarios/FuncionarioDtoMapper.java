@@ -21,7 +21,7 @@ public class FuncionarioDtoMapper {
         if(funcionario == null) return null;
         return new FuncionarioOutDto(
                 funcionario.getId(),
-                funcionario.getUserName(),
+                funcionario.getUsername(),
                 funcionario.getNomeCompleto(),
                 funcionario.getEmail(),
                 funcionario.isUsuarioAtivo(),

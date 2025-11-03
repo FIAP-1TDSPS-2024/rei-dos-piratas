@@ -12,7 +12,7 @@ public class JpaClienteMapper {
         if (cliente == null) return null;
         JpaClienteEntity clienteJpa = new JpaClienteEntity(
                 cliente.getId(),
-                cliente.getUserName(),
+                cliente.getUsername(),
                 cliente.getNomeCompleto(),
                 cliente.getEmail(),
                 cliente.getSenha(),

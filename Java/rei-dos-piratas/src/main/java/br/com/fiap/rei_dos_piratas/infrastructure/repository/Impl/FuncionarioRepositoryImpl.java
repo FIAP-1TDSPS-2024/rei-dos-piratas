@@ -42,7 +42,7 @@ public class FuncionarioRepositoryImpl implements FuncionarioRepository {
     public Funcionario create(Funcionario funcionario) {
 
         //Verificação para evitar e-mail ou userNames duplicados em banco
-        if (this.repository.findFirstByUserName(funcionario.getUserName()) != null) {
+        if (this.repository.findFirstByUserName(funcionario.getUsername()) != null) {
             throw new UniqueKeyDuplicatedException("Já existe um funcionario com esse nome de usuário. Insira um novo nome de usuário válido");
         }
         if(this.repository.findFirstByEmail(funcionario.getEmail()) != null) {
