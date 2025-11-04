@@ -21,8 +21,8 @@ public class UsuarioServiceConfig {
     }
 
     @Bean
-    public FuncionarioService vendedorService(FuncionarioRepository repository) {
-        return new FuncionarioServiceImpl(repository);
+    public FuncionarioService vendedorService(FuncionarioRepository repository, PasswordEncoder passwordEncoder) {
+        return new FuncionarioServiceImpl(repository, passwordEncoder);
     }
 
 }
