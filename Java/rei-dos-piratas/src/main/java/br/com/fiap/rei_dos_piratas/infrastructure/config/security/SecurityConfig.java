@@ -44,13 +44,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/clientes/**").permitAll()
                         .requestMatchers("/health").permitAll()
                         .requestMatchers(HttpMethod.GET,"/produtos/**").permitAll()
                         .requestMatchers("/carrinho/**").hasRole("CLIENT")
                         .requestMatchers("/produtos/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "funcionarios/**").hasRole("FUNCIONARIO")
                         .requestMatchers("/funcionarios/**").hasRole("ADMIN")
-                        .requestMatchers("/pedidos/**").hasAnyRole("CLIENT", "USER", "ADMIN")
+                        .requestMatchers("/pedidos", "/pedidos/cancelamento/", "/pedidos/pagamento/").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.GET, "pedidos/").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("pedidos/envio/", "pedidos/entrega/").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
