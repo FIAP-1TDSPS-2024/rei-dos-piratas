@@ -54,6 +54,10 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public Cliente update(Cliente cliente) {
+        //Encriptar senha para salvar em banco
+        String encryptedPassword = this.passwordEncoder.encode(cliente.getPassword());
+        cliente.setSenha(encryptedPassword);
+
         Cliente clienteAtualizado = this.repository.update(cliente);
 
         if (clienteAtualizado == null){

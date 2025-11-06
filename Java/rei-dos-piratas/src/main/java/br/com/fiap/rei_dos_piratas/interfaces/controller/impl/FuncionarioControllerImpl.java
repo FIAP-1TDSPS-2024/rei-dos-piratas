@@ -56,7 +56,8 @@ public class FuncionarioControllerImpl implements FuncionarioController {
     }
 
     @Override
-    public void delete(Long id) {
-        this.service.delete(id);
+    public FuncionarioOutDto ativarDesativar(Long id) {
+        Funcionario updFuncionario = this.service.ativarDesativar(id);
+        return FuncionarioDtoMapper.toDto(updFuncionario);
     }
 }

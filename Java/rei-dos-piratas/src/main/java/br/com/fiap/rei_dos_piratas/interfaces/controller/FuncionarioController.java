@@ -15,5 +15,5 @@ public interface FuncionarioController {
 
     FuncionarioOutDto update(Funcionario funcionario);
 
-    void delete(Long id);
+    FuncionarioOutDto ativarDesativar(Long id);
 }

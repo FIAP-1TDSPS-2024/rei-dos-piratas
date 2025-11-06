@@ -5,7 +5,6 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaFuncionarioEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaClienteMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaFuncionarioMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaFuncionarioEntityRepository;
@@ -71,8 +70,13 @@ public class FuncionarioRepositoryImpl implements FuncionarioRepository {
     }
 
     @Override
-    public void delete(Long id) {
-        repository.deleteById(id);
+    public Page<Funcionario> findAllByUsuarioAtivoTrue(int pageNumber, int pageSize) {
+        return PageMapper.fromFrameworkPage(
+                this.repository.findAllByUsuarioAtivoTrue(
+                        Pageable
+                                .ofSize(pageSize)
+                                .withPage(pageNumber)
+                ).map(JpaFuncionarioMapper::toEntity));
     }
 
     @Override
@@ -85,4 +89,6 @@ public class FuncionarioRepositoryImpl implements FuncionarioRepository {
             return null;
         }
     }
+
+
 }

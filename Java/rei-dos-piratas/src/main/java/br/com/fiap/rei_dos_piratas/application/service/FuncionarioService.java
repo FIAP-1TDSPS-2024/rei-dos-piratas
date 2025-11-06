@@ -12,5 +12,5 @@ public interface FuncionarioService {
 
     Funcionario update(Funcionario funcionario);
 
-    void delete(Long id);
+    Funcionario ativarDesativar(Long id);
 }

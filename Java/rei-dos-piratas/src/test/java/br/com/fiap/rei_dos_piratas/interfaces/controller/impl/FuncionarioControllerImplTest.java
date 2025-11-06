@@ -149,14 +149,14 @@ class FuncionarioControllerImplTest {
     }
 
     @Test
-    void delete() {
+    void ativarDesativar() {
         // Quando
-        doNothing().when(funcionarioService).delete(1L);
+        doNothing().when(funcionarioService).ativarDesativar(1L);
 
         // Executa
-        funcionarioService.delete(1L);
+        funcionarioService.ativarDesativar(1L);
 
         // Verifica
-        verify(funcionarioService, times(1)).delete(1L);
+        verify(funcionarioService, times(1)).ativarDesativar(1L);
     }
 }

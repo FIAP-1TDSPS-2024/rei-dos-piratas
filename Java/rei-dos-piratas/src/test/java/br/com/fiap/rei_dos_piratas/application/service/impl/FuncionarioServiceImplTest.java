@@ -153,12 +153,12 @@ class FuncionarioServiceImplTest {
     }
 
     @Test
-    void delete() {
+    void ativarDesativar() {
         // Quando
         doNothing().when(funcionarioRepository).delete(1L);
 
         // Executa
-        funcionarioService.delete(1L);
+        funcionarioService.ativarDesativar(1L);
 
         // Verifica
         verify(funcionarioRepository, times(1)).delete(1L);

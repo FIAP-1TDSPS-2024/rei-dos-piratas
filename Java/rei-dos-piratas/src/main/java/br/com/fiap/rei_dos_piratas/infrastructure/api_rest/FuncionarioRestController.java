@@ -51,9 +51,9 @@ public class FuncionarioRestController {
         return ResponseEntity.ok(novoVendedor);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
-        this.controller.delete(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<?> ativarDesativar(@PathVariable("id") Long id) {
+        this.controller.ativarDesativar(id);
         return ResponseEntity.noContent().build();
     }
 }

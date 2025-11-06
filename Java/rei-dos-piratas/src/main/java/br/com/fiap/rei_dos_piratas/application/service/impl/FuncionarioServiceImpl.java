@@ -23,7 +23,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 
     @Override
     public Page<Funcionario> listAll(int pageNumber, int pageSize) {
-        return this.repository.listAll(pageNumber, pageSize);
+        return this.repository.findAllByUsuarioAtivoTrue(pageNumber, pageSize);
     }
 
     @Override
@@ -49,6 +49,11 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     @Override
     @Transactional
     public Funcionario update(Funcionario funcionario) {
+
+        //Encriptar senha para salvar em banco
+        String encryptedPassword = this.passwordEncoder.encode(funcionario.getPassword());
+        funcionario.setSenha(encryptedPassword);
+
         Funcionario funcionarioAtualizado = this.repository.update(funcionario);
 
         if (funcionarioAtualizado == null){
@@ -59,7 +64,16 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     }
 
     @Override
-    public void delete(Long id) {
-        this.repository.delete(id);
+    public Funcionario ativarDesativar(Long id) {
+        Funcionario funcionario = this.findById(id);
+
+        if (funcionario.isUsuarioAtivo()){
+            funcionario.setUsuarioAtivo(false);
+        }
+        else {
+            funcionario.setUsuarioAtivo(true);
+        }
+
+        return this.repository.update(funcionario);
     }
 }

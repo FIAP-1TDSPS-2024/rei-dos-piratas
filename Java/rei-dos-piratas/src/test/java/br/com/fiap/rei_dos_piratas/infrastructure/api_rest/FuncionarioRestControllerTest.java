@@ -168,7 +168,7 @@ class FuncionarioRestControllerTest {
 
 
     @Test
-    void delete() throws Exception {
+    void ativarDesativar() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.delete("/funcionarios/{id}", 1L))
                 .andExpect(status().isNoContent());
     }
