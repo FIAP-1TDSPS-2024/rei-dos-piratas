@@ -10,6 +10,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetailsService
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class UsuarioDetailsServiceImpl implements UsuarioDetailsService {
         this.funcionarioRepository = funcionarioRepository;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Cliente cliente = clienteRepository.findByUsername(username);
@@ -32,7 +34,7 @@ public class UsuarioDetailsServiceImpl implements UsuarioDetailsService {
                     cliente.getId(),
                     cliente.getUsername(),
                     cliente.getPassword(),
-                    List.of(new SimpleGrantedAuthority(cliente.getRole().toString())));
+                    List.of(new SimpleGrantedAuthority("ROLE_" + cliente.getRole().name())));
         }
 
         Funcionario funcionario = funcionarioRepository.findByUsername(username);
@@ -41,7 +43,7 @@ public class UsuarioDetailsServiceImpl implements UsuarioDetailsService {
                     funcionario.getId(),
                     funcionario.getUsername(),
                     funcionario.getPassword(),
-                    List.of(new SimpleGrantedAuthority(funcionario.getRole().toString())));
+                    List.of(new SimpleGrantedAuthority("ROLE_" + funcionario.getRole().name())));
         }
 
         throw new UsernameNotFoundException("Usuário não encontrado");

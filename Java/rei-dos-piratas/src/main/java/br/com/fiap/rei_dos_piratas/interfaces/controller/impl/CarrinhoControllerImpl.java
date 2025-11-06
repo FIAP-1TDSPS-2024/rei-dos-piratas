@@ -25,40 +25,40 @@ public class CarrinhoControllerImpl implements CarrinhoController {
     }
 
     @Override
-    public CarrinhoOutDto adicionarProduto(Long clienteId, ItemProdutoInDto itemProduto) {
+    public CarrinhoOutDto adicionarProduto(ItemProdutoInDto itemProduto) {
 
         Produto produto = this.produtoService.findById(itemProduto.produtoId());
         ItemProdutoPedido item = new ItemProdutoPedido(produto, itemProduto.quantidade());
 
-        Carrinho carrinho = this.service.adicionarProduto(clienteId, item);
+        Carrinho carrinho = this.service.adicionarProduto(item);
         return CarrinhoDtoMapper.toDto(carrinho);
     }
 
     @Override
-    public CarrinhoOutDto removerProduto(Long clienteId, ItemProdutoInDto itemProduto) {
+    public CarrinhoOutDto removerProduto(ItemProdutoInDto itemProduto) {
 
         Produto produto = this.produtoService.findById(itemProduto.produtoId());
         ItemProdutoPedido item = new ItemProdutoPedido(produto, itemProduto.quantidade());
 
-        Carrinho carrinho = this.service.removerProduto(clienteId, item);
+        Carrinho carrinho = this.service.removerProduto(item);
         return CarrinhoDtoMapper.toDto(carrinho);
     }
 
     @Override
-    public CarrinhoOutDto limparCarrinho(Long clienteId) {
-        Carrinho carrinho = this.service.limparCarrinho(clienteId);
+    public CarrinhoOutDto limparCarrinho() {
+        Carrinho carrinho = this.service.limparCarrinho();
         return CarrinhoDtoMapper.toDto(carrinho);
     }
 
     @Override
-    public CarrinhoOutDto visualizarCarrinho(Long clienteId) {
-        Carrinho carrinho = this.service.visualizarCarrinho(clienteId);
+    public CarrinhoOutDto visualizarCarrinho() {
+        Carrinho carrinho = this.service.visualizarCarrinho();
         return CarrinhoDtoMapper.toDto(carrinho);
     }
 
     @Override
-    public PedidoOutDto finalizarCompra(Long clienteId) {
-        Pedido pedido = this.service.finalizarCompra(clienteId);
+    public PedidoOutDto finalizarCompra() {
+        Pedido pedido = this.service.finalizarCompra();
         return PedidoDtoMapper.toDto(pedido);
     }
 }

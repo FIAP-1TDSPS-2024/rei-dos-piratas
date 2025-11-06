@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/carrinho/cliente/{clienteId}")
+@RequestMapping("/carrinho")
 public class CarrinhoRestController {
 
     private final CarrinhoController controller;
@@ -23,32 +23,32 @@ public class CarrinhoRestController {
     }
 
     @PutMapping("/adicionar")
-    public ResponseEntity<CarrinhoOutDto> adicionarProduto(@PathVariable("clienteId") Long clienteId, @Valid @RequestBody ItemProdutoInDto itemProduto) {
-        CarrinhoOutDto carrinho = this.controller.adicionarProduto(clienteId, itemProduto);
+    public ResponseEntity<CarrinhoOutDto> adicionarProduto(@Valid @RequestBody ItemProdutoInDto itemProduto) {
+        CarrinhoOutDto carrinho = this.controller.adicionarProduto(itemProduto);
         return ResponseEntity.ok(carrinho);
     }
 
     @PutMapping("/remover")
-    public ResponseEntity<CarrinhoOutDto> removerProduto(@PathVariable("clienteId") Long clienteId, @Valid @RequestBody ItemProdutoInDto itemProduto) {
-        CarrinhoOutDto carrinho = this.controller.removerProduto(clienteId, itemProduto);
+    public ResponseEntity<CarrinhoOutDto> removerProduto(@Valid @RequestBody ItemProdutoInDto itemProduto) {
+        CarrinhoOutDto carrinho = this.controller.removerProduto(itemProduto);
         return ResponseEntity.ok(carrinho);
     }
 
     @PutMapping("/limpar")
-    public ResponseEntity<CarrinhoOutDto> limparCarrinho(@PathVariable("clienteId") Long clienteId) {
-        CarrinhoOutDto carrinho = this.controller.limparCarrinho(clienteId);
+    public ResponseEntity<CarrinhoOutDto> limparCarrinho() {
+        CarrinhoOutDto carrinho = this.controller.limparCarrinho();
         return ResponseEntity.ok(carrinho);
     }
 
     @GetMapping()
-    public ResponseEntity<CarrinhoOutDto> visualizarCarrinho(@PathVariable("clienteId") Long clienteId) {
-        CarrinhoOutDto carrinho = this.controller.visualizarCarrinho(clienteId);
+    public ResponseEntity<CarrinhoOutDto> visualizarCarrinho() {
+        CarrinhoOutDto carrinho = this.controller.visualizarCarrinho();
         return ResponseEntity.ok(carrinho);
     }
 
     @PutMapping("/finalizar")
-    public ResponseEntity<PedidoOutDto> finalizarCompra(@PathVariable("clienteId") Long clienteId) {
-       PedidoOutDto pedido = this.controller.finalizarCompra(clienteId);
+    public ResponseEntity<PedidoOutDto> finalizarCompra() {
+       PedidoOutDto pedido = this.controller.finalizarCompra();
        return ResponseEntity.ok(pedido);
     }
 }

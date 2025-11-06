@@ -9,6 +9,8 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteExceptio
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaItemProdutoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -35,9 +37,11 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
     @Transactional
     @Override
-    public Carrinho adicionarProduto(Long clienteId, ItemProdutoPedido itemProdutoPedido) {
+    public Carrinho adicionarProduto(ItemProdutoPedido itemProdutoPedido) {
         Produto produto = produtoService.findById(itemProdutoPedido.getProduto().getId());
-        Cliente cliente = clienteService.findById(clienteId);
+
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cliente cliente = clienteService.findById(userDetails.getId());
 
         //Verifica o produto tem estoque suficiente para adicionar a quantidade desejada
         //Quando for criado o pedido, essa quandidade vai ser revisada, caso o estoque tenha sido atualizado
@@ -64,9 +68,11 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
     @Transactional
     @Override
-    public Carrinho removerProduto(Long clienteId, ItemProdutoPedido itemProdutoPedido) {
+    public Carrinho removerProduto(ItemProdutoPedido itemProdutoPedido) {
         Produto produto = produtoService.findById(itemProdutoPedido.getProduto().getId());
-        Cliente cliente = clienteService.findById(clienteId);
+
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cliente cliente = clienteService.findById(userDetails.getId());
 
         Carrinho carrinho = cliente.getCarrinho();
         List<ItemProdutoCarrinho> items = new ArrayList<>(carrinho.getProdutosAdicionados());
@@ -95,8 +101,9 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
     @Transactional
     @Override
-    public Carrinho limparCarrinho(Long clienteId) {
-        Cliente cliente = clienteService.findById(clienteId);
+    public Carrinho limparCarrinho() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cliente cliente = clienteService.findById(userDetails.getId());
 
         Carrinho carrinho = cliente.getCarrinho();
 
@@ -108,15 +115,17 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     }
 
     @Override
-    public Carrinho visualizarCarrinho(Long clienteId) {
-        return this.clienteService.findById(clienteId).getCarrinho();
+    public Carrinho visualizarCarrinho() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return this.clienteService.findById(userDetails.getId()).getCarrinho();
     }
 
     @Transactional
     @Override
-    public Pedido finalizarCompra(Long clienteId) {
+    public Pedido finalizarCompra() {
 
-        Cliente cliente = clienteService.findById(clienteId);
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cliente cliente = clienteService.findById(userDetails.getId());
 
         Carrinho carrinho = cliente.getCarrinho();
 
@@ -134,7 +143,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         Pedido pedidoFinalizado = this.pedidoService.fazerPedido(pedido);
 
         //Se a operação de criação de pedido for um sucesso, o carrinho é limpo
-        limparCarrinho(clienteId);
+        limparCarrinho();
 
         return pedidoFinalizado;
     }
