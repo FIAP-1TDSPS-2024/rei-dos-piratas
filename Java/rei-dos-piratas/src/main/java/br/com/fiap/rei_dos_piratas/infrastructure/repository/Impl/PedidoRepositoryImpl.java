@@ -20,6 +20,16 @@ public class PedidoRepositoryImpl implements PedidoRepository {
     }
 
     @Override
+    public Page<Pedido> listAll(int pageNumber, int pageSize) {
+        return PageMapper.fromFrameworkPage(
+                this.repository.findAll(
+                        Pageable
+                                .ofSize(pageSize)
+                                .withPage(pageNumber)
+                ).map(JpaPedidoMapper::toEntity));
+    }
+
+    @Override
     public Page<Pedido> listAllByClient(int pageNumber, int pageSize, Long clienteId) {
         return PageMapper.fromFrameworkPage(
                 this.repository.findAllByCliente_Id(

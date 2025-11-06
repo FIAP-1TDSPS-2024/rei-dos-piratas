@@ -8,9 +8,11 @@ import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -29,8 +31,8 @@ public class PedidoControllerImpl implements PedidoController {
     }
 
     @Override
-    public Page<PedidoOutDto> findAllByCliente(int pageNumber, int pageSize, Long clienteId) {
-        Page<Pedido> pedidosPage = this.service.findAllByCliente(pageNumber, pageSize, clienteId);
+    public Page<PedidoOutDto> findAllByCliente(int pageNumber, int pageSize) {
+        Page<Pedido> pedidosPage = this.service.findAll(pageNumber, pageSize);
 
         List<PedidoOutDto> pedidos = pedidosPage
                 .pageItems()
@@ -51,9 +53,10 @@ public class PedidoControllerImpl implements PedidoController {
     }
 
     @Override
-    public PedidoOutDto fazerPedido(PedidoInDto pedido, Long clienteId) {
+    public PedidoOutDto fazerPedido(PedidoInDto pedido) {
 
-        Cliente cliente = this.clienteService.findById(clienteId);
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cliente cliente = clienteService.findById(userDetails.getId());
 
         List<ItemProdutoPedido> items = pedido
                 .produtosAdicionados()

@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.pedido;
 
+import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.application.service.impl.PedidoServiceImpl;
@@ -13,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 public class PedidoServiceConfig {
 
     @Bean
-    public PedidoService pedidoService(PedidoRepository repository, ProdutoRepository produtoRepository) {
-        return new PedidoServiceImpl(repository, produtoRepository);
+    public PedidoService pedidoService(PedidoRepository repository, ProdutoRepository produtoRepository, ClienteService clienteService) {
+        return new PedidoServiceImpl(repository, produtoRepository, clienteService);
     }
 
 

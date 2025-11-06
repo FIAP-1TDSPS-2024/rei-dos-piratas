@@ -1,7 +1,9 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
@@ -9,6 +11,9 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
@@ -19,18 +24,31 @@ public class PedidoServiceImpl implements PedidoService {
 
     private final ProdutoRepository produtoRepository;
 
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository) {
+    private final ClienteService clienteService;
+
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, ClienteService clienteService) {
         this.repository = repository;
         this.produtoRepository = produtoRepository;
+        this.clienteService = clienteService;
     }
 
     @Override
-    public Page<Pedido> findAllByCliente(int pageNumber, int pageSize, Long clienteId) {
-        return this.repository
-                .listAllByClient(
-                    pageNumber,
-                    pageSize,
-                    clienteId);
+    public Page<Pedido> findAll(int pageNumber, int pageSize) {
+
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CLIENTE"))) {
+            return this.repository
+                        .listAllByClient(
+                                pageNumber,
+                                pageSize,
+                                userDetails.getId());
+            }
+            else {
+                return this.repository.listAll(
+                                pageNumber,
+                                pageSize);
+            }
     }
 
     @Override

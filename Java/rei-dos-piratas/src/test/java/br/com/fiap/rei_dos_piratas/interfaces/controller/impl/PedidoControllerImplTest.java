@@ -110,13 +110,13 @@ class PedidoControllerImplTest {
 
         Page<Pedido> pedidoPage = new Page<>(1, 0, pedidos);
 
-        when(pedidoService.findAllByCliente(0, 10, clienteId)).thenReturn(pedidoPage);
+        when(pedidoService.findAll(0, 10, clienteId)).thenReturn(pedidoPage);
 
         // Act
-        final Page<Pedido> foundPedidoPage = pedidoService.findAllByCliente(0, 10, clienteId);
+        final Page<Pedido> foundPedidoPage = pedidoService.findAll(0, 10, clienteId);
 
         // Assert
-        verify(pedidoService, times(1)).findAllByCliente(0, 10, clienteId);
+        verify(pedidoService, times(1)).findAll(0, 10, clienteId);
         assertThat(foundPedidoPage).isSameAs(pedidoPage);
     }
 

@@ -98,7 +98,7 @@ class PedidoServiceImplTest {
     }
 
     @Test
-    void findAllByCliente_DeveRetornarPaginaDePedidos() {
+    void findAll_DeveRetornarPaginaDePedidos() {
         // Arrange
         Cliente cliente = criarCliente();
         Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
@@ -117,7 +117,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.listAllByClient(0, 10, 1L)).thenReturn(page);
 
         // Act
-        Page<Pedido> resultado = pedidoService.findAllByCliente(0, 10, 1L);
+        Page<Pedido> resultado = pedidoService.findAll(0, 10, 1L);
 
         // Assert
         verify(pedidoRepository, times(1)).listAllByClient(0, 10, 1L);

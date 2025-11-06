@@ -12,8 +12,6 @@ public interface ClienteController {
 
     ClienteOutDto findById(Long id);
 
-    ClienteOutDto create(ClienteInDto dto);
-
     ClienteOutDto update(Cliente cliente);
 
     void delete(Long id);

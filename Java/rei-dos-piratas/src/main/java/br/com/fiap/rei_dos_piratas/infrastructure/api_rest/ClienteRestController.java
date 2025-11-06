@@ -38,12 +38,6 @@ public class ClienteRestController {
         return ResponseEntity.ok(cliente);
     }
 
-    @PostMapping
-    public ResponseEntity<ClienteOutDto> create(@Valid @RequestBody ClienteInDto cliente) {
-        ClienteOutDto novoCliente = this.controller.create(cliente);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoCliente);
-    }
-
     @PutMapping
     public ResponseEntity<ClienteOutDto> update(@Valid @RequestBody Cliente cliente) {
         ClienteOutDto novoCliente = this.controller.update(cliente);

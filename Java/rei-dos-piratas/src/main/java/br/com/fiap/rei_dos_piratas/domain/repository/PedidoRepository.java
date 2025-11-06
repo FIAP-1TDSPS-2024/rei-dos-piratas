@@ -6,6 +6,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 
 public interface PedidoRepository {
+    Page<Pedido> listAll(int pageNumber, int pageSize);
     Page<Pedido> listAllByClient(int pageNumber, int pageSize, Long clienteId);
     Pedido findById(Long id);
     Pedido create(Pedido pedido);

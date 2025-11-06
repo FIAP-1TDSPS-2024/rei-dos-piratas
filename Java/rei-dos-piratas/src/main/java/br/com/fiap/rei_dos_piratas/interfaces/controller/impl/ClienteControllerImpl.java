@@ -42,13 +42,6 @@ public class ClienteControllerImpl implements ClienteController {
     }
 
     @Override
-    public ClienteOutDto create(ClienteInDto dto) {
-        Cliente cliente = ClienteDtoMapper.toEntity(dto);
-        Cliente novoCliente = this.service.create(cliente);
-        return ClienteDtoMapper.toDto(novoCliente);
-    }
-
-    @Override
     public ClienteOutDto update(Cliente cliente) {
         Cliente updCliente = this.service.update(cliente);
         return ClienteDtoMapper.toDto(updCliente);

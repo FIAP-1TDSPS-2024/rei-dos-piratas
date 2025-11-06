@@ -18,13 +18,12 @@ public class PedidoRestController {
         this.controller = controller;
     }
 
-    @GetMapping("cliente/{clienteId}")
+    @GetMapping()
     public ResponseEntity<Page<PedidoOutDto>> findAllByCliente(
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
-            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
-            @PathVariable("clienteId") Long clienteId) {
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber) {
 
-        Page<PedidoOutDto> pagePedidos = this.controller.findAllByCliente(pageNumber, pageSize, clienteId);
+        Page<PedidoOutDto> pagePedidos = this.controller.findAllByCliente(pageNumber, pageSize);
 
         return ResponseEntity.ok(pagePedidos);
     }
@@ -35,9 +34,9 @@ public class PedidoRestController {
         return ResponseEntity.ok(pedido);
     }
 
-    @PostMapping("/cliente/{clienteId}")
-    public ResponseEntity<PedidoOutDto> fazerPedido(@Valid @RequestBody PedidoInDto pedido, @Valid @PathVariable Long clienteId) {
-        PedidoOutDto novoPedido = this.controller.fazerPedido(pedido, clienteId);
+    @PostMapping()
+    public ResponseEntity<PedidoOutDto> fazerPedido(@Valid @RequestBody PedidoInDto pedido) {
+        PedidoOutDto novoPedido = this.controller.fazerPedido(pedido);
         return ResponseEntity.ok(novoPedido);
     }
 

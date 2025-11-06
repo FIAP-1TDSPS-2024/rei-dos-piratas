@@ -4,7 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 
 public interface PedidoService {
-    public Page<Pedido> findAllByCliente(int pageNumber, int pageSize, Long clienteId);
+    public Page<Pedido> findAll(int pageNumber, int pageSize);
     public Pedido findById(Long id);
     public Pedido fazerPedido(Pedido pedido);
     public Pedido pagarPedido(Long id);
