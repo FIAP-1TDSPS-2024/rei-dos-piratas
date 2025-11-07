@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -30,7 +31,8 @@ public class FuncionarioIntegrationTest {
     private FuncionarioRepository funcionarioRepository;
 
     @Test
-    void createCliente_shouldPersistAndReturnAuthor() throws Exception {
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void createFuncionario_shouldPersistAndReturn() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.post("/funcionarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -49,6 +51,6 @@ public class FuncionarioIntegrationTest {
                 .andExpect(jsonPath("$.email", is("jonas@example.com")));
 
         Page<Funcionario> vendedores = funcionarioRepository.listAll(0,10);
-        assert vendedores.pageItems().get(0).getUserName().equals("jonasDasNeves");
+        assert vendedores.pageItems().get(0).getUsername().equals("jonasDasNeves");
     }
 }

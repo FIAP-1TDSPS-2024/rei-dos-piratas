@@ -150,13 +150,39 @@ class FuncionarioControllerImplTest {
 
     @Test
     void ativarDesativar() {
+        //O que
+        Funcionario funcionarioAntigo = new Funcionario(
+                "jonasdasneves",
+                1L,
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                Role.USER,
+                null,
+                1000.00F);
+
+        Funcionario funcionarioNovo = new Funcionario(
+                "jonasdasneves",
+                1L,
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                false,
+                LocalDate.now(),
+                Role.USER,
+                null,
+                1000.00F);
+
         // Quando
-        doNothing().when(funcionarioService).ativarDesativar(1L);
+        when(funcionarioService.ativarDesativar(1L)).thenReturn(funcionarioNovo);
 
         // Executa
-        funcionarioService.ativarDesativar(1L);
+        Funcionario newFuncionario = funcionarioService.ativarDesativar(1L);
 
         // Verifica
         verify(funcionarioService, times(1)).ativarDesativar(1L);
+        assertThat(newFuncionario).isSameAs(funcionarioNovo).isNotSameAs(funcionarioAntigo);
     }
 }

@@ -11,8 +11,13 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,12 +33,31 @@ class PedidoServiceImplTest {
     private PedidoService pedidoService;
     private PedidoRepository pedidoRepository;
     private ProdutoRepository produtoRepository;
+    private br.com.fiap.rei_dos_piratas.application.service.ClienteService clienteService;
 
     @BeforeEach
     void setUp() {
+
+        // Limpa qualquer contexto anterior
+        SecurityContextHolder.clearContext();
+
+        // Cria usuário cliente
+        SimpleGrantedAuthority auth = new SimpleGrantedAuthority("ROLE_CLIENTE");
+        CustomUserDetails userDetails = new CustomUserDetails(1L, "joao", "pwd", List.of(auth));
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
         this.pedidoRepository = mock(PedidoRepository.class);
         this.produtoRepository = mock(ProdutoRepository.class);
-        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository);
+        this.clienteService = mock(br.com.fiap.rei_dos_piratas.application.service.ClienteService.class);
+        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, clienteService);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     private Cliente criarCliente() {
@@ -114,17 +138,35 @@ class PedidoServiceImplTest {
         List<Pedido> pedidos = List.of(pedido1, pedido2);
         Page<Pedido> page = new Page<>(1, 0, pedidos);
 
+        // Mock do repository
         when(pedidoRepository.listAllByClient(0, 10, 1L)).thenReturn(page);
 
+        // Cria CustomUserDetails com ROLE_CLIENTE corretamente
+        CustomUserDetails userDetails = new CustomUserDetails(
+                1L,
+                "joao",
+                "pwd",
+                List.of(new SimpleGrantedAuthority("ROLE_CLIENTE"))
+        );
+
+        // Define autenticação no SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())
+        );
+
         // Act
-        Page<Pedido> resultado = pedidoService.findAll(0, 10, 1L);
+        Page<Pedido> resultado = pedidoService.findAll(0, 10);
 
         // Assert
         verify(pedidoRepository, times(1)).listAllByClient(0, 10, 1L);
         assertThat(resultado.pageItems()).hasSize(2);
         assertThat(resultado.pageNumber()).isEqualTo(0);
         assertThat(resultado.numberOfPages()).isEqualTo(1);
+
+        // Limpa contexto para evitar interferência em outros testes
+        SecurityContextHolder.clearContext();
     }
+
 
     @Test
     void findById_DeveRetornarPedidoQuandoExistir() {

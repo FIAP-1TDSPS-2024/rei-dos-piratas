@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -41,7 +41,7 @@ class FuncionarioRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private FuncionarioController funcionarioController;
 
     @Test
@@ -150,16 +150,17 @@ class FuncionarioRestControllerTest {
                 1000.00F);
 
         FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
-        when(funcionarioController.update(any(Funcionario.class))).thenReturn(funcionarioOutDto);
+        when(funcionarioController.update(any())).thenReturn(funcionarioOutDto);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String vendedorJson = mapper.writeValueAsString(funcionario);
+
+        String funcionarioJson = mapper.writeValueAsString(funcionario);
 
         mockMvc.perform(put("/funcionarios")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(vendedorJson))
+                        .content(funcionarioJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userName", is("jonasdasneves")))
                 .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
@@ -169,7 +170,26 @@ class FuncionarioRestControllerTest {
 
     @Test
     void ativarDesativar() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.delete("/funcionarios/{id}", 1L))
-                .andExpect(status().isNoContent());
+
+        //O que
+        Funcionario funcionario = new Funcionario(
+                "jonasdasneves",
+                1L,
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                false,
+                LocalDate.now(),
+                Role.USER,
+                null,
+                1000.00F);
+
+        FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
+        when(funcionarioController.ativarDesativar(any())).thenReturn(funcionarioOutDto);
+
+        this.mockMvc.perform(MockMvcRequestBuilders.put("/funcionarios/{id}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
+                .andExpect(jsonPath("$.usuarioAtivo", is(false)));
     }
 }

@@ -31,7 +31,7 @@ public class ClienteIntegrationTest {
 
     @Test
     void createCliente_shouldPersistAndReturnAuthor() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.post("/clientes")
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/auth/cadastro")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -59,6 +59,6 @@ public class ClienteIntegrationTest {
                 .andExpect(jsonPath("$.email", is("jonas@example.com")));
 
         Page<Cliente> clientes = clienteRepository.listAll(0,10);
-        assert clientes.pageItems().get(0).getUserName().equals("jonasDasNeves");
+        assert clientes.pageItems().get(0).getUsername().equals("jonasDasNeves");
     }
 }

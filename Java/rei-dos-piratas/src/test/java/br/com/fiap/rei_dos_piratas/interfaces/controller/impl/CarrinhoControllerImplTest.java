@@ -69,14 +69,14 @@ class CarrinhoControllerImplTest {
         Carrinho carrinho = new Carrinho(1L, List.of(item));
 
         when(produtoService.findById(produtoId)).thenReturn(produto);
-        when(carrinhoService.adicionarProduto(eq(clienteId), any(ItemProdutoPedido.class))).thenReturn(carrinho);
+        when(carrinhoService.adicionarProduto(any(ItemProdutoPedido.class))).thenReturn(carrinho);
 
         // Act
-        carrinhoController.adicionarProduto(clienteId, new br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto(produtoId, quantidade));
+        carrinhoController.adicionarProduto(new br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto(produtoId, quantidade));
 
         // Assert
         verify(produtoService, times(1)).findById(produtoId);
-        verify(carrinhoService, times(1)).adicionarProduto(eq(clienteId), any(ItemProdutoPedido.class));
+        verify(carrinhoService, times(1)).adicionarProduto(any(ItemProdutoPedido.class));
     }
 
     @Test
@@ -114,14 +114,14 @@ class CarrinhoControllerImplTest {
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
 
         when(produtoService.findById(produtoId)).thenReturn(produto);
-        when(carrinhoService.removerProduto(eq(clienteId), any(ItemProdutoPedido.class))).thenReturn(carrinho);
+        when(carrinhoService.removerProduto(any(ItemProdutoPedido.class))).thenReturn(carrinho);
 
         // Act
-        carrinhoController.removerProduto(clienteId, new br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto(produtoId, quantidade));
+        carrinhoController.removerProduto(new br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto(produtoId, quantidade));
 
         // Assert
         verify(produtoService, times(1)).findById(produtoId);
-        verify(carrinhoService, times(1)).removerProduto(eq(clienteId), any(ItemProdutoPedido.class));
+        verify(carrinhoService, times(1)).removerProduto(any(ItemProdutoPedido.class));
     }
 
     @Test
@@ -131,13 +131,13 @@ class CarrinhoControllerImplTest {
 
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
 
-        when(carrinhoService.limparCarrinho(clienteId)).thenReturn(carrinho);
+        when(carrinhoService.limparCarrinho()).thenReturn(carrinho);
 
         // Act
-        carrinhoController.limparCarrinho(clienteId);
+        carrinhoController.limparCarrinho();
 
         // Assert
-        verify(carrinhoService, times(1)).limparCarrinho(clienteId);
+        verify(carrinhoService, times(1)).limparCarrinho();
     }
 
     @Test
@@ -174,13 +174,13 @@ class CarrinhoControllerImplTest {
 
         Carrinho carrinho = new Carrinho(1L, List.of(item));
 
-        when(carrinhoService.visualizarCarrinho(clienteId)).thenReturn(carrinho);
+        when(carrinhoService.visualizarCarrinho()).thenReturn(carrinho);
 
         // Act
-        carrinhoController.visualizarCarrinho(clienteId);
+        carrinhoController.visualizarCarrinho();
 
         // Assert
-        verify(carrinhoService, times(1)).visualizarCarrinho(clienteId);
+        verify(carrinhoService, times(1)).visualizarCarrinho();
     }
 
     @Test
@@ -251,12 +251,12 @@ class CarrinhoControllerImplTest {
         pedido.setDataPedido(LocalDate.now());
         pedido.setValorTotal(300.00F);
 
-        when(carrinhoService.finalizarCompra(clienteId)).thenReturn(pedido);
+        when(carrinhoService.finalizarCompra()).thenReturn(pedido);
 
         // Act
-        carrinhoController.finalizarCompra(clienteId);
+        carrinhoController.finalizarCompra();
 
         // Assert
-        verify(carrinhoService, times(1)).finalizarCompra(clienteId);
+        verify(carrinhoService, times(1)).finalizarCompra();
     }
 }

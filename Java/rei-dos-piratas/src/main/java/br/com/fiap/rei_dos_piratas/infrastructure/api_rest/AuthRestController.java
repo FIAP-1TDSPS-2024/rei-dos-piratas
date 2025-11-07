@@ -39,13 +39,13 @@ public class AuthRestController {
 
     @Operation(summary = "Cadastro de cliente", description = "Cria um novo cliente a partir dos dados informados")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Cliente cadastrado com sucesso"),
+            @ApiResponse(responseCode = "201", description = "Cliente cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
             @ApiResponse(responseCode = "500", description = "Erro interno")
     })
     @PostMapping("/cadastro")
     public ResponseEntity<ClienteOutDto> cadastro(@Valid @RequestBody ClienteInDto clienteInDto) {
         ClienteOutDto cliente = this.controller.cadastrar(clienteInDto);
-        return ResponseEntity.ok(cliente);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(cliente);
     }
 }

@@ -19,7 +19,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,10 +45,11 @@ class PedidoRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private PedidoController pedidoController;
 
     @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void findAllByCliente() throws Exception {
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
@@ -61,8 +64,7 @@ class PedidoRestControllerTest {
                 CondicaoEnum.NOVO
         );
 
-        List<ItemProdutoOutDto> produtos = new ArrayList<>();
-        produtos.add(new ItemProdutoOutDto(produtoOut, 2));
+        List<ItemProdutoOutDto> produtos = List.of(new ItemProdutoOutDto(produtoOut, 2));
 
         PedidoOutDto pedido = new PedidoOutDto(
                 1L,
@@ -74,16 +76,14 @@ class PedidoRestControllerTest {
                 produtos
         );
 
-        List<PedidoOutDto> pedidos = new ArrayList<>();
-        pedidos.add(pedido);
+        Page<PedidoOutDto> pedidosPage = new Page<>(1, 0, List.of(pedido));
 
-        Page<PedidoOutDto> pedidosPage = new Page<>(1, 0, pedidos);
+        when(this.pedidoController.findAllByCliente(0, 10)).thenReturn(pedidosPage);
 
-        when(this.pedidoController.findAllByCliente(0, 10, 1L)).thenReturn(pedidosPage);
-
-        this.mockMvc.perform(get("/pedidos/cliente/{clienteId}", 1L)
+        mockMvc.perform(get("/pedidos")
                         .param("pageNumber", "0")
-                        .param("pageSize", "10"))
+                        .param("pageSize", "10")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pageItems", hasSize(1)))
                 .andExpect(jsonPath("$.pageItems[0].id", is(1)))
@@ -130,6 +130,7 @@ class PedidoRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void fazerPedido() throws Exception {
         List<ItemProdutoInDto> produtosIn = new ArrayList<>();
         produtosIn.add(new ItemProdutoInDto(1L, 2));
@@ -162,14 +163,14 @@ class PedidoRestControllerTest {
                 produtosOut
         );
 
-        when(this.pedidoController.fazerPedido(any(PedidoInDto.class), eq(1L))).thenReturn(pedidoOut);
+        when(this.pedidoController.fazerPedido(any(PedidoInDto.class))).thenReturn(pedidoOut);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String pedidoJson = mapper.writeValueAsString(pedidoIn);
 
-        this.mockMvc.perform(post("/pedidos/cliente/{clienteId}", 1L)
+        this.mockMvc.perform(post("/pedidos", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(pedidoJson))
                 .andExpect(status().isOk())

@@ -16,9 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -28,8 +29,8 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,10 +44,11 @@ class CarrinhoRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private CarrinhoController carrinhoController;
 
     @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void adicionarProduto() throws Exception {
         ItemProdutoInDto itemProduto = new ItemProdutoInDto(1L, 2);
 
@@ -68,16 +70,18 @@ class CarrinhoRestControllerTest {
 
         CarrinhoOutDto carrinho = new CarrinhoOutDto(1L, produtos);
 
-        when(this.carrinhoController.adicionarProduto(eq(1L), any(ItemProdutoInDto.class))).thenReturn(carrinho);
+        when(this.carrinhoController.adicionarProduto(any(ItemProdutoInDto.class))).thenReturn(carrinho);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String itemProdutoJson = mapper.writeValueAsString(itemProduto);
 
-        this.mockMvc.perform(put("/carrinho/cliente/{clienteId}/adicionar", 1L)
+        this.mockMvc.perform(put("/carrinho/adicionar")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(itemProdutoJson))
+                        .content(itemProdutoJson)
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)))
@@ -86,6 +90,7 @@ class CarrinhoRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void removerProduto() throws Exception {
         ItemProdutoInDto itemProduto = new ItemProdutoInDto(1L, 1);
 
@@ -107,28 +112,37 @@ class CarrinhoRestControllerTest {
 
         CarrinhoOutDto carrinho = new CarrinhoOutDto(1L, produtos);
 
-        when(this.carrinhoController.removerProduto(eq(1L), any(ItemProdutoInDto.class))).thenReturn(carrinho);
+        when(this.carrinhoController.removerProduto(any(ItemProdutoInDto.class))).thenReturn(carrinho);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String itemProdutoJson = mapper.writeValueAsString(itemProduto);
 
-        this.mockMvc.perform(put("/carrinho/cliente/{clienteId}/remover", 1L)
+        this.mockMvc.perform(put("/carrinho/remover")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(itemProdutoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
+
+        this.mockMvc.perform(put("/carrinho/remover")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(itemProdutoJson)
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
+                .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void limparCarrinho() throws Exception {
         CarrinhoOutDto carrinho = new CarrinhoOutDto(1L, new ArrayList<>());
 
-        when(this.carrinhoController.limparCarrinho(1L)).thenReturn(carrinho);
+        when(this.carrinhoController.limparCarrinho()).thenReturn(carrinho);
 
-        this.mockMvc.perform(put("/carrinho/cliente/{clienteId}/limpar", 1L))
+        this.mockMvc.perform(put("/carrinho/limpar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(0)));
@@ -168,9 +182,9 @@ class CarrinhoRestControllerTest {
 
         CarrinhoOutDto carrinho = new CarrinhoOutDto(1L, produtos);
 
-        when(this.carrinhoController.visualizarCarrinho(1L)).thenReturn(carrinho);
+        when(this.carrinhoController.visualizarCarrinho()).thenReturn(carrinho);
 
-        this.mockMvc.perform(get("/carrinho/cliente/{clienteId}", 1L))
+        this.mockMvc.perform(get("/carrinho").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(2)))
@@ -179,6 +193,7 @@ class CarrinhoRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void finalizarCompra() throws Exception {
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
@@ -206,9 +221,10 @@ class CarrinhoRestControllerTest {
                 produtos
         );
 
-        when(this.carrinhoController.finalizarCompra(1L)).thenReturn(pedido);
+        when(this.carrinhoController.finalizarCompra()).thenReturn(pedido);
 
-        this.mockMvc.perform(put("/carrinho/cliente/{clienteId}/finalizar", 1L))
+        this.mockMvc.perform(put("/carrinho/finalizar")
+                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.valorTotal", is(200.0)))

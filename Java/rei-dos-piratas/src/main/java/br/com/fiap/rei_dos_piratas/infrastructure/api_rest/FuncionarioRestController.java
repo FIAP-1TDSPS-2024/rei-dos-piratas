@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,10 +54,13 @@ public class FuncionarioRestController {
             @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Link> findById(@PathVariable("id") Long id) {
-        FuncionarioOutDto vendedor = this.controller.findById(id);
-        final Link getFuncionarioLink = linkTo(methodOn(FuncionarioController.class).findById(id)).withSelfRel().withType("GET");
-        return ResponseEntity.ok(getFuncionarioLink);
+    public ResponseEntity<EntityModel<FuncionarioOutDto>> findById(@PathVariable("id") Long id) {
+        FuncionarioOutDto funcionario = this.controller.findById(id);
+
+        EntityModel<FuncionarioOutDto> resource = EntityModel.of(funcionario);
+        resource.add(linkTo(methodOn(FuncionarioRestController.class).findById(id)).withSelfRel());
+
+        return ResponseEntity.ok(resource);
     }
 
     @Operation(summary = "Criar funcionário", description = "Cria um novo funcionário")
@@ -87,8 +91,8 @@ public class FuncionarioRestController {
             @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<?> ativarDesativar(@PathVariable("id") Long id) {
-        this.controller.ativarDesativar(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<FuncionarioOutDto> ativarDesativar(@PathVariable("id") Long id) {
+        FuncionarioOutDto funcionario = this.controller.ativarDesativar(id);
+        return ResponseEntity.ok(funcionario);
     }
 }

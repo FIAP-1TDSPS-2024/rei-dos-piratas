@@ -12,6 +12,7 @@ import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,12 +29,14 @@ class ClienteServiceImplTest {
     private ClienteService clienteService;
     private ClienteRepository clienteRepository;
     private ProdutoService produtoService;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
         this.clienteRepository = mock(ClienteRepository.class);
         this.produtoService = mock(ProdutoService.class);
-        this.clienteService = new ClienteServiceImpl(clienteRepository, produtoService);
+        this.passwordEncoder = mock(PasswordEncoder.class);
+        this.clienteService = new ClienteServiceImpl(clienteRepository, produtoService, passwordEncoder);
     }
 
     @Test

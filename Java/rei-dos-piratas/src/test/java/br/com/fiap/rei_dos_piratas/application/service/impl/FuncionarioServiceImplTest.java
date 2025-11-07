@@ -7,6 +7,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,11 +21,14 @@ class FuncionarioServiceImplTest {
 
     private FuncionarioService funcionarioService;
     private FuncionarioRepository funcionarioRepository;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
         this.funcionarioRepository = mock(FuncionarioRepository.class);
-        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository);
+        this.passwordEncoder = mock(PasswordEncoder.class);
+        when(passwordEncoder.encode(any())).thenAnswer(invocation -> "encoded-") ;
+        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository, passwordEncoder);
     }
 
     @Test
@@ -42,17 +46,22 @@ class FuncionarioServiceImplTest {
                 null,
                 1000.00F);
 
-        List<Funcionario> vendedores = new ArrayList<Funcionario>();
+        List<Funcionario> vendedores = new ArrayList<>();
         vendedores.add(funcionario);
 
-        Page<Funcionario> vendedorPage = new Page<Funcionario>(1, 0, vendedores);
+        Page<Funcionario> vendedorPage = new Page<>(1, 0, vendedores);
 
-        when(this.funcionarioRepository.listAll(0,10)).thenReturn(vendedorPage);
+        when(this.funcionarioRepository.findAllByUsuarioAtivoTrue(0,10))
+                .thenReturn(vendedorPage);
 
         final Page<Funcionario> foundVendedorPage = this.funcionarioService.listAll(0,10);
-        verify(this.funcionarioRepository, times(1)).listAll(0,10);
+
+        verify(this.funcionarioRepository, times(1))
+                .findAllByUsuarioAtivoTrue(0,10);
+
         assertThat(foundVendedorPage).isSameAs(vendedorPage);
     }
+
 
     @Test
     void findById() {
@@ -154,13 +163,40 @@ class FuncionarioServiceImplTest {
 
     @Test
     void ativarDesativar() {
-        // Quando
-        doNothing().when(funcionarioRepository).delete(1L);
+        // Arrange
+        Funcionario funcionario = new Funcionario(
+                "jonasdasneves",
+                1L,
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                Role.USER,
+                null,
+                1000.00F);
 
-        // Executa
-        funcionarioService.ativarDesativar(1L);
+        Funcionario funcionarioAtualizado = new Funcionario(
+                "jonasdasneves",
+                1L,
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                false,
+                LocalDate.now(),
+                Role.USER,
+                null,
+                1000.00F);
 
-        // Verifica
-        verify(funcionarioRepository, times(1)).delete(1L);
+        when(funcionarioRepository.findById(1L)).thenReturn(funcionario);
+        when(funcionarioRepository.update(any(Funcionario.class))).thenReturn(funcionarioAtualizado);
+
+        // Act
+        Funcionario result = funcionarioService.ativarDesativar(1L);
+
+        // Assert
+        verify(funcionarioRepository, times(1)).findById(1L);
+        verify(funcionarioRepository, times(1)).update(any(Funcionario.class));
+        assertThat(result.isUsuarioAtivo()).isFalse();
     }
 }

@@ -18,9 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -43,7 +43,7 @@ class ClienteRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private ClienteController clienteController;
 
     @Test
@@ -133,47 +133,6 @@ class ClienteRestControllerTest {
         this.mockMvc.perform(get("/clientes/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
-                .andExpect(jsonPath("$.email", is("jonas@gmail.com")));
-    }
-
-    @Test
-    void create() throws Exception {
-        //O que
-        EnderecoInDto endereco = new EnderecoInDto(
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                "São Paulo",
-                "São Paulo",
-                "SP");
-
-        ClienteInDto cliente = new ClienteInDto(
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                LocalDate.of(2000, 03, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978");
-
-        ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(ClienteDtoMapper.toEntity(cliente));
-        when(this.clienteController.create(cliente)).thenReturn(clienteOutDto);
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // para LocalDate
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        String clienteJson = mapper.writeValueAsString(cliente);
-
-
-        this.mockMvc.perform(post("/clientes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(clienteJson))
-                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.userName", is("jonasdasneves")))
                 .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
                 .andExpect(jsonPath("$.email", is("jonas@gmail.com")));

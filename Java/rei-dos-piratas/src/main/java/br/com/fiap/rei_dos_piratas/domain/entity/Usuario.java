@@ -2,6 +2,8 @@ package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetails;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -26,6 +28,7 @@ public abstract class Usuario implements UsuarioDetails {
 
     private Long id;
 
+    @JsonProperty("username")
     @NotNull(message = "O nome não pode ser nulo")
     @Length(max=30, message = "O nome de usuário deve ter de 3 a 30 caracteres")
     private String userName;
@@ -50,6 +53,7 @@ public abstract class Usuario implements UsuarioDetails {
 
     private Role role;
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

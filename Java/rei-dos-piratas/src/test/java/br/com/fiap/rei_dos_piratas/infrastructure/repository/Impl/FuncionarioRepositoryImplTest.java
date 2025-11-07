@@ -20,12 +20,12 @@ import static org.mockito.Mockito.*;
 class FuncionarioRepositoryImplTest {
 
     private JpaFuncionarioEntityRepository repository;
-    private FuncionarioRepositoryImpl vendedorRepository;
+    private FuncionarioRepositoryImpl funcionarioRepository;
 
     @BeforeEach
     void setUp() {
         repository = mock(JpaFuncionarioEntityRepository.class);
-        vendedorRepository = new FuncionarioRepositoryImpl(repository);
+        funcionarioRepository = new FuncionarioRepositoryImpl(repository);
     }
 
     @Test
@@ -36,7 +36,7 @@ class FuncionarioRepositoryImplTest {
                 .thenReturn(new PageImpl<>(List.of(jpaEntity)));
 
         // Act
-        Page<Funcionario> result = vendedorRepository.listAll(0, 10);
+        Page<Funcionario> result = funcionarioRepository.listAll(0, 10);
 
         // Assert
         assertNotNull(result);
@@ -45,13 +45,13 @@ class FuncionarioRepositoryImplTest {
     }
 
     @Test
-    void findById_shouldReturnMappedVendedor() {
+    void findById_shouldReturnMappedFuncionario() {
         // Arrange
         JpaFuncionarioEntity jpaEntity = new JpaFuncionarioEntity();
         when(repository.findById(1L)).thenReturn(Optional.of(jpaEntity));
 
         // Act
-        Funcionario result = vendedorRepository.findById(1L);
+        Funcionario result = funcionarioRepository.findById(1L);
 
         // Assert
         assertNotNull(result);
@@ -74,7 +74,7 @@ class FuncionarioRepositoryImplTest {
         when(repository.save(any(JpaFuncionarioEntity.class))).thenReturn(new JpaFuncionarioEntity());
 
         // Act
-        Funcionario result = vendedorRepository.create(funcionario);
+        Funcionario result = funcionarioRepository.create(funcionario);
 
         // Assert
         assertNotNull(result);
@@ -94,7 +94,7 @@ class FuncionarioRepositoryImplTest {
         when(repository.findFirstByUserName("duplicado")).thenReturn(new JpaFuncionarioEntity());
 
         //Assert
-        assertThrows(UniqueKeyDuplicatedException.class, () -> vendedorRepository.create(funcionario));
+        assertThrows(UniqueKeyDuplicatedException.class, () -> funcionarioRepository.create(funcionario));
         verify(repository, never()).save(any());
     }
 
@@ -112,16 +112,7 @@ class FuncionarioRepositoryImplTest {
         when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(new JpaFuncionarioEntity());
 
         // Act & Assert
-        assertThrows(UniqueKeyDuplicatedException.class, () -> vendedorRepository.create(funcionario));
+        assertThrows(UniqueKeyDuplicatedException.class, () -> funcionarioRepository.create(funcionario));
         verify(repository, never()).save(any());
-    }
-
-    @Test
-    void delete_shouldCallRepositoryDeleteById() {
-        // Act
-        vendedorRepository.delete(10L);
-
-        // Assert
-        verify(repository).deleteById(10L);
     }
 }
