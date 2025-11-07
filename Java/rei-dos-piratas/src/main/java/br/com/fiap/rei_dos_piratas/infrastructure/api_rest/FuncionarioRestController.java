@@ -5,11 +5,16 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Funcionários", description = "Operações sobre funcionários")
 @RestController
 @RequestMapping("/funcionarios")
 public class FuncionarioRestController {
@@ -20,6 +25,11 @@ public class FuncionarioRestController {
         this.controller = controller;
     }
 
+    @Operation(summary = "Listar funcionários", description = "Retorna página de funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista retornada"),
+            @ApiResponse(responseCode = "204", description = "Nenhum funcionário encontrado")
+    })
     @GetMapping
     public ResponseEntity<Page<FuncionarioOutDto>> findAll(
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
@@ -33,24 +43,44 @@ public class FuncionarioRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Buscar funcionário por id", description = "Retorna os dados do funcionário pelo id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Funcionário encontrado"),
+            @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<FuncionarioOutDto> findById(@PathVariable("id") Long id) {
         FuncionarioOutDto vendedor = this.controller.findById(id);
         return ResponseEntity.ok(vendedor);
     }
 
+    @Operation(summary = "Criar funcionário", description = "Cria um novo funcionário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Funcionário criado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     @PostMapping
     public ResponseEntity<FuncionarioOutDto> create(@Valid @RequestBody FuncionarioInDto vendedor) {
         FuncionarioOutDto novoVendedor = this.controller.create(vendedor);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoVendedor);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(novoVendedor);
     }
 
+    @Operation(summary = "Atualizar funcionário", description = "Atualiza dados do funcionário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Funcionário atualizado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     @PutMapping
     public ResponseEntity<FuncionarioOutDto> update(@Valid @RequestBody Funcionario funcionario) {
         FuncionarioOutDto novoVendedor = this.controller.update(funcionario);
         return ResponseEntity.ok(novoVendedor);
     }
 
+    @Operation(summary = "Ativar/Desativar funcionário", description = "Alterna estado ativo do funcionário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<?> ativarDesativar(@PathVariable("id") Long id) {
         this.controller.ativarDesativar(id);

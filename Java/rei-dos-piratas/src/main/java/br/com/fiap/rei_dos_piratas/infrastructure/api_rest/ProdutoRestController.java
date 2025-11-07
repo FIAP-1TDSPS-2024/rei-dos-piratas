@@ -7,11 +7,16 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ProdutoOutDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Produtos", description = "Operações para consulta e inserção de produtos")
 @RestController
 @RequestMapping("/produtos")
 public class ProdutoRestController {
@@ -22,6 +27,11 @@ public class ProdutoRestController {
         this.controller = controller;
     }
 
+    @Operation(summary = "Listar todos os produtos", description = "Retorna todos os pedidos da loja paginados")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista retornada"),
+            @ApiResponse(responseCode = "204", description = "Nenhum pedido encontrado")
+    })
     @GetMapping
     public ResponseEntity<Page<ProdutoOutDto>> findAll(
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
@@ -35,24 +45,43 @@ public class ProdutoRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Buscar produto por id", description = "Retorna um produto pelo id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedido encontrado"),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ProdutoOutDto> findById(@PathVariable("id") Long id) {
         ProdutoOutDto produto = this.controller.findById(id);
         return ResponseEntity.ok(produto);
     }
 
+    @Operation(summary = "Criar produto", description = "Inserção de um novo produto na loja, acessível para funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedido criado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+    })
     @PostMapping
     public ResponseEntity<ProdutoOutDto> create(@Valid @RequestBody ProdutoInDto produto) {
         ProdutoOutDto novoProduto = this.controller.create(produto);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoProduto);
     }
 
+    @Operation(summary = "Atualizar produto", description = "Atualização de um produto na loja, acessível para funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedido criado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+    })
     @PutMapping
     public ResponseEntity<ProdutoOutDto> update(@Valid @RequestBody Produto produto) {
         ProdutoOutDto novoVendedor = this.controller.update(produto);
         return ResponseEntity.ok(novoVendedor);
     }
 
+    @Operation(summary = "Deletar produto", description = "Deleção de um produto na loja, acessível para funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Sem conteúdo")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         this.controller.delete(id);

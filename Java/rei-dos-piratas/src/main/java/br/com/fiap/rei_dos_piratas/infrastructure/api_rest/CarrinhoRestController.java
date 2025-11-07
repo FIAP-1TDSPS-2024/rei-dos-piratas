@@ -9,10 +9,14 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.CarrinhoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Carrinho", description = "Operações para manipulação do carrinho do cliente")
 @RestController
 @RequestMapping("/carrinho")
 public class CarrinhoRestController {
@@ -23,38 +27,57 @@ public class CarrinhoRestController {
         this.controller = controller;
     }
 
-    @Operation(summary = "Método para que o cliente adicione um item, em quantidade desejada, ao seu carrinho")
+    @Operation(summary = "Adicionar produto ao carrinho", description = "Adiciona quantidade do produto ao carrinho")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Produto adicionado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     @PutMapping("/adicionar")
     public ResponseEntity<CarrinhoOutDto> adicionarProduto(@Valid @RequestBody ItemProdutoInDto itemProduto) {
         CarrinhoOutDto carrinho = this.controller.adicionarProduto(itemProduto);
         return ResponseEntity.ok(carrinho);
     }
 
-    @Operation(summary = "Método para que o cliente REMOVA um item, em quantidade desejada, de seu carrinho")
+    @Operation(summary = "Remover produto do carrinho", description = "Remove quantidade do produto do carrinho")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Produto removido"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     @PutMapping("/remover")
     public ResponseEntity<CarrinhoOutDto> removerProduto(@Valid @RequestBody ItemProdutoInDto itemProduto) {
         CarrinhoOutDto carrinho = this.controller.removerProduto(itemProduto);
         return ResponseEntity.ok(carrinho);
     }
 
-    @Operation(summary = "Método para que o cliente remova TODOS os itens de seu carrinho")
+    @Operation(summary = "Limpar carrinho", description = "Remove todos os itens do carrinho")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Carrinho limpo")
+    })
     @PutMapping("/limpar")
     public ResponseEntity<CarrinhoOutDto> limparCarrinho() {
         CarrinhoOutDto carrinho = this.controller.limparCarrinho();
         return ResponseEntity.ok(carrinho);
     }
 
-    @Operation(summary = "Método para que o cliente visualize seu carrinho e os itens adicionados no mesmo")
+    @Operation(summary = "Visualizar carrinho", description = "Retorna os itens do carrinho do cliente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Carrinho retornado"),
+            @ApiResponse(responseCode = "204", description = "Carrinho vazio")
+    })
     @GetMapping()
     public ResponseEntity<CarrinhoOutDto> visualizarCarrinho() {
         CarrinhoOutDto carrinho = this.controller.visualizarCarrinho();
         return ResponseEntity.ok(carrinho);
     }
 
-    @Operation(summary = "Método para que o cliente finalize seu pedido, coletando os itens do carrinho e criando um novo pedido. O carrinho então é limpo.")
+    @Operation(summary = "Finalizar compra", description = "Cria pedido com os itens do carrinho e limpa o carrinho")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedido criado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     @PutMapping("/finalizar")
     public ResponseEntity<PedidoOutDto> finalizarCompra() {
-       PedidoOutDto pedido = this.controller.finalizarCompra();
-       return ResponseEntity.ok(pedido);
+        PedidoOutDto pedido = this.controller.finalizarCompra();
+        return ResponseEntity.ok(pedido);
     }
 }
