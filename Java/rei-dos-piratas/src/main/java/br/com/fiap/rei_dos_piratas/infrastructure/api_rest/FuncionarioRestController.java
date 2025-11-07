@@ -10,9 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Tag(name = "Funcionários", description = "Operações sobre funcionários")
 @RestController
@@ -49,9 +53,10 @@ public class FuncionarioRestController {
             @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<FuncionarioOutDto> findById(@PathVariable("id") Long id) {
+    public ResponseEntity<Link> findById(@PathVariable("id") Long id) {
         FuncionarioOutDto vendedor = this.controller.findById(id);
-        return ResponseEntity.ok(vendedor);
+        final Link getFuncionarioLink = linkTo(methodOn(FuncionarioController.class).findById(id)).withSelfRel().withType("GET");
+        return ResponseEntity.ok(getFuncionarioLink);
     }
 
     @Operation(summary = "Criar funcionário", description = "Cria um novo funcionário")

@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/produtos/**").permitAll()
                         .requestMatchers("/carrinho/**").hasRole("CLIENT")
                         .requestMatchers("/produtos/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/funcionarios/**").hasRole("FUNCIONARIO")
+                        .requestMatchers(HttpMethod.GET, "/funcionarios/**").hasAnyRole("FUNCIONARIO", "ADMIN")
                         .requestMatchers("/funcionarios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/pedidos/cancelamento/**", "/pedidos/pagamento/**").hasRole("CLIENT")
                         .requestMatchers(HttpMethod.PUT, "/pedidos/**").hasAnyRole("USER", "ADMIN")
