@@ -44,5 +44,5 @@ az monitor metrics alert create \
 ## Deletando grupo de recursos
 
 ```bash
-az group ativarDesativar --name ReiDosPiratas --yes --no-wait
+az group delete --name ReiDosPiratas --yes --no-wait
 ```
