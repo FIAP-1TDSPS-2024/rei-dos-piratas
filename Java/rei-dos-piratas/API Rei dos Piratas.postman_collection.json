@@ -8,10 +8,10 @@
 	},
 	"item": [
 		{
-			"name": "Vendedores",
+			"name": "Funcionarios",
 			"item": [
 				{
-					"name": "List vendedores",
+					"name": "List funcionarios",
 					"event": [
 						{
 							"listen": "test",
@@ -44,7 +44,7 @@
 					"response": []
 				},
 				{
-					"name": "Find cliente por ID",
+					"name": "Find funcionario por ID",
 					"event": [
 						{
 							"listen": "test",
@@ -64,12 +64,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/vendedores/1",
+							"raw": "{{base_url}}/funcionarios/1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"vendedores",
+								"funcionarios",
 								"1"
 							]
 						},
@@ -78,7 +78,7 @@
 					"response": []
 				},
 				{
-					"name": "Criar vendedor",
+					"name": "Criar funcionario",
 					"event": [
 						{
 							"listen": "test",
@@ -108,12 +108,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/vendedores",
+							"raw": "{{base_url}}/funcionarios",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"vendedores"
+								"funcionarios"
 							]
 						},
 						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
@@ -121,7 +121,7 @@
 					"response": []
 				},
 				{
-					"name": "Atualizar vendedor",
+					"name": "Atualizar funcionarios",
 					"event": [
 						{
 							"listen": "test",
@@ -151,12 +151,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/vendedores",
+							"raw": "{{base_url}}/funcionarios",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"vendedores"
+								"funcionarios"
 							]
 						},
 						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
@@ -164,7 +164,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete data",
+					"name": "Ativar ou desativar funcionário",
 					"event": [
 						{
 							"listen": "test",
@@ -182,7 +182,7 @@
 						}
 					],
 					"request": {
-						"method": "DELETE",
+						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
@@ -194,17 +194,52 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}vendedores/1",
+							"raw": "{{base_url}}/funcionarios/1002",
 							"host": [
-								"{{base_url}}vendedores"
+								"{{base_url}}"
 							],
 							"path": [
-								"1"
+								"funcionarios",
+								"1002"
 							]
 						},
 						"description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
 					},
 					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJDTElFTlQiXSwic3ViIjoiam9uYXNEYXNOZXZlcyIsImlhdCI6MTc2MjM5MjM3MSwiZXhwIjoxNzYyNDc4NzcxfQ.Xo8R6FYV6fFN_1Wv98vRVDNRfpWZfHSFOUM3C_QUEhKm_icI0FizdcwvbsDxpo01",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		},
@@ -306,49 +341,6 @@
 					"response": []
 				},
 				{
-					"name": "Criar cliente",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Successful POST request\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"userName\": \"jonasDasNeves\",\n  \"nomeCompleto\": \"Jonas da Silva Souza\",\n  \"email\": \"jonas@3example.com\",\n  \"senha\": \"SenhaSegura\",\n  \"dataNascimento\": \"2004-03-13\",\n  \"sexo\": \"M\",\n  \"cpf\": \"18123697822\",\n  \"endereco\": {\n    \"numero\": 123,\n    \"cep\": \"04567812\",\n    \"logradouro\": \"Avenida Paulista\",\n    \"bairro\": \"Bela Vista\",\n    \"cidade\": \"São Paulo\",\n    \"estadoNome\": \"São Paulo\",\n    \"estadoSigla\": \"SP\"\n  }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/clientes",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"clientes"
-							]
-						},
-						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
-					},
-					"response": []
-				},
-				{
 					"name": "Atualizar cliente",
 					"event": [
 						{
@@ -435,6 +427,854 @@
 							]
 						},
 						"description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Produtos",
+			"item": [
+				{
+					"name": "List produtos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/produtos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"produtos"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Find produto por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/produtos/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"produtos",
+								"1"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar produto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"One Piece Vol. 1 — Romance Dawn (Mangá, Edição Brasileira)\",\n  \"descricao\": \"Primeiro volume do mangá One Piece, apresentando a origem de Luffy e o início de sua aventura em busca do tesouro One Piece. Edição brasileira com tradução revisada, capa colorida e orelhas com perfil dos personagens. Ideal para colecionadores e fãs da série.\",\n  \"enderecoImagem\": \"https://exemplo.com/imagens/one-piece-vol1-romance-dawn.jpg\",\n  \"preco\": 39.90,\n  \"estoque\": 120,\n  \"altura\": 19.0,\n  \"largura\": 13.0,\n  \"profundidade\": 2.0,\n  \"condicao\": \"NOVO\",\n  \"funcionarioId\": 1002\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/produtos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"produtos"
+							]
+						},
+						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar produtos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/produtos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"produtos"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful DELETE request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/produtos/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"produtos",
+								"1"
+							]
+						},
+						"description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pedidos",
+			"item": [
+				{
+					"name": "List pedidos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/pedidos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pedidos"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Find pedido por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/pedidos/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pedidos",
+								"1"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"produtosAdicionados\": [\n    {\n        \"produto\": 3,\n        \"quantidade\": 1\n    }\n  ]\n}\n\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/pedidos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pedidos"
+							]
+						},
+						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Pagar pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/pedidos/pagamento/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pedidos",
+								"pagamento",
+								"1"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/pedidos/envio/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pedidos",
+								"envio",
+								"1"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Entregar pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/pedidos/envio/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pedidos",
+								"envio",
+								"1"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancelar pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/pedidos/cancelamento/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pedidos",
+								"cancelamento",
+								"1"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJDTElFTlQiXSwic3ViIjoiam9uYXNEYXNOZXZlcyIsImlhdCI6MTc2MjM5MjM3MSwiZXhwIjoxNzYyNDc4NzcxfQ.Xo8R6FYV6fFN_1Wv98vRVDNRfpWZfHSFOUM3C_QUEhKm_icI0FizdcwvbsDxpo01",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Carrinho",
+			"item": [
+				{
+					"name": "Verificar meu carrinho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJDTElFTlQiXSwic3ViIjoiam9uYXNEYXNOZXZlcyIsImlhdCI6MTc2MjM5MjM3MSwiZXhwIjoxNzYyNDc4NzcxfQ.Xo8R6FYV6fFN_1Wv98vRVDNRfpWZfHSFOUM3C_QUEhKm_icI0FizdcwvbsDxpo01",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/carrinho",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"carrinho"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Adicionar item ao carrinho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"produtoId\": 3,\n    \"quantidade\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/carrinho/adicionar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"carrinho",
+								"adicionar"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Remover item do carrinho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/carrinho/remover",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"carrinho",
+								"remover"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Limpar Carrinho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/carrinho/limpar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"carrinho",
+								"limpar"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Finalizar pedido com carrinho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/carrinho/finalizar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"carrinho",
+								"finalizar"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJDTElFTlQiXSwic3ViIjoiam9uYXNEYXNOZXZlcyIsImlhdCI6MTc2MjM5MjM3MSwiZXhwIjoxNzYyNDc4NzcxfQ.Xo8R6FYV6fFN_1Wv98vRVDNRfpWZfHSFOUM3C_QUEhKm_icI0FizdcwvbsDxpo01",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastro",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userName\": \"exemploUsuario\",\r\n  \"nomeCompleto\": \"Nome Completo do Usuário\",\r\n  \"email\": \"usuario@exemplo.com\",\r\n  \"senha\": \"senhaSegura123\",\r\n  \"dataNascimento\": \"2000-01-01\",\r\n  \"sexo\": \"M\",\r\n  \"endereco\": {\r\n    \"rua\": \"Rua Exemplo\",\r\n    \"numero\": \"123\",\r\n    \"cidade\": \"Cidade Exemplo\",\r\n    \"estado\": \"SP\",\r\n    \"cep\": \"01234567\"\r\n  },\r\n  \"cpf\": \"12345678901\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/cadastro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"cadastro"
+							]
+						}
 					},
 					"response": []
 				}

@@ -28,19 +28,58 @@
 
 ## Cronograma de Desenvolvimento - Java - Sprint 1
 
-| Semana | Datas           | Atividade                                         |
-| ------ |-----------------| ------------------------------------------------- |
-| 1      | 22/set - 28/set | Definir diagrama UML e arquitetura                |
-| 2      | 29/set - 05/out | Repositories, entidades JPA e mappers JPA         |
-| 2      | 29/set - 05/out | Implementação de Usuario, Cliente e Vendedor      |
-| 3      | 06/out - 08/out | Services e validations                            |
-| 3      | 06/out - 08/out | Controllers e DTOs                                |
-| 3      | 08/out - 10/out | RestControllers                                   |
-| 3      | 08/out - 10/out | Conexão com DB                                    |
-| 3      | 09/out - 12/out | Testes de requisição, criação de testes unitários |
-| 3      | 09/out - 12/out | Finalização de documentação                       |
-| 3      | 12/out          | Entrega final - Sprint 1                          |
+| Semana | Datas           | Atividade                                              |
+| ------ |-----------------|--------------------------------------------------------|
+| 1      | 22/set - 28/set | Definir diagrama UML e arquitetura                     |
+| 2      | 29/set - 05/out | Repositories, entidades JPA e mappers JPA              |
+| 2      | 29/set - 05/out | Implementação de Usuario, Cliente e Vendedor           |
+| 3      | 06/out - 08/out | Services e validations                                 |
+| 3      | 06/out - 08/out | Controllers e DTOs                                     |
+| 3      | 08/out - 10/out | RestControllers                                        |
+| 3      | 08/out - 10/out | Conexão com DB                                         |
+| 3      | 09/out - 12/out | Testes de requisição, criação de testes unitários      |
+| 3      | 09/out - 12/out | Finalização de documentação                            |
+| 3      | 12/out          | Entrega final - Sprint 1                               |
 
+
+## Cronograma de Desenvolvimento - Java - Sprint 3
+
+| Semana | Dias   | Atividade                                                       |
+|--------|--------|-----------------------------------------------------------------|
+| 1      | 1 - 2  | Implementar domínio de Produtos                                 |
+| 1      | 2 - 3  | Implementar domínio de pedidos e associação                     |
+| 1      | 4 - 5  | Implementar services e controllers de produtos e pedidos        |
+| 1      | 6      | Implementar CRUD de carrinhos                                   |
+| 1      | 7      | Implementar regras de negócio de estoque e afins                |
+| 2      | 8 - 10 | Implementar configurações Spring Security                       |
+| 2      | 11     | Implementar Login e cadastro de usuarios com JWT                |
+| 2      | 12     | Implementar coleta de informações do usuario por contexto       |
+| 2      | 13     | Implementação de Documentação swagger e HATEOAS                 |
+| 2      | 14     | Entrega final - Sprint 2 - Ajustes de documentação              |
+---
+
+## Cronograma de Desenvolvimento - Java - Sprint 3
+
+| Semana | Dias    | Atividade                                                       |
+|--------|---------|-----------------------------------------------------------------|
+| 1      | 1       | Implementação de historico pedidos para evitar quebras de fluxo |
+| 1      | 2 - 5   | Implementar API de frete com teste em SandBox                   |
+| 1      | 6 - 9   | Implementar API de GATEWAY de pagamentos com pagamento por PIX  |
+| 1      | 10 - 11 | Ajustes devidos das regras de negócio para confiabilidade       |
+| 1      | 12 - 13 | Implementar Refresh token no método de login                    |
+| 1      | 14      | Entrega final - Sprint 3 - Ajustes de documentação              |
+---
+
+## Cronograma de Desenvolvimento - Java - Sprint 3
+
+| Semana | Dias    | Atividade                                                      |
+|--------|---------|----------------------------------------------------------------|
+| 1      | 2       | Revisão de regras de negócio conforme feedback                 |
+| 1      | 3 - 6   | Revisar webhooks dos fluxos de pagamento e entrega com API key |
+| 1      | 7 - 9   | Implementar pagamento por boleto bancário                      |
+| 1      | 10 - 11 | Ajustes devidos das regras de negócio para confiabilidade      |
+| 1      | 12 - 13 | Implementar segurança em duas etapas (opcional)                |
+| 1      | 14      | Entrega final - Sprint 3 - Ajustes de documentação             |
 ---
 
 ## Como Executar a Aplicação
@@ -71,23 +110,72 @@ mvn spring-boot:run
 
 ## Endpoints Disponíveis
 
-| Método | Endpoint         | Descrição                    | 
-| ------ |------------------| ---------------------------- |
-| GET    | /clientes        | Retorna lista de clientes    |
-| GET    | /clientes/{id}   | Retorna cliente por ID       |
-| POST   | /clientes        | Cria um novo clientes        |
-| PUT    | /clientes        | Atualiza clientes existente  |
-| DELETE | /clientes/{id}   | Remove clientes existente    |
-| GET    | /vendedores      | Retorna lista de vendedores  |
-| GET    | /vendedores/{id} | Retorna funcionario por ID      |
-| POST   | /vendedores      | Cria um novo funcionario        |
-| PUT    | /vendedores      | Atualiza funcionario existente  |
-| DELETE | /vendedores/{id} | Remove funcionario existente    |
+### Funcionários
+
+| Método | Endpoint                                      | Descrição                                              |
+| ------ | --------------------------------------------- |--------------------------------------------------------|
+| GET    | /vendedores                                   | Listar funcionários                                    |
+| GET    | /funcionarios/{id}                            | Buscar funcionário por id                              |
+| POST   | /funcionarios                                 | Criar funcionário                                      |
+| PUT    | /funcionarios                                 | Atualizar funcionário                                  |
+| PUT    | /funcionarios/{id}                            | Ativar/Desativar funcionário                           |
+
+### Clientes
+
+| Método | Endpoint                                      | Descrição                                              |
+| ------ | --------------------------------------------- |--------------------------------------------------------|
+| GET    | /clientes?pageNumber={n}&pageSize={m}         | Listar clientes paginados                              |
+| GET    | /clientes                                     | Buscar clientes                                        |
+| GET    | /clientes/{id}                                | Buscar cliente por id                                  |
+| POST   | /clientes                                     | Criar cliente                                          |
+| PUT    | /clientes                                     | Atualizar cliente                                      |
+| DELETE | /info?id={id}                                 | Remover cliente (rota presente na coleção Postman)     |
+
+### Produtos
+
+| Método | Endpoint                                      | Descrição                                              |
+| ------ | --------------------------------------------- |--------------------------------------------------------|
+| GET    | /produtos                                     | Listar produtos                                        |
+| GET    | /produtos/{id}                                | Buscar produto por id                                  |
+| POST   | /produtos                                     | Criar produto                                          |
+| PUT    | /produtos                                     | Atualizar produto                                      |
+| DELETE | /produtos/{id}                                | Remover produto                                        |
+
+### Pedidos
+
+| Método | Endpoint                                      | Descrição                                              |
+| ------ | --------------------------------------------- |--------------------------------------------------------|
+| GET    | /pedidos                                      | Listar pedidos                                         |
+| GET    | /pedidos/{id}                                 | Buscar pedido por id                                   |
+| POST   | /pedidos                                      | Criar pedido                                           |
+| PUT    | /pedidos/pagamento/{id}                       | Marcar pagamento do pedido                             |
+| PUT    | /pedidos/envio/{id}                           | Marcar envio/entrega do pedido                         |
+| PUT    | /pedidos/cancelamento/{id}                    | Cancelar pedido                                        |
+
+### Carrinho
+
+| Método | Endpoint                                      | Descrição                                              |
+| ------ | --------------------------------------------- |--------------------------------------------------------|
+| GET    | /carrinho                                     | Ver carrinho do usuário                                |
+| PUT    | /carrinho/adicionar                           | Adicionar item ao carrinho                             |
+| PUT    | /carrinho/remover                             | Remover item do carrinho                               |
+| PUT    | /carrinho/limpar                              | Limpar carrinho                                        |
+| PUT    | /carrinho/finalizar                           | Finalizar pedido a partir do carrinho                  |
+
+### Authentication
+
+| Método | Endpoint                                      | Descrição                                              |
+| ------ |-----------------------------------------------|--------------------------------------------------------|
+| POST   | /auth/login                                   | Autenticação / login (gera token)                      |
+| POST   | /auth/cadastro                                | Cadastro de usuário (Apenas clientes)                  |
+
 ---
+
+### OBS: O usuário administrador deve estar criado no banco com antecedência para que novos funcionários sejam criados.
 
 ## Coleção POSTMAN
 
-[Link do arquivo JSON da coleção POSTMAN para teste dos END-POINTS](API Rei dos Piratas.postman_collection.json)
+[Link do arquivo JSON da coleção POSTMAN para teste dos END-POINTS](API%20Rei%20dos%20Piratas.postman_collection.json)
 
 ## Tecnologias Utilizadas
 
@@ -118,7 +206,6 @@ Plugins relevantes configurados no build:
 * spring-boot-maven-plugin — empacotamento/execução da aplicação
 
 > Observação: versões seguem as definidas pelo Spring Boot parent (3.5.6). O driver Oracle (ojdbc11) é referenciado sem versão explícita no pom (é resolvido em tempo de execução ou via repositório configurado).
-...
 
 ## Observações
 

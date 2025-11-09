@@ -30,7 +30,7 @@ public abstract class Usuario implements UsuarioDetails {
 
     @JsonProperty("username")
     @NotNull(message = "O nome não pode ser nulo")
-    @Length(max=30, message = "O nome de usuário deve ter de 3 a 30 caracteres")
+    @Length(min=3, max=30, message = "O nome de usuário deve ter de 3 a 30 caracteres")
     private String userName;
 
     @NotNull(message = "O nome completo não deve estar nulo")
