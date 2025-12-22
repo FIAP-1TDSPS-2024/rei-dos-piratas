@@ -8,6 +8,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -19,14 +20,14 @@ public class Funcionario extends Usuario{
 
     @Digits(fraction = 2, integer = 6, message = "O salario deve ter até 8 digitos com 2 dígitos após a vírgula")
     @DecimalMin(value = "0.0", message = "O salario não pode ser negativo")
-    float salario;
+    BigDecimal salario;
 
     public Funcionario(String userName,
                        String nomeCompleto,
                        String email,
                        String senha,
                        Role role,
-                       float salario) {
+                       BigDecimal salario) {
         super(userName, nomeCompleto, email, senha, role);
         this.salario = salario;
     }
@@ -40,7 +41,7 @@ public class Funcionario extends Usuario{
                        LocalDate dataCadastro,
                        Role role,
                        LocalDate dataDemissao,
-                       float salario) {
+                       BigDecimal salario) {
         super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, role);
         this.dataDemissao = dataDemissao;
         this.salario = salario;

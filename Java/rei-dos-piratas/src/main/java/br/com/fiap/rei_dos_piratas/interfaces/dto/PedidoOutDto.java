@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public record PedidoOutDto(
 
         @Digits(fraction = 2, integer = 6, message = "O preço total do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
         @DecimalMin(value = "0.0", inclusive = false, message = "O preço total não pode ser negativo")
-        float valorTotal,
+        BigDecimal valorTotal,
 
         @NotNull(message = "O status do pedido não pode ser nulo")
         StatusEnum status,

@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record FuncionarioOutDto(
@@ -36,5 +37,5 @@ public record FuncionarioOutDto(
 
         @Digits(fraction = 2, integer = 6, message = "O salario deve ter até 8 digitos com 2 dígitos após a vírgula")
         @DecimalMin(value = "0.0", message = "O salario não pode ser negativo")
-        float salario
+        BigDecimal salario
 ) {}

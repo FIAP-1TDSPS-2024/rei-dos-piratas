@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class JpaFuncionarioEntity extends JpaUsuarioEntity {
 
     private LocalDate dataDemissao;
 
-    private float salario;
+    private BigDecimal salario;
 
     public JpaFuncionarioEntity(Long id,
                                 String userName,
@@ -31,7 +32,7 @@ public class JpaFuncionarioEntity extends JpaUsuarioEntity {
                                 LocalDate dataCadastro,
                                 Role role,
                                 LocalDate dataDemissao,
-                                float salario) {
+                                BigDecimal salario) {
         super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, role);
         this.dataDemissao = dataDemissao;
         this.salario = salario;

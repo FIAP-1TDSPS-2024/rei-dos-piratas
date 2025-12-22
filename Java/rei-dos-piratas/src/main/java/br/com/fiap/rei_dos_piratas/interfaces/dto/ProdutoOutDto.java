@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
+import java.math.BigDecimal;
+
 public record ProdutoOutDto(
 
         @NotNull(message = "O ID não deve estar nulo para exibição ao usuário")
@@ -24,7 +26,7 @@ public record ProdutoOutDto(
 
         @Digits(fraction = 2, integer = 6, message = "O preço do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
         @DecimalMin(value = "0.0", inclusive = false, message = "O preço não pode ser negativo")
-        float preco,
+        BigDecimal preco,
 
         @Digits(fraction = 0, integer = 6, message = "O estoque deve ter 6 dígitos sem dígitos após a vírgula")
         @DecimalMin(value = "0", inclusive = false, message = "O estoque não pode ser negativo")
@@ -32,15 +34,15 @@ public record ProdutoOutDto(
 
         @Digits(fraction = 0, integer = 6, message = "A altura do produto deve ter até 8 digitos com dois após a vírgula")
         @DecimalMin(value = "0", inclusive = false, message = "A altura do produto não pode ser negativa")
-        float altura,
+        BigDecimal altura,
 
         @Digits(fraction = 0, integer = 6, message = "A largura do produto deve ter até 8 digitos com dois após a vírgula")
         @DecimalMin(value = "0", inclusive = false, message = "A largura do produto não pode ser negativa")
-        float largura,
+        BigDecimal largura,
 
         @Digits(fraction = 0, integer = 6, message = "A profundidade do produto deve ter até 8 digitos com dois após a vírgula")
         @DecimalMin(value = "0", inclusive = false, message = "A profundidade do produto não pode ser negativa")
-        float profundidade,
+        BigDecimal profundidade,
 
         @NotNull(message = "A condição do produto é obrigatória(NOVO ou USADO)")
         CondicaoEnum condicao

@@ -5,6 +5,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEnti
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class JpaPedidoEntity {
     private LocalDate dataCancelamento;
 
     @Column(nullable = false)
-    private float valorTotal;
+    private BigDecimal valorTotal;
 
     @Column(nullable = false, length = 50)
     private StatusEnum status;

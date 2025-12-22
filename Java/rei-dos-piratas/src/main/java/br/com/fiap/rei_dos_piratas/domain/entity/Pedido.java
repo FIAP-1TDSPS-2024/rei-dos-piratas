@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class Pedido {
 
     @Digits(fraction = 2, integer = 6, message = "O preço total do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
     @DecimalMin(value = "0.0", inclusive = false, message = "O preço total não pode ser negativo")
-    private float valorTotal;
+    private BigDecimal valorTotal;
 
     @NotNull(message = "O status do pedido não pode ser nulo")
     private StatusEnum status;
@@ -41,10 +43,12 @@ public class Pedido {
     public Pedido(Cliente cliente, List<ItemProdutoPedido> produtosAdicionados) {
         this.dataPedido = LocalDate.now();
         this.status = StatusEnum.AGUARDANDO_PAGAMENTO;
-        this.valorTotal = (float) produtosAdicionados
+        this.valorTotal = produtosAdicionados
                 .stream()
-                .mapToDouble(item -> item.getQuantidade() * item.getProduto().getPreco())
-                .sum();
+                .map(item ->
+                        item.getProduto().getPreco()
+                                .multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         this.cliente = cliente;
         this.produtosAdicionados = produtosAdicionados;
     }

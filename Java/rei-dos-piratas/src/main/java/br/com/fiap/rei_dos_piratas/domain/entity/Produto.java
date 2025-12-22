@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -25,7 +26,7 @@ public class Produto {
 
     @Digits(fraction = 2, integer = 6, message = "O preço do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
     @DecimalMin(value = "0.0", inclusive = false, message = "O preço não pode ser negativo")
-    private float preco;
+    private BigDecimal preco;
 
     @Digits(fraction = 0, integer = 6, message = "O estoque deve ter 6 dígitos sem dígitos após a vírgula")
     @DecimalMin(value = "0", inclusive = false, message = "O estoque não pode ser negativo")
@@ -33,22 +34,22 @@ public class Produto {
 
     @Digits(fraction = 0, integer = 6, message = "A altura do produto deve ter até 8 digitos com dois após a vírgula")
     @DecimalMin(value = "0", inclusive = false, message = "A altura do produto não pode ser negativa")
-    private float altura;
+    private BigDecimal altura;
 
     @Digits(fraction = 0, integer = 6, message = "A largura do produto deve ter até 8 digitos com dois após a vírgula")
     @DecimalMin(value = "0", inclusive = false, message = "A largura do produto não pode ser negativa")
-    private float largura;
+    private BigDecimal largura;
 
     @Digits(fraction = 0, integer = 6, message = "A profundidade do produto deve ter até 8 digitos com dois após a vírgula")
     @DecimalMin(value = "0", inclusive = false, message = "A profundidade do produto não pode ser negativa")
-    private float profundidade;
+    private BigDecimal profundidade;
 
     @NotNull(message = "A condição do produto é obrigatória(NOVO ou USADO)")
     private CondicaoEnum condicao;
 
     private Funcionario funcionario;
 
-    public Produto(String nome, String descricao, String enderecoImagem, float preco, int estoque, float altura, float largura, float profundidade, CondicaoEnum condicao, Funcionario funcionario) {
+    public Produto(String nome, String descricao, String enderecoImagem, BigDecimal preco, int estoque, BigDecimal altura, BigDecimal largura, BigDecimal profundidade, CondicaoEnum condicao, Funcionario funcionario) {
         this.nome = nome;
         this.descricao = descricao;
         this.enderecoImagem = enderecoImagem;

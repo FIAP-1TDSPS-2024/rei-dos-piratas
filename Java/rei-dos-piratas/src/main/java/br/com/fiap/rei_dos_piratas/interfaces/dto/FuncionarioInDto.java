@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
+import java.math.BigDecimal;
+
 public record FuncionarioInDto(
         @NotNull(message = "O nome não pode ser nulo")
         @Length(max=30, message = "O nome de usuário deve ter de 3 a 30 caracteres")
@@ -28,6 +30,6 @@ public record FuncionarioInDto(
 
         @Digits(fraction = 2, integer = 6, message = "O salario deve ter até 8 digitos com 2 dígitos após a vírgula")
         @DecimalMin(value = "0.0", message = "O salario não pode ser negativo")
-        float salario
+        BigDecimal salario
 ) {
 }

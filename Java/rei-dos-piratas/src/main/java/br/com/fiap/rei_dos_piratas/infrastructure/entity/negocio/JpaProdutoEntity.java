@@ -5,6 +5,8 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaFuncionario
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -27,16 +29,16 @@ public class JpaProdutoEntity {
     private String enderecoImagem;
 
     @Column(nullable = false)
-    private float preco;
+    private BigDecimal preco;
 
     @Column(nullable = false)
     private int estoque;
 
-    private float altura;
+    private BigDecimal altura;
 
-    private float largura;
+    private BigDecimal largura;
 
-    private float profundidade;
+    private BigDecimal profundidade;
 
     @Column(nullable = false, length = 255)
     private CondicaoEnum condicao;
