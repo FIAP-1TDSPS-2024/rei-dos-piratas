@@ -2,12 +2,14 @@ package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 
 import java.time.LocalDate;
 
 @Getter
+@AllArgsConstructor
 public class Token {
     private Long id;
 
