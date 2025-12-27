@@ -20,4 +20,9 @@ public class TokenRepositoryImpl implements TokenRepository {
                 this.repository.save(
                         JpaTokenMapper.toJpaEntity(token)));
     }
+
+    public Token findLastToken() {
+        return JpaTokenMapper.toEntity(
+                this.repository.findLastToken());
+    }
 }

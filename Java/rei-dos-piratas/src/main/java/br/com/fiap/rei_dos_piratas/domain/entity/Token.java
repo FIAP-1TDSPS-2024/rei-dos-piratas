@@ -25,15 +25,22 @@ public class Token {
     @NotNull(message = "A data de expiração do token não pode ser nula")
     private LocalDate dataExpiracao;
 
-    public Token(String token, String refreshToken, LocalDate dataCriacao, int expiresInSeconds) {
+    public Token(String token, String refreshToken, int expiresInSeconds) {
         this.token = token;
         this.refreshToken = refreshToken;
-        this.dataCriacao = dataCriacao;
+        this.dataCriacao = LocalDate.now();
 
         //Conversao de expiração em segundos para expiração em dias
         int expiresInDays = expiresInSeconds/86400;
 
         //Definição de data de expiração do Token
         this.dataExpiracao = dataCriacao.plusDays(expiresInDays);
+    }
+
+    public boolean isTokenValid(){
+        if(dataExpiracao.isBefore(LocalDate.now())){
+            return false;
+        }
+        return true;
     }
 }
