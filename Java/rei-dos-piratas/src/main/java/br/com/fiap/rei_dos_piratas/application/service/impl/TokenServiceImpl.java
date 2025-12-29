@@ -49,6 +49,7 @@ public class TokenServiceImpl implements TokenService {
 
         //URL melhor envio para fretes
         String url = System.getenv("ME_URL");
+        url = url + "/oauth/token";
 
         //Criando um objeto Gson
         Gson gson = new Gson();
@@ -59,7 +60,7 @@ public class TokenServiceImpl implements TokenService {
         String redirectUri = System.getenv("ME_REDIRECT_URI");
 
         //Criar objeto para request
-        TokenRequestDto dto = new TokenRequestDto("authorization_code", clientId, clientSecret, redirectUri, refreshToken);
+        TokenRequestDto dto = new TokenRequestDto("refresh_token", clientId, clientSecret, redirectUri, refreshToken);
 
         //request
         HttpPost request = new HttpPost(url);
