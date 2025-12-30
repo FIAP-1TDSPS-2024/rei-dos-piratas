@@ -1,10 +1,10 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.AuthResponse;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.LoginRequest;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.LoginRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -10,8 +10,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;

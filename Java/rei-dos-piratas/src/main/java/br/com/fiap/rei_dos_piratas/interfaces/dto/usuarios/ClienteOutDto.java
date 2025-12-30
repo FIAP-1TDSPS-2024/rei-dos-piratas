@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto;
+package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
@@ -7,11 +7,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 public record ClienteOutDto(
         @NotNull(message = "O ID não deve estar nulo para exibição ao usuário")

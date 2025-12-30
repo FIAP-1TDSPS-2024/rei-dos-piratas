@@ -6,9 +6,7 @@ import br.com.fiap.rei_dos_piratas.application.service.TokenService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.ProdutoFreteDtoMapper;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.TokenRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.TokenResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.ConsultaFreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.FreteServiceDto;
 import com.fasterxml.jackson.core.JsonParser;
@@ -24,6 +22,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -67,9 +66,10 @@ public class FreteServiceImpl implements FreteService {
 
         // Authorization
         Token token = tokenService.findLastToken();
-        request.setHeader("Authorization", "Bearer" + token.getToken());
+        request.setHeader("Authorization", "Bearer " + token.getToken());
 
         request.setHeader("Accept", "application/json");
+        request.setHeader("User-Agent", "jonascamp2004@gmail.com");
 
         request.setEntity(stringEntity);
 
@@ -88,17 +88,22 @@ public class FreteServiceImpl implements FreteService {
         HttpEntity entity = response.getEntity();
 
         if (entity != null){
-            String result = null;
             try {
+                String json = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+
+                System.out.println(json);
+
                 ObjectMapper mapper = new ObjectMapper();
-                List<FreteServiceDto> services = mapper.readValue((JsonParser) entity, new TypeReference<List<FreteServiceDto>>() {});
-                return services;
+                return mapper.readValue(
+                        json,
+                        new TypeReference<List<FreteServiceDto>>() {}
+                );
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
         else{
-            throw new ResourceNotFoundException("Não foi possível gerar um novo token com o refresh token.");
+            throw new ResourceNotFoundException("Não existem serviços disponíveis para esa entrega");
         }
     }
 }

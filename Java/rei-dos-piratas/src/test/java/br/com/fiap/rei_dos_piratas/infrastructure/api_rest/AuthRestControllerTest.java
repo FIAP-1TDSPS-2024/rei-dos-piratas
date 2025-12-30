@@ -1,10 +1,11 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.AuthResponse;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.EnderecoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.LoginRequest;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.EnderecoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.LoginRequest;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -65,7 +65,7 @@ class AuthRestControllerTest {
         // criar ClienteOutDto completo a partir do DTO de entrada para manter consistência
         br.com.fiap.rei_dos_piratas.domain.entity.Cliente clienteEntity = br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper.toEntity(in);
         clienteEntity.setId(1L);
-        br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto out = br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper.toDto(clienteEntity);
+        ClienteOutDto out = br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper.toDto(clienteEntity);
 
         when(authController.cadastrar(any(ClienteInDto.class))).thenReturn(out);
 

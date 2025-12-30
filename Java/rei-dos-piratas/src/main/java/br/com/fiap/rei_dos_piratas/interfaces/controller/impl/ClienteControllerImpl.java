@@ -5,8 +5,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 
 import java.util.List;
 

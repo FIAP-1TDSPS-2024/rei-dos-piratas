@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 
 import java.util.List;
 

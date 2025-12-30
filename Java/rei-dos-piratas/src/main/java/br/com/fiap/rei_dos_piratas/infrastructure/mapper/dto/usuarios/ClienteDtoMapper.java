@@ -1,8 +1,8 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ClienteOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 
 public class ClienteDtoMapper {
 

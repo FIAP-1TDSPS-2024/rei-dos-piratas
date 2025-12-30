@@ -1,7 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.CarrinhoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CarrinhoOutDto;
 
 public class CarrinhoDtoMapper {
 

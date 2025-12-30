@@ -3,16 +3,14 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

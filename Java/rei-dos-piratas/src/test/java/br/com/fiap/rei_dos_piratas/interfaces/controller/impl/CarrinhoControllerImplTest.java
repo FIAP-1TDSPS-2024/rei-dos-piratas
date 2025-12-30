@@ -8,6 +8,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -72,7 +73,7 @@ class CarrinhoControllerImplTest {
         when(carrinhoService.adicionarProduto(any(ItemProdutoPedido.class))).thenReturn(carrinho);
 
         // Act
-        carrinhoController.adicionarProduto(new br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto(produtoId, quantidade));
+        carrinhoController.adicionarProduto(new ItemProdutoInDto(produtoId, quantidade));
 
         // Assert
         verify(produtoService, times(1)).findById(produtoId);
@@ -117,7 +118,7 @@ class CarrinhoControllerImplTest {
         when(carrinhoService.removerProduto(any(ItemProdutoPedido.class))).thenReturn(carrinho);
 
         // Act
-        carrinhoController.removerProduto(new br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto(produtoId, quantidade));
+        carrinhoController.removerProduto(new ItemProdutoInDto(produtoId, quantidade));
 
         // Assert
         verify(produtoService, times(1)).findById(produtoId);

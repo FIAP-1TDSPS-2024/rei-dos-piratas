@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto;
+package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;

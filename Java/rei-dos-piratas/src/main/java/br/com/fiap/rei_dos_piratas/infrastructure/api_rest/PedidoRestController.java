@@ -1,9 +1,8 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ProdutoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

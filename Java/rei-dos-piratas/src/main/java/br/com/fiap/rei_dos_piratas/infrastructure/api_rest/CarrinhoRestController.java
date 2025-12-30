@@ -1,13 +1,9 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
-import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
-import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.CarrinhoDtoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.CarrinhoOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.ItemProdutoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.PedidoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CarrinhoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

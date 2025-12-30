@@ -1,7 +1,6 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto;
+package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
-import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +9,6 @@ import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 public record ClienteInDto(
         @NotNull(message = "O nome não pode ser nulo")

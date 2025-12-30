@@ -1,8 +1,8 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.FuncionarioOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioOutDto;
 
 public class FuncionarioDtoMapper {
 
