@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.ProdutoFreteDto;
@@ -13,7 +13,7 @@ public class ProdutoFreteDtoMapper {
                 produto.getLargura(),
                 produto.getAltura(),
                 produto.getProfundidade(),
-                BigDecimal.valueOf(0.3),
+                produto.getPeso(),
                 produto.getPreco(),
                 quantidade
         );

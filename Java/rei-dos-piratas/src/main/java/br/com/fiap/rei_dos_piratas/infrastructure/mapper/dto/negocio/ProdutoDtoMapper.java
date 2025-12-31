@@ -18,6 +18,7 @@ public class ProdutoDtoMapper {
                 produtoDto.estoque(),
                 produtoDto.altura(),
                 produtoDto.largura(),
+                produtoDto.peso(),
                 produtoDto.profundidade(),
                 produtoDto.condicao(),
                 null
@@ -39,6 +40,7 @@ public class ProdutoDtoMapper {
                 produto.getAltura(),
                 produto.getLargura(),
                 produto.getProfundidade(),
+                produto.getPeso(),
                 produto.getCondicao()
         );
     }

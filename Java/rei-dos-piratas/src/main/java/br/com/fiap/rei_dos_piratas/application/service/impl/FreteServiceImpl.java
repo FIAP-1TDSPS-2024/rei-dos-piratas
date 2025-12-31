@@ -4,12 +4,12 @@ import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.application.service.TokenService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.ProdutoFreteDtoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete.ProdutoFreteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.ConsultaFreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.FreteServiceDto;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -22,7 +22,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +30,12 @@ public class FreteServiceImpl implements FreteService {
 
     private final TokenService tokenService;
     private final ProdutoService produtoService;
+    private final ObjectMapper mapper;
 
-    public FreteServiceImpl(TokenService tokenService, ProdutoService produtoService) {
+    public FreteServiceImpl(TokenService tokenService, ProdutoService produtoService, ObjectMapper mapper) {
         this.tokenService = tokenService;
         this.produtoService = produtoService;
+        this.mapper = mapper;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class FreteServiceImpl implements FreteService {
         try {
             response = httpClient.execute(request);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ApiExternaException("Erro temporário no cálculo de frete. Tente novamente mais tarde.");
         }
 
         HttpEntity entity = response.getEntity();
@@ -91,9 +92,6 @@ public class FreteServiceImpl implements FreteService {
             try {
                 String json = EntityUtils.toString(entity, StandardCharsets.UTF_8);
 
-                System.out.println(json);
-
-                ObjectMapper mapper = new ObjectMapper();
                 return mapper.readValue(
                         json,
                         new TypeReference<List<FreteServiceDto>>() {}
@@ -103,7 +101,7 @@ public class FreteServiceImpl implements FreteService {
             }
         }
         else{
-            throw new ResourceNotFoundException("Não existem serviços disponíveis para esa entrega");
+            throw new ResourceNotFoundException("Não existem serviços disponíveis para essa entrega");
         }
     }
 }

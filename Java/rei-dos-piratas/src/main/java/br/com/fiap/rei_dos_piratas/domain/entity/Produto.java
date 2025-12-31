@@ -44,12 +44,16 @@ public class Produto {
     @DecimalMin(value = "0", inclusive = false, message = "A profundidade do produto não pode ser negativa")
     private BigDecimal profundidade;
 
+    @Digits(fraction = 0, integer = 6, message = "A profundidade do produto deve ter até 8 digitos com dois após a vírgula")
+    @DecimalMin(value = "0", inclusive = false, message = "O peso do produto não pode ser negativa")
+    private BigDecimal peso;
+
     @NotNull(message = "A condição do produto é obrigatória(NOVO ou USADO)")
     private CondicaoEnum condicao;
 
     private Funcionario funcionario;
 
-    public Produto(String nome, String descricao, String enderecoImagem, BigDecimal preco, int estoque, BigDecimal altura, BigDecimal largura, BigDecimal profundidade, CondicaoEnum condicao, Funcionario funcionario) {
+    public Produto(String nome, String descricao, String enderecoImagem, BigDecimal preco, int estoque, BigDecimal altura, BigDecimal largura, BigDecimal profundidade, BigDecimal peso, CondicaoEnum condicao, Funcionario funcionario) {
         this.nome = nome;
         this.descricao = descricao;
         this.enderecoImagem = enderecoImagem;
@@ -57,6 +61,7 @@ public class Produto {
         this.estoque = estoque;
         this.altura = altura;
         this.largura = largura;
+        this.peso = peso;
         this.profundidade = profundidade;
         this.condicao = condicao;
         this.funcionario = funcionario;

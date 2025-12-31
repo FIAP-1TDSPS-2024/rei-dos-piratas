@@ -67,6 +67,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
+    @ExceptionHandler(ApiExternaException.class)
+    public ResponseEntity<ErrorResponse> handleApiExternaException(ApiExternaException e) {
+        final ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleResourceException(Exception e) {
         e.printStackTrace();

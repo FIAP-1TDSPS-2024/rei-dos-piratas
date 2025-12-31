@@ -17,6 +17,7 @@ public class JpaProdutoMapper {
                 jpaProdutoEntity.getAltura(),
                 jpaProdutoEntity.getLargura(),
                 jpaProdutoEntity.getProfundidade(),
+                jpaProdutoEntity.getPeso(),
                 jpaProdutoEntity.getCondicao(),
                 JpaFuncionarioMapper.toEntity(jpaProdutoEntity.getFuncionario())
         );
@@ -33,6 +34,7 @@ public class JpaProdutoMapper {
                 produto.getAltura(),
                 produto.getLargura(),
                 produto.getProfundidade(),
+                produto.getPeso(),
                 produto.getCondicao(),
                 JpaFuncionarioMapper.toJpaEntity(produto.getFuncionario())
         );

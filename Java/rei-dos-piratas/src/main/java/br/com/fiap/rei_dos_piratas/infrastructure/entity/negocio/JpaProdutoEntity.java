@@ -40,6 +40,8 @@ public class JpaProdutoEntity {
 
     private BigDecimal profundidade;
 
+    private BigDecimal peso;
+
     @Column(nullable = false, length = 255)
     private CondicaoEnum condicao;
 

@@ -40,6 +40,10 @@ public record ProdutoInDto(
         @DecimalMin(value = "0", inclusive = false, message = "A profundidade do produto não pode ser negativa")
         BigDecimal profundidade,
 
+        @Digits(fraction = 0, integer = 6, message = "A profundidade do produto deve ter até 8 digitos com dois após a vírgula")
+        @DecimalMin(value = "0", inclusive = false, message = "O peso do produto não pode ser negativa")
+        BigDecimal peso,
+
         @NotNull(message = "A condição do produto é obrigatória(NOVO ou USADO)")
         CondicaoEnum condicao,
 

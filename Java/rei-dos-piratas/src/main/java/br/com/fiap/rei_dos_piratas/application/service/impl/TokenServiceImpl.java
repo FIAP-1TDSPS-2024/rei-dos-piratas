@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.TokenService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.TokenRequestDto;
@@ -79,7 +80,7 @@ public class TokenServiceImpl implements TokenService {
         try {
             response = httpClient.execute(request);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ApiExternaException("Erro temporário no serviço de frete. Tente novamente mais tarde.");
         }
 
         HttpEntity entity = response.getEntity();
