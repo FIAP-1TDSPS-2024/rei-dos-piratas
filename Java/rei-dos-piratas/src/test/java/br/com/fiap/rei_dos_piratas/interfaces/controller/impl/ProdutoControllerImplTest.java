@@ -11,6 +11,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,18 +46,19 @@ class ProdutoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(1000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -83,18 +85,19 @@ class ProdutoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(1000));
 
         Produto produto1 = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -103,11 +106,12 @@ class ProdutoControllerImplTest {
                 "Action Figure One Piece Zoro Sanzen Sekai",
                 "Action figure do Zoro com as três espadas em posição de ataque",
                 "http://imagem.com/zoro.jpg",
-                180.00F,
-                5,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -140,17 +144,18 @@ class ProdutoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(1000));
 
         Produto produtoParaCriar = new Produto(
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -159,11 +164,12 @@ class ProdutoControllerImplTest {
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -191,18 +197,19 @@ class ProdutoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(1000));
 
         Produto produtoAntigo = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -211,11 +218,12 @@ class ProdutoControllerImplTest {
                 "Action Figure One Piece Luffy Gear 5 Edição Especial",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis edição especial",
                 "http://imagem.com/luffy-special.jpg",
-                200.00F,
-                15,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 

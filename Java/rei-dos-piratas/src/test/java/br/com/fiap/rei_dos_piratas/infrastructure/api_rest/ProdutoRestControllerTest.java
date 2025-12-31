@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,11 +50,12 @@ class ProdutoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
+                BigDecimal.valueOf(100),
                 50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -71,8 +73,8 @@ class ProdutoRestControllerTest {
                 .andExpect(jsonPath("$.pageItems", hasSize(1)))
                 .andExpect(jsonPath("$.pageItems[0].id", is(1)))
                 .andExpect(jsonPath("$.pageItems[0].nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.pageItems[0].preco", is(100.0)))
-                .andExpect(jsonPath("$.pageItems[0].estoque", is(50)));
+                .andExpect(jsonPath("$.pageItems[0].preco", is(BigDecimal.valueOf(100))))
+                .andExpect(jsonPath("$.pageItems[0].estoque", is(BigDecimal.valueOf(50))));
     }
 
     @Test
@@ -82,11 +84,12 @@ class ProdutoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -96,7 +99,7 @@ class ProdutoRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.preco", is(100.0)))
+                .andExpect(jsonPath("$.preco", is(BigDecimal.valueOf(100))))
                 .andExpect(jsonPath("$.condicao", is("NOVO")));
     }
 
@@ -106,11 +109,12 @@ class ProdutoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 1L
         );
@@ -120,11 +124,12 @@ class ProdutoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -141,7 +146,7 @@ class ProdutoRestControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.preco", is(100.0)))
+                .andExpect(jsonPath("$.preco", is(BigDecimal.valueOf(100))))
                 .andExpect(jsonPath("$.condicao", is("NOVO")));
     }
 
@@ -152,11 +157,12 @@ class ProdutoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 null
         );
@@ -166,11 +172,12 @@ class ProdutoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -187,7 +194,7 @@ class ProdutoRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.preco", is(100.0)));
+                .andExpect(jsonPath("$.preco", is(BigDecimal.valueOf(100))));
     }
 
     @Test

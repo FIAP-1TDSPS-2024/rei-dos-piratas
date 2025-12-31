@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,10 +104,10 @@ class PedidoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(1000));
     }
 
-    private Produto criarProduto(Long id, String nome, int estoque, float preco) {
+    private Produto criarProduto(Long id, String nome, int estoque, BigDecimal preco) {
         return new Produto(
                 id,
                 nome,
@@ -114,9 +115,10 @@ class PedidoServiceImplTest {
                 "http://imagem.com/" + nome + ".jpg",
                 preco,
                 estoque,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 criarFuncionario());
     }
@@ -125,14 +127,14 @@ class PedidoServiceImplTest {
     void findAll_DeveRetornarPaginaDePedidos() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido1 = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido1 = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
-        Pedido pedido2 = new Pedido(2L, LocalDate.now(), null, null, 300.0f,
+        Pedido pedido2 = new Pedido(2L, LocalDate.now(), null, null, BigDecimal.valueOf(300),
                 StatusEnum.EM_TRANSITO, cliente, itens);
 
         List<Pedido> pedidos = List.of(pedido1, pedido2);
@@ -172,12 +174,12 @@ class PedidoServiceImplTest {
     void findById_DeveRetornarPedidoQuandoExistir() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -209,15 +211,15 @@ class PedidoServiceImplTest {
     void fazerPedido_DeveCriarPedidoEAtualizarEstoque() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 2));
 
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
-        Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
@@ -236,12 +238,12 @@ class PedidoServiceImplTest {
     void fazerPedido_DeveLancarExcecaoQuandoEstoqueInsuficiente() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 1, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 1, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 5)); // Quantidade maior que estoque
 
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, 500.0f,
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, BigDecimal.valueOf(500),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
         // Act & Assert
@@ -258,17 +260,17 @@ class PedidoServiceImplTest {
     void fazerPedido_DeveAtualizarEstoqueDeMultiplosProdutos() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto1 = criarProduto(1L, "Produto 1", 10, 100.0f);
-        Produto produto2 = criarProduto(2L, "Produto 2", 5, 150.0f);
+        Produto produto1 = criarProduto(1L, "Produto 1", 10, BigDecimal.valueOf(100));
+        Produto produto2 = criarProduto(2L, "Produto 2", 5, BigDecimal.valueOf(150));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto1, 2));
         itens.add(new ItemProdutoPedido(produto2, 1));
 
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, 350.0f,
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, BigDecimal.valueOf(350),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
-        Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, 350.0f,
+        Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(350),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
@@ -287,12 +289,12 @@ class PedidoServiceImplTest {
     void pagarPedido_DeveAtualizarStatusParaPreparandoEnvio() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -311,12 +313,12 @@ class PedidoServiceImplTest {
     void pagarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.EM_TRANSITO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -334,12 +336,12 @@ class PedidoServiceImplTest {
     void enviarPedido_DeveAtualizarStatusParaEmTransito() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.PREPARANDO_ENVIO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -358,12 +360,12 @@ class PedidoServiceImplTest {
     void enviarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -381,12 +383,12 @@ class PedidoServiceImplTest {
     void entregarPedido_DeveAtualizarStatusParaEntregue() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.EM_TRANSITO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -405,12 +407,12 @@ class PedidoServiceImplTest {
     void entregarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.PREPARANDO_ENVIO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -428,12 +430,12 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveCancelarPedidoEDevolverEstoque() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 8, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 8, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -454,14 +456,14 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveDevolverEstoqueDeMultiplosProdutos() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto1 = criarProduto(1L, "Produto 1", 8, 100.0f);
-        Produto produto2 = criarProduto(2L, "Produto 2", 4, 150.0f);
+        Produto produto1 = criarProduto(1L, "Produto 1", 8, BigDecimal.valueOf(100));
+        Produto produto2 = criarProduto(2L, "Produto 2", 4, BigDecimal.valueOf(150));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto1, 2));
         itens.add(new ItemProdutoPedido(produto2, 1));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 350.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(350),
                 StatusEnum.PREPARANDO_ENVIO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -483,12 +485,12 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveLancarExcecaoQuandoJaEstaCancelado() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.CANCELADO, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
@@ -507,12 +509,12 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveLancarExcecaoQuandoJaFoiEntregue() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, 200.0f,
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
                 StatusEnum.ENTREGUE, cliente, itens);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);

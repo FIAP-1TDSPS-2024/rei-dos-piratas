@@ -11,6 +11,7 @@ import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -41,10 +42,10 @@ class ProdutoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(1000.00));
     }
 
-    private Produto criarProduto(Long id, String nome, int estoque, float preco) {
+    private Produto criarProduto(Long id, String nome, int estoque, BigDecimal preco) {
         return new Produto(
                 id,
                 nome,
@@ -52,9 +53,10 @@ class ProdutoServiceImplTest {
                 "http://imagem.com/" + nome + ".jpg",
                 preco,
                 estoque,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 criarFuncionario());
     }
@@ -62,7 +64,7 @@ class ProdutoServiceImplTest {
     @Test
     void findById_DeveRetornarProdutoQuandoExistir() {
         // Arrange
-        Produto produto = criarProduto(1L, "Produto Teste", 10, 100.0f);
+        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
         when(produtoRepository.findById(1L)).thenReturn(produto);
 
         // Act
@@ -74,7 +76,7 @@ class ProdutoServiceImplTest {
         assertThat(resultado.getId()).isEqualTo(1L);
         assertThat(resultado.getNome()).isEqualTo("Produto Teste");
         assertThat(resultado.getEstoque()).isEqualTo(10);
-        assertThat(resultado.getPreco()).isEqualTo(100.0f);
+        assertThat(resultado.getPreco()).isEqualTo(BigDecimal.valueOf(100));
     }
 
     @Test
@@ -93,9 +95,9 @@ class ProdutoServiceImplTest {
     @Test
     void findAll_DeveRetornarPaginaDeProdutos() {
         // Arrange
-        Produto produto1 = criarProduto(1L, "Produto 1", 10, 100.0f);
-        Produto produto2 = criarProduto(2L, "Produto 2", 5, 150.0f);
-        Produto produto3 = criarProduto(3L, "Produto 3", 20, 200.0f);
+        Produto produto1 = criarProduto(1L, "Produto 1", 10, BigDecimal.valueOf(100));
+        Produto produto2 = criarProduto(2L, "Produto 2", 5, BigDecimal.valueOf(100));
+        Produto produto3 = criarProduto(3L, "Produto 3", 20, BigDecimal.valueOf(100));
 
         List<Produto> produtos = List.of(produto1, produto2, produto3);
         Page<Produto> page = new Page<>(1, 0, produtos);
@@ -130,8 +132,8 @@ class ProdutoServiceImplTest {
     @Test
     void findAll_DeveRetornarPaginaComTamanhoDiferente() {
         // Arrange
-        Produto produto1 = criarProduto(1L, "Produto 1", 10, 100.0f);
-        Produto produto2 = criarProduto(2L, "Produto 2", 5, 150.0f);
+        Produto produto1 = criarProduto(1L, "Produto 1", 10, BigDecimal.valueOf(100));
+        Produto produto2 = criarProduto(2L, "Produto 2", 5, BigDecimal.valueOf(150));
 
         List<Produto> produtos = List.of(produto1, produto2);
         Page<Produto> page = new Page<>(5, 1, produtos);
@@ -151,8 +153,8 @@ class ProdutoServiceImplTest {
     @Test
     void create_DeveCriarNovoProduto() {
         // Arrange
-        Produto produtoNovo = criarProduto(null, "Produto Novo", 15, 250.0f);
-        Produto produtoCriado = criarProduto(1L, "Produto Novo", 15, 250.0f);
+        Produto produtoNovo = criarProduto(null, "Produto Novo", 15, BigDecimal.valueOf(250));
+        Produto produtoCriado = criarProduto(1L, "Produto Novo", 15, BigDecimal.valueOf(250));
 
         when(produtoRepository.create(produtoNovo)).thenReturn(produtoCriado);
 
@@ -176,11 +178,12 @@ class ProdutoServiceImplTest {
                 "Produto Usado",
                 "Descrição produto usado",
                 "http://imagem.com/usado.jpg",
-                80.0f,
+                BigDecimal.valueOf(80),
                 3,
-                5.0f,
-                10.0f,
-                15.0f,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.USADO,
                 funcionario);
 
@@ -189,11 +192,12 @@ class ProdutoServiceImplTest {
                 "Produto Usado",
                 "Descrição produto usado",
                 "http://imagem.com/usado.jpg",
-                80.0f,
+                BigDecimal.valueOf(80),
                 3,
-                5.0f,
-                10.0f,
-                15.0f,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.USADO,
                 funcionario);
 
@@ -211,7 +215,7 @@ class ProdutoServiceImplTest {
     @Test
     void update_DeveAtualizarProdutoExistente() {
         // Arrange
-        Produto produtoAtualizado = criarProduto(1L, "Produto Atualizado", 25, 300.0f);
+        Produto produtoAtualizado = criarProduto(1L, "Produto Atualizado", 25, BigDecimal.valueOf(300));
 
         when(produtoRepository.update(produtoAtualizado)).thenReturn(produtoAtualizado);
 
@@ -229,7 +233,7 @@ class ProdutoServiceImplTest {
     @Test
     void update_DeveLancarExcecaoQuandoProdutoNaoExistir() {
         // Arrange
-        Produto produtoInexistente = criarProduto(999L, "Produto Inexistente", 10, 100.0f);
+        Produto produtoInexistente = criarProduto(999L, "Produto Inexistente", 10, BigDecimal.valueOf(300));
 
         when(produtoRepository.update(produtoInexistente)).thenReturn(null);
 
@@ -245,8 +249,8 @@ class ProdutoServiceImplTest {
     @Test
     void update_DeveAtualizarApenasEstoque() {
         // Arrange
-        Produto produtoOriginal = criarProduto(1L, "Produto Original", 10, 100.0f);
-        Produto produtoComEstoqueAtualizado = criarProduto(1L, "Produto Original", 50, 100.0f);
+        Produto produtoOriginal = criarProduto(1L, "Produto Original", 10, BigDecimal.valueOf(100));
+        Produto produtoComEstoqueAtualizado = criarProduto(1L, "Produto Original", 50, BigDecimal.valueOf(100));
 
         when(produtoRepository.update(produtoComEstoqueAtualizado)).thenReturn(produtoComEstoqueAtualizado);
 
@@ -257,13 +261,13 @@ class ProdutoServiceImplTest {
         verify(produtoRepository, times(1)).update(produtoComEstoqueAtualizado);
         assertThat(resultado.getEstoque()).isEqualTo(50);
         assertThat(resultado.getNome()).isEqualTo("Produto Original");
-        assertThat(resultado.getPreco()).isEqualTo(100.0f);
+        assertThat(resultado.getPreco()).isEqualTo(BigDecimal.valueOf(100));
     }
 
     @Test
     void update_DeveAtualizarPreco() {
         // Arrange
-        Produto produtoComPrecoAtualizado = criarProduto(1L, "Produto Teste", 10, 150.0f);
+        Produto produtoComPrecoAtualizado = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(150));
 
         when(produtoRepository.update(produtoComPrecoAtualizado)).thenReturn(produtoComPrecoAtualizado);
 
@@ -284,11 +288,12 @@ class ProdutoServiceImplTest {
                 "Produto Teste",
                 "Descrição atualizada",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(80),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.USADO,
                 funcionario);
 
@@ -331,8 +336,8 @@ class ProdutoServiceImplTest {
     @Test
     void create_DeveCriarProdutoComEstoqueZero() {
         // Arrange
-        Produto produtoSemEstoque = criarProduto(null, "Produto Sem Estoque", 0, 100.0f);
-        Produto produtoCriado = criarProduto(1L, "Produto Sem Estoque", 0, 100.0f);
+        Produto produtoSemEstoque = criarProduto(null, "Produto Sem Estoque", 0, BigDecimal.valueOf(100));
+        Produto produtoCriado = criarProduto(1L, "Produto Sem Estoque", 0, BigDecimal.valueOf(100));
 
         when(produtoRepository.create(produtoSemEstoque)).thenReturn(produtoCriado);
 
@@ -353,11 +358,12 @@ class ProdutoServiceImplTest {
                 "Nome Atualizado",
                 "Nova descrição",
                 "http://nova-imagem.com/produto.jpg",
-                180.0f,
+                BigDecimal.valueOf(80),
                 30,
-                12.0f,
-                22.0f,
-                32.0f,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.USADO,
                 funcionario);
 
@@ -370,7 +376,7 @@ class ProdutoServiceImplTest {
         verify(produtoRepository, times(1)).update(produtoAtualizado);
         assertThat(resultado.getNome()).isEqualTo("Nome Atualizado");
         assertThat(resultado.getDescricao()).isEqualTo("Nova descrição");
-        assertThat(resultado.getPreco()).isEqualTo(180.0f);
+        assertThat(resultado.getPreco()).isEqualTo(BigDecimal.valueOf(80));
         assertThat(resultado.getEstoque()).isEqualTo(30);
         assertThat(resultado.getCondicao()).isEqualTo(CondicaoEnum.USADO);
     }

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,7 +68,7 @@ class FuncionarioRepositoryImplTest {
                 "jonas@gmail.com",
                 "SenhaSegura123",
                 Role.USER,
-                1000.00F);
+                BigDecimal.valueOf(1000.00));
 
         when(repository.findFirstByUserName("jonasdasneves")).thenReturn(null);
         when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(null);
@@ -89,7 +90,7 @@ class FuncionarioRepositoryImplTest {
                 "jonas@gmail.com",
                 "SenhaSegura123",
                 Role.USER,
-                1000.00F);
+                BigDecimal.valueOf(1000.00));
 
         when(repository.findFirstByUserName("duplicado")).thenReturn(new JpaFuncionarioEntity());
 
@@ -106,7 +107,7 @@ class FuncionarioRepositoryImplTest {
                 "jonas@gmail.com",
                 "SenhaSegura123",
                 Role.USER,
-                1000.00F);
+                BigDecimal.valueOf(1000.00));
 
         when(repository.findFirstByUserName("jonasdasneves")).thenReturn(null);
         when(repository.findFirstByEmail("jonas@gmail.com")).thenReturn(new JpaFuncionarioEntity());

@@ -12,6 +12,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,18 +51,19 @@ class CarrinhoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece",
                 "Action figure do Luffy em alta qualidade",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -97,18 +99,19 @@ class CarrinhoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece",
                 "Action figure do Luffy em alta qualidade",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -156,18 +159,19 @@ class CarrinhoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece",
                 "Action figure do Luffy em alta qualidade",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -199,18 +203,19 @@ class CarrinhoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece",
                 "Action figure do Luffy em alta qualidade",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -250,7 +255,7 @@ class CarrinhoControllerImplTest {
         pedido.setProdutosAdicionados(List.of(item));
         pedido.setStatus(StatusEnum.AGUARDANDO_PAGAMENTO);
         pedido.setDataPedido(LocalDate.now());
-        pedido.setValorTotal(300.00F);
+        pedido.setValorTotal(BigDecimal.valueOf(300));
 
         when(carrinhoService.finalizarCompra()).thenReturn(pedido);
 

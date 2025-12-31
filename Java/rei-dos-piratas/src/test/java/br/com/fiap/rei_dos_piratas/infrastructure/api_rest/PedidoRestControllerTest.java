@@ -23,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +57,12 @@ class PedidoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -71,7 +73,7 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtos
         );
@@ -87,7 +89,7 @@ class PedidoRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pageItems", hasSize(1)))
                 .andExpect(jsonPath("$.pageItems[0].id", is(1)))
-                .andExpect(jsonPath("$.pageItems[0].valorTotal", is(200.0)))
+                .andExpect(jsonPath("$.pageItems[0].valorTotal", is(BigDecimal.valueOf(200))))
                 .andExpect(jsonPath("$.pageItems[0].status", is("AGUARDANDO_PAGAMENTO")));
     }
 
@@ -98,11 +100,12 @@ class PedidoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -114,7 +117,7 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtos
         );
@@ -124,7 +127,7 @@ class PedidoRestControllerTest {
         this.mockMvc.perform(get("/pedidos/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(200.0)))
+                .andExpect(jsonPath("$.valorTotal", is(BigDecimal.valueOf(200))))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
     }
@@ -142,11 +145,12 @@ class PedidoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -158,7 +162,7 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtosOut
         );
@@ -175,7 +179,7 @@ class PedidoRestControllerTest {
                         .content(pedidoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(200.0)))
+                .andExpect(jsonPath("$.valorTotal", is(BigDecimal.valueOf(200))))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")));
     }
 
@@ -186,11 +190,12 @@ class PedidoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -202,7 +207,7 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.PREPARANDO_ENVIO,
                 produtos
         );
@@ -222,11 +227,12 @@ class PedidoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -238,7 +244,7 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.EM_TRANSITO,
                 produtos
         );
@@ -258,11 +264,12 @@ class PedidoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -276,7 +283,7 @@ class PedidoRestControllerTest {
                 hoje,
                 hoje,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.ENTREGUE,
                 produtos
         );
@@ -296,11 +303,12 @@ class PedidoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -314,7 +322,7 @@ class PedidoRestControllerTest {
                 hoje,
                 null,
                 hoje,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.CANCELADO,
                 produtos
         );

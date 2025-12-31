@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +58,7 @@ class FuncionarioRestControllerTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         List<FuncionarioOutDto> funcionarios = new ArrayList<FuncionarioOutDto>();
         funcionarios.add(FuncionarioDtoMapper.toDto(funcionario));
@@ -90,7 +91,7 @@ class FuncionarioRestControllerTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         FuncionarioOutDto vendedorDto = FuncionarioDtoMapper.toDto(funcionario);
 
@@ -113,7 +114,7 @@ class FuncionarioRestControllerTest {
                 "jonas@gmail.com",
                 "SenhaSegura123",
                 Role.USER,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(FuncionarioDtoMapper.toEntity(vendedor));
         when(this.funcionarioController.create(vendedor)).thenReturn(funcionarioOutDto);
@@ -147,7 +148,7 @@ class FuncionarioRestControllerTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
         when(funcionarioController.update(any())).thenReturn(funcionarioOutDto);
@@ -182,7 +183,7 @@ class FuncionarioRestControllerTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
         when(funcionarioController.ativarDesativar(any())).thenReturn(funcionarioOutDto);

@@ -22,9 +22,13 @@ import java.nio.charset.StandardCharsets;
 public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository repository;
+    private final Gson gson;
+    private final CloseableHttpClient httpClient;
 
-    public TokenServiceImpl(TokenRepository repository) {
+    public TokenServiceImpl(TokenRepository repository, Gson gson, CloseableHttpClient httpClient) {
         this.repository = repository;
+        this.gson = gson;
+        this.httpClient = httpClient;
     }
 
     @Override
@@ -51,9 +55,6 @@ public class TokenServiceImpl implements TokenService {
         String url = System.getenv("ME_URL");
         url = url + "/oauth/token";
 
-        //Criando um objeto Gson
-        Gson gson = new Gson();
-
         //Definição de informações de cliente melhor envio para renovação de token
         String clientId = System.getenv("ME_CLIENT_ID");
         String clientSecret = System.getenv("ME_SECRET");
@@ -70,9 +71,6 @@ public class TokenServiceImpl implements TokenService {
         StringEntity StringEntity = new StringEntity(jsonBody, StandardCharsets.UTF_8);
         StringEntity.setContentType("application/json");
         request.setEntity(StringEntity);
-
-        //client
-        CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build();
 
         //response
         CloseableHttpResponse response = null;

@@ -6,13 +6,17 @@ import br.com.fiap.rei_dos_piratas.application.service.TokenService;
 import br.com.fiap.rei_dos_piratas.application.service.impl.FreteServiceImpl;
 import br.com.fiap.rei_dos_piratas.application.service.impl.TokenServiceImpl;
 import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
+import com.google.gson.Gson;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.io.Closeable;
 
 @Configuration
 public class TokenServiceConfig {
     @Bean
-    public TokenService tokenService(TokenRepository repository) {
-        return new TokenServiceImpl(repository);
+    public TokenService tokenService(TokenRepository repository, Gson gson, CloseableHttpClient httpClient) {
+        return new TokenServiceImpl(repository, gson, httpClient);
     }
 }

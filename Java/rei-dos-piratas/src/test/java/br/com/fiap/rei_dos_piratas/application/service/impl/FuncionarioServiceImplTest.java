@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         List<Funcionario> vendedores = new ArrayList<>();
         vendedores.add(funcionario);
@@ -76,7 +77,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         //Quando
         when(this.funcionarioRepository.findById(1L)).thenReturn(funcionario);
@@ -100,7 +101,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         Funcionario funcionarioCriado = new Funcionario(
                 "jonasdasneves",
@@ -112,7 +113,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         //Quando
         when(this.funcionarioRepository.create(funcionarioParaCriar)).thenReturn(funcionarioCriado);
@@ -137,7 +138,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         Funcionario funcionarioNovo = new Funcionario(
                 "jonasdasneves",
@@ -149,7 +150,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         //Quando
         when(this.funcionarioRepository.findById(1L)).thenReturn(funcionarioAntigo);
@@ -174,7 +175,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         Funcionario funcionarioAtualizado = new Funcionario(
                 "jonasdasneves",
@@ -186,7 +187,7 @@ class FuncionarioServiceImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         when(funcionarioRepository.findById(1L)).thenReturn(funcionario);
         when(funcionarioRepository.update(any(Funcionario.class))).thenReturn(funcionarioAtualizado);

@@ -26,7 +26,8 @@ public class FreteRestController {
     @Operation(summary = "Consultar opções e valores de fretes", description = "Consultar opções e valores de fretes para produtos, retornando opções de serviços")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista retornada"),
-            @ApiResponse(responseCode = "500", description = "Erro inesperado")
+            @ApiResponse(responseCode = "404", description = "Não foram encontrados serviços para essa entrega"),
+            @ApiResponse(responseCode = "502", description = "Erro temporário no serviço de frete")
     })
     @PostMapping
     public List<FreteServiceDto> calcularFreteProdutos(@RequestBody @Valid ConsultaFreteDto dto) {

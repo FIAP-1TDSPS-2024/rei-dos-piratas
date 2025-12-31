@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,11 +58,12 @@ class CarrinhoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -99,11 +101,12 @@ class CarrinhoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -155,11 +158,12 @@ class CarrinhoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -168,11 +172,12 @@ class CarrinhoRestControllerTest {
                 "Produto Teste Número 02",
                 "Descrição do produto teste número 02",
                 "http://exemplo.com/imagem2.jpg",
-                50.0f,
-                30,
-                8.0f,
-                4.0f,
-                2.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.USADO
         );
 
@@ -200,11 +205,12 @@ class CarrinhoRestControllerTest {
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
                 "http://exemplo.com/imagem.jpg",
-                100.0f,
-                50,
-                10.0f,
-                5.0f,
-                3.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO
         );
 
@@ -216,7 +222,7 @@ class CarrinhoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtos
         );
@@ -227,7 +233,7 @@ class CarrinhoRestControllerTest {
                 .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(200.0)))
+                .andExpect(jsonPath("$.valorTotal", is(BigDecimal.valueOf(200))))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
     }

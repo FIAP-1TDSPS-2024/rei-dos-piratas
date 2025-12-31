@@ -12,6 +12,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,18 +79,19 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -100,7 +102,7 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 null,
                 null,
-                300.00F,
+                BigDecimal.valueOf(300),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 cliente,
                 List.of(item));
@@ -161,18 +163,19 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -183,7 +186,7 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 null,
                 null,
-                300.00F,
+                BigDecimal.valueOf(300),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 cliente,
                 List.of(item));
@@ -241,18 +244,19 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -263,7 +267,7 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 null,
                 null,
-                300.00F,
+                BigDecimal.valueOf(300),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 cliente,
                 List.of(item));
@@ -321,18 +325,19 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -343,7 +348,7 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 null,
                 null,
-                300.00F,
+                BigDecimal.valueOf(300),
                 StatusEnum.PREPARANDO_ENVIO,
                 cliente,
                 List.of(item));
@@ -400,18 +405,19 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -422,7 +428,7 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 null,
                 null,
-                300.00F,
+                BigDecimal.valueOf(300),
                 StatusEnum.EM_TRANSITO,
                 cliente,
                 List.of(item));
@@ -479,18 +485,19 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -501,7 +508,7 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 LocalDate.now(),
                 null,
-                300.00F,
+                BigDecimal.valueOf(300),
                 StatusEnum.ENTREGUE,
                 cliente,
                 List.of(item));
@@ -558,18 +565,19 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                2000.00F);
+                BigDecimal.valueOf(2000));
 
         Produto produto = new Produto(
                 1L,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incríveis",
                 "http://imagem.com/luffy.jpg",
-                150.00F,
-                10,
-                30F,
-                20F,
-                15F,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -580,7 +588,7 @@ class PedidoControllerImplTest {
                 LocalDate.now(),
                 null,
                 LocalDate.now(),
-                300.00F,
+                BigDecimal.valueOf(300),
                 StatusEnum.CANCELADO,
                 cliente,
                 List.of(item));

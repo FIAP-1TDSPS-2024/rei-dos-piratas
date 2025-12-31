@@ -22,6 +22,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,18 +76,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto = new Produto(
                 1L,
                 "Produto Teste para Carrinho",
                 "Descrição do produto teste",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -154,18 +156,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto = new Produto(
                 1L,
                 "Produto Teste Estoque Baixo",
                 "Descrição do produto teste",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                2, // Estoque baixo
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -227,18 +230,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto = new Produto(
                 1L,
                 "Produto Teste para Remover",
                 "Descrição do produto teste",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -307,18 +311,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto = new Produto(
                 1L,
                 "Produto Teste para Remover",
                 "Descrição do produto teste",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -387,18 +392,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto = new Produto(
                 1L,
                 "Produto Teste Inexistente",
                 "Descrição do produto teste",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -460,18 +466,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto1 = new Produto(
                 1L,
                 "Produto Teste 1",
                 "Descrição do produto teste 1",
                 "http://imagem.com/produto1.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -480,11 +487,12 @@ class CarrinhoServiceImplTest {
                 "Produto Teste 2",
                 "Descrição do produto teste 2",
                 "http://imagem.com/produto2.jpg",
-                150.0f,
-                5,
-                15.0f,
-                25.0f,
-                35.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.USADO,
                 funcionario);
 
@@ -549,18 +557,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto = new Produto(
                 1L,
                 "Produto Teste",
                 "Descrição do produto teste",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -622,18 +631,19 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 Role.ADMIN,
                 null,
-                5000.0f);
+                BigDecimal.valueOf(5000));
 
         Produto produto = new Produto(
                 1L,
                 "Produto Teste para Pedido",
                 "Descrição do produto teste",
                 "http://imagem.com/produto.jpg",
-                100.0f,
-                10,
-                10.0f,
-                20.0f,
-                30.0f,
+                BigDecimal.valueOf(100),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(0.2),
+                BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
 
@@ -678,7 +688,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 null,
                 null,
-                200.0f,
+                BigDecimal.valueOf(200),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 cliente,
                 produtosPedido);

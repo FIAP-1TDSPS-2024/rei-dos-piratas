@@ -8,6 +8,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ class FuncionarioControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         List<Funcionario> vendedores = new ArrayList<Funcionario>();
         vendedores.add(funcionario);
@@ -67,7 +68,7 @@ class FuncionarioControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         //Quando
         when(this.funcionarioService.findById(1L)).thenReturn(funcionario);
@@ -87,7 +88,7 @@ class FuncionarioControllerImplTest {
                 "jonas@gmail.com",
                 "SenhaSegura123",
                 Role.USER,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         Funcionario funcionarioCriado = new Funcionario(
                 "jonasdasneves",
@@ -99,7 +100,7 @@ class FuncionarioControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         //Quando
         when(this.funcionarioService.create(funcionarioParaCriar)).thenReturn(funcionarioCriado);
@@ -124,7 +125,7 @@ class FuncionarioControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         Funcionario funcionarioNovo = new Funcionario(
                 "jonasdasneves",
@@ -136,7 +137,7 @@ class FuncionarioControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         //Quando
         when(this.funcionarioService.findById(1L)).thenReturn(funcionarioAntigo);
@@ -161,7 +162,7 @@ class FuncionarioControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         Funcionario funcionarioNovo = new Funcionario(
                 "jonasdasneves",
@@ -173,7 +174,7 @@ class FuncionarioControllerImplTest {
                 LocalDate.now(),
                 Role.USER,
                 null,
-                1000.00F);
+                BigDecimal.valueOf(1000));
 
         // Quando
         when(funcionarioService.ativarDesativar(1L)).thenReturn(funcionarioNovo);

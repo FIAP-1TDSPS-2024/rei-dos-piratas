@@ -31,11 +31,15 @@ public class FreteServiceImpl implements FreteService {
     private final TokenService tokenService;
     private final ProdutoService produtoService;
     private final ObjectMapper mapper;
+    private final Gson gson;
+    private final CloseableHttpClient httpClient;
 
-    public FreteServiceImpl(TokenService tokenService, ProdutoService produtoService, ObjectMapper mapper) {
+    public FreteServiceImpl(TokenService tokenService, ProdutoService produtoService, ObjectMapper mapper, Gson gson, CloseableHttpClient httpClient) {
         this.tokenService = tokenService;
         this.produtoService = produtoService;
         this.mapper = mapper;
+        this.gson = gson;
+        this.httpClient = httpClient;
     }
 
     @Override
@@ -44,9 +48,6 @@ public class FreteServiceImpl implements FreteService {
         //URL melhor envio para calculo de fretes
         String url = System.getenv("ME_URL");
         url = url + "/api/v2/me/shipment/calculate";
-
-        //Criando um objeto Gson
-        Gson gson = new Gson();
 
         //Criar objeto para request
         ConsultaFreteServiceDto dto = new ConsultaFreteServiceDto(
@@ -73,9 +74,6 @@ public class FreteServiceImpl implements FreteService {
         request.setHeader("User-Agent", "jonascamp2004@gmail.com");
 
         request.setEntity(stringEntity);
-
-        //client
-        CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build();
 
         //response
         CloseableHttpResponse response = null;
