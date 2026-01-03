@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaDadosEmpresaEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,4 +34,18 @@ public class JpaEnderecoEntity {
     @ManyToOne
     @JsonIgnore
     private JpaClienteEntity cliente;
+
+    @OneToOne
+    @JsonIgnore
+    private JpaDadosEmpresaEntity empresa;
+
+    public JpaEnderecoEntity(Long id, int numero, String cep, String logradouro, String bairro, JpaCidadeEntity cidade, JpaClienteEntity cliente) {
+        this.id = id;
+        this.numero = numero;
+        this.cep = cep;
+        this.logradouro = logradouro;
+        this.bairro = bairro;
+        this.cidade = cidade;
+        this.cliente = cliente;
+    }
 }

@@ -10,4 +10,5 @@ public interface EnderecoRepository {
     Endereco save(Endereco endereco);
     Endereco findFirstByCidade(String cidade);
     Endereco findFirstByEstado(String estado);
+    Endereco getDadosEmpresa();
 }

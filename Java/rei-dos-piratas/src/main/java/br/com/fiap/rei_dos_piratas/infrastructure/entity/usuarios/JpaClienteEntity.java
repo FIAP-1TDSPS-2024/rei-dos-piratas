@@ -16,15 +16,12 @@ import java.util.List;
 @Entity
 @Table(name = "CLIENTES")
 public class JpaClienteEntity extends JpaUsuarioEntity{
-    @Setter
     @Column(nullable = false)
     private LocalDate dataNascimento;
 
-    @Setter
     @Column(nullable = false)
     private SexoEnum sexo;
 
-    @Setter
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<JpaEnderecoEntity> enderecos;
 

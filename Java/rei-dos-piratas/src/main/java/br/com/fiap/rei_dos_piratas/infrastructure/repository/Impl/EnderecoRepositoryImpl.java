@@ -52,4 +52,11 @@ public class EnderecoRepositoryImpl implements EnderecoRepository {
                 .toEntity(this.repository
                         .findFirstByCidade_Estado_EstadoNome(estado));
     }
+
+    @Override
+    public Endereco getDadosEmpresa() {
+        return JpaEnderecoMapper
+                .toEntity(this.repository
+                        .findFirstByEmpresa_Id(1L));
+    }
 }

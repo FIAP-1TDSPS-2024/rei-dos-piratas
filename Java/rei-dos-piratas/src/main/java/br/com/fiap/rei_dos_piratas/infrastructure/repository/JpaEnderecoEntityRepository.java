@@ -9,4 +9,5 @@ public interface JpaEnderecoEntityRepository extends JpaRepository<JpaEnderecoEn
     JpaEnderecoEntity findFirstByCidade_Estado_EstadoNome(String estadoNome);
     JpaEnderecoEntity findFirstByCidade_CidadeNome(String cidadeCidadeNome);
     List<JpaEnderecoEntity> findAllByCliente_Id(Long clienteId);
+    JpaEnderecoEntity findFirstByEmpresa_Id(Long empresaId);
 }
