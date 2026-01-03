@@ -25,8 +25,8 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
     private SexoEnum sexo;
 
     @Setter
-    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private JpaEnderecoEntity endereco;
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = false)
+    private List<JpaEnderecoEntity> enderecos;
 
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
@@ -46,13 +46,11 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
                             LocalDate dataCadastro,
                             LocalDate dataNascimento,
                             SexoEnum sexo,
-                            JpaEnderecoEntity endereco,
                             String cpf,
                             JpaCarrinhoEntity carrinho) {
         super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
-        this.endereco = endereco;
         this.cpf = cpf;
         this.carrinho = carrinho;
     }

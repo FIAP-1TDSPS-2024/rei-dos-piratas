@@ -35,10 +35,6 @@ public class JpaPedidoMapper {
                 pedido.getStatus(),
                 JpaClienteMapper.toJpaEntity(
                         pedido.getCliente(),
-                        JpaEnderecoMapper
-                                .toJpaEntity(pedido
-                                        .getCliente()
-                                        .getEndereco()),
                         JpaCarrinhoMapper
                                 .toJpaEntity(pedido
                                         .getCliente()

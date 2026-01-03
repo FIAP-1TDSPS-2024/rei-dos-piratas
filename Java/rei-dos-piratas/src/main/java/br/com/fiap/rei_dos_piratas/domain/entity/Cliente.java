@@ -27,9 +27,6 @@ public class Cliente extends Usuario{
     @NotNull(message = "O sexo do usuário não pode ser nulo")
     private SexoEnum sexo;
 
-    @NotNull(message = "O endereço do usuário não pode ser nulo")
-    private Endereco endereco;
-
     @Pattern(regexp = "[0-9]{11}", message = "O CPF do usuário deve ter 11 dígitos, sendo apenas números")
     private String cpf;
 
@@ -43,12 +40,10 @@ public class Cliente extends Usuario{
             String senha,
             LocalDate dataNascimento,
             SexoEnum sexo,
-            Endereco endereco,
             String cpf) {
         super(userName, nomeCompleto, email, senha, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
-        this.endereco = endereco;
         this.cpf = cpf;
         this.carrinho = new Carrinho(
                 null,
@@ -66,13 +61,11 @@ public class Cliente extends Usuario{
                    LocalDate dataCadastro,
                    LocalDate dataNascimento,
                    SexoEnum sexo,
-                   Endereco endereco,
                    String cpf,
                    Carrinho carrinho) {
         super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
-        this.endereco = endereco;
         this.cpf = cpf;
         this.carrinho = carrinho;
     }

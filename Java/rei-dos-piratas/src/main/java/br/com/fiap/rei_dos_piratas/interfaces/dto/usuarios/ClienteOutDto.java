@@ -40,10 +40,6 @@ public record ClienteOutDto(
         @NotNull(message = "O sexo do usuário não pode ser nulo")
         SexoEnum sexo,
 
-        @Valid
-        @NotNull(message = "O endereço do usuário não pode ser nulo")
-        Endereco endereco,
-
         @NotNull(message = "O carrinho deve ser exibido ao usuário")
         Carrinho carrinho
 ) {}

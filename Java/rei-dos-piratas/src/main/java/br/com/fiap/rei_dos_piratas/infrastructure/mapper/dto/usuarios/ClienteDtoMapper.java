@@ -15,7 +15,6 @@ public class ClienteDtoMapper {
                 dto.senha(),
                 dto.dataNascimento(),
                 dto.sexo(),
-                EnderecoDtoMapper.toEntity(dto.endereco()),
                 dto.cpf());
     }
 
@@ -30,7 +29,6 @@ public class ClienteDtoMapper {
                 cliente.getDataCadastro(),
                 cliente.getDataNascimento(),
                 cliente.getSexo(),
-                cliente.getEndereco(),
                 cliente.getCarrinho());
     }
 

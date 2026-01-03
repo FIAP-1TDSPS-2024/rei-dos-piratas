@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "ENDERECO_CLIENTES")
+@Table(name = "ENDERECO")
 public class JpaEnderecoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public class JpaEnderecoEntity {
     @ManyToOne(cascade = CascadeType.PERSIST)
     private JpaCidadeEntity cidade;
 
-    @OneToOne
+    @ManyToOne
     @JsonIgnore
     private JpaClienteEntity cliente;
 }

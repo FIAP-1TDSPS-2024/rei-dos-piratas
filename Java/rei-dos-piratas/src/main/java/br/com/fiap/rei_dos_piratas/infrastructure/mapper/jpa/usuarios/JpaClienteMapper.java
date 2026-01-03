@@ -8,7 +8,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaCarrinho
 
 public class JpaClienteMapper {
 
-    public static JpaClienteEntity toJpaEntity(Cliente cliente, JpaEnderecoEntity jpaEndereco, JpaCarrinhoEntity jpaCarrinho) {
+    public static JpaClienteEntity toJpaEntity(Cliente cliente, JpaCarrinhoEntity jpaCarrinho) {
         if (cliente == null) return null;
         JpaClienteEntity clienteJpa = new JpaClienteEntity(
                 cliente.getId(),
@@ -20,12 +20,9 @@ public class JpaClienteMapper {
                 cliente.getDataCadastro(),
                 cliente.getDataNascimento(),
                 cliente.getSexo(),
-                jpaEndereco,
                 cliente.getCpf(),
                 jpaCarrinho
         );
-
-        clienteJpa.getEndereco().setCliente(clienteJpa);
 
         clienteJpa.getCarrinho().setCliente(clienteJpa);
 
@@ -44,10 +41,8 @@ public class JpaClienteMapper {
                 jpaCliente.getDataCadastro(),
                 jpaCliente.getDataNascimento(),
                 jpaCliente.getSexo(),
-                JpaEnderecoMapper.toEntity(jpaCliente.getEndereco()),
                 jpaCliente.getCpf(),
-                JpaCarrinhoMapper.toEntity(jpaCliente.getCarrinho())
-        );
+                JpaCarrinhoMapper.toEntity(jpaCliente.getCarrinho()));
     }
 
     private JpaClienteMapper() {

@@ -62,7 +62,6 @@ class ClienteRepositoryImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
                 carrinho
         );
@@ -103,7 +102,6 @@ class ClienteRepositoryImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
                 carrinho
         );
@@ -147,7 +145,6 @@ class ClienteRepositoryImplTest {
                 "SenhaSegura123",
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                enderecoParaCriar,
                 "12345678978");
 
         when(jpaRepository.findFirstByUserName("jonasdasneves")).thenReturn(new JpaClienteEntity());
@@ -180,7 +177,6 @@ class ClienteRepositoryImplTest {
                 "SenhaSegura123",
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
-                enderecoParaCriar,
                 "12345678978"
         );
 
@@ -200,7 +196,6 @@ class ClienteRepositoryImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
-                new JpaEnderecoEntity(),
                 "12345678978",
                 mockCarrinho
         );

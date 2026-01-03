@@ -8,10 +8,6 @@ import java.util.Optional;
 
 public interface JpaClienteEntityRepository extends JpaRepository<JpaClienteEntity, Long> {
 
-    JpaClienteEntity findFirstByEndereco_Cidade_CidadeNome(String cidadeNome);
-
-    JpaClienteEntity findFirstByEndereco_Cidade_Estado_EstadoNome(String estadoNome);
-
     JpaClienteEntity findFirstByCpf(String cpf);
 
     JpaClienteEntity findFirstByEmail(String email);
