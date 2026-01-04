@@ -10,7 +10,8 @@ public class JpaEnderecoMapper {
     public static Endereco toEntity(JpaEnderecoEntity endereco){
         if (endereco != null) {
             if (endereco.getCidade() != null){
-                return new Endereco(endereco.getId(),
+                return new Endereco(
+                        endereco.getId(),
                         endereco.getNumero(),
                         endereco.getCep(),
                         endereco.getLogradouro(),
@@ -21,7 +22,8 @@ public class JpaEnderecoMapper {
                         endereco.getCidade().getEstado().getEstadoNome(),
                         endereco.getCidade().getEstado().getEstadoSigla(),
                         "Brasil",
-                        "BRA");
+                        "BRA",
+                        endereco.getCliente().getId());
             }
         }
         return null;
@@ -38,7 +40,7 @@ public class JpaEnderecoMapper {
 
         JpaCidadeEntity jpaCidade = new JpaCidadeEntity(
                 endereco.getCidadeId(),
-                endereco.getCidade(),
+                endereco.getCidadeNome(),
                 jpaEstado
         );
 

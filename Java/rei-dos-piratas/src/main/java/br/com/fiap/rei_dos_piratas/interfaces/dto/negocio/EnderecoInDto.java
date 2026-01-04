@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
+package br.com.fiap.rei_dos_piratas.interfaces.dto.negocio;
 
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
@@ -18,8 +18,8 @@ public record EnderecoInDto (
     @Length(max = 50, message = "O bairro deve possuir até 50 caracteres")
     String bairro,
 
-    @NotNull(message = "O nome da cidade não pode ser nulo")
-    @Length(max = 50, message = "O nome da cidade deve possuir até 50 caracteres")
+    @NotNull(message = "O nome da cidadeNome não pode ser nulo")
+    @Length(max = 50, message = "O nome da cidadeNome deve possuir até 50 caracteres")
     String cidade,
 
     @NotNull(message = "O nome do estado não pode ser nulo")

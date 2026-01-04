@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.EnderecoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.EnderecoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.LoginRequest;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
