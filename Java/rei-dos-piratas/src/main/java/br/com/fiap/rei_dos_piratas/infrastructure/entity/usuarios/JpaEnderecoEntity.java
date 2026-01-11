@@ -28,15 +28,16 @@ public class JpaEnderecoEntity {
     @Column(nullable = false, length = 50)
     private String bairro;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne()
+    @JoinColumn(name = "cidade_id")
     private JpaCidadeEntity cidade;
 
-    @ManyToOne
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
     private JpaClienteEntity cliente;
 
-    @OneToOne
-    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id")
     private JpaDadosEmpresaEntity empresa;
 
     public JpaEnderecoEntity(Long id, int numero, String cep, String logradouro, String bairro, JpaCidadeEntity cidade, JpaClienteEntity cliente) {

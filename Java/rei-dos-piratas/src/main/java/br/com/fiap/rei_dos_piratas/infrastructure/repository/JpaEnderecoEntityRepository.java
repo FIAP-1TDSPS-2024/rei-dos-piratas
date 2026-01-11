@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface JpaEnderecoEntityRepository extends JpaRepository<JpaEnderecoEntity, Long> {
-    JpaEnderecoEntity findFirstByCidade_Estado_EstadoNome(String estadoNome);
-    JpaEnderecoEntity findFirstByCidade_CidadeNome(String cidadeCidadeNome);
+    JpaEnderecoEntity findFirstByCepAndNumeroAndCliente_Id(String cep, int numero, Long clienteId);
     List<JpaEnderecoEntity> findAllByCliente_Id(Long clienteId, Pageable pageable);
     JpaEnderecoEntity findFirstByEmpresa_Id(Long empresaId);
 }

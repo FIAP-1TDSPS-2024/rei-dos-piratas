@@ -8,8 +8,7 @@ public interface EnderecoRepository {
     Endereco findById(Long id);
     Endereco save(Endereco endereco);
     Endereco update(Endereco endereco);
-    Endereco findFirstByCidade(String cidade);
-    Endereco findFirstByEstado(String estado);
+    Endereco VerificaEnderecoDuplicado(String cep, int numero, Long clienteId);
     Endereco getEnderecoEmpresa();
     void delete(Long id);
 }

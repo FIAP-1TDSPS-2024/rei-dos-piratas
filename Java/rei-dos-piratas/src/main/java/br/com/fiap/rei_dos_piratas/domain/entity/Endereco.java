@@ -22,30 +22,16 @@ public class Endereco {
     private String logradouro;
     @Length(max = 50, message = "O bairro deve possuir até 50 caracteres")
     private String bairro;
-    private Long cidadeId;
-    @NotNull(message = "O nome da cidadeNome não pode ser nulo")
-    @Length(max = 50, message = "O nome da cidadeNome deve possuir até 50 caracteres")
-    private String cidadeNome;
-    private Long estadoId;
-    @NotNull(message = "O nome do estado não pode ser nulo")
-    @Length(max = 50, message = "O nome do estado deve possuir até 50 caracteres")
-    private String estadoNome;
-    @NotNull(message = "A sigla do estado não pode estar nula")
-    @Length(min = 2, max = 2, message = "A sigla do estado deve possuir 2 dígitos")
-    private String estadoSigla;
+    private Cidade cidade;
     private String paisNome;
     private String paisSigla;
-    private Long clienteId;
+    private Cliente cliente;
 
     @Override
     public String toString() {
         return logradouro + ","
                 + bairro + ","
-                + cidadeNome + " - "
-                + estadoNome
-                + "/"
-                + estadoSigla
-                + " - "
+                + cep + " - "
                 + paisNome;
     }
 }

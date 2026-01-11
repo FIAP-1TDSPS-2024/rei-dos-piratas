@@ -5,14 +5,11 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.repository.EnderecoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEnderecoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaProdutoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaEnderecoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaEnderecoEntityRepository;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class EnderecoRepositoryImpl implements EnderecoRepository {
 
@@ -61,17 +58,10 @@ public class EnderecoRepositoryImpl implements EnderecoRepository {
     }
 
     @Override
-    public Endereco findFirstByCidade(String cidade) {
+    public Endereco VerificaEnderecoDuplicado(String cep, int numero, Long clienteId) {
         return JpaEnderecoMapper
                 .toEntity(this.repository
-                        .findFirstByCidade_CidadeNome(cidade));
-    }
-
-    @Override
-    public Endereco findFirstByEstado(String estado) {
-        return JpaEnderecoMapper
-                .toEntity(this.repository
-                        .findFirstByCidade_Estado_EstadoNome(estado));
+                        .findFirstByCepAndNumeroAndCliente_Id(cep, numero, clienteId));
     }
 
     @Override

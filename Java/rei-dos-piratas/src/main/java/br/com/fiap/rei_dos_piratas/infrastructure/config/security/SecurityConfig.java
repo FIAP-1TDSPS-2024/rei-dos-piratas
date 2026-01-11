@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/error", "/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/frete").permitAll()
                         .requestMatchers(HttpMethod.GET,"/produtos/**").permitAll()
-                        .requestMatchers("/carrinho/**").hasRole("CLIENT")
+                        .requestMatchers("/carrinho/**", "/enderecos").hasRole("CLIENT")
                         .requestMatchers("/produtos/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/funcionarios/**").hasAnyRole("FUNCIONARIO", "ADMIN")
                         .requestMatchers("/funcionarios/**").hasRole("ADMIN")
