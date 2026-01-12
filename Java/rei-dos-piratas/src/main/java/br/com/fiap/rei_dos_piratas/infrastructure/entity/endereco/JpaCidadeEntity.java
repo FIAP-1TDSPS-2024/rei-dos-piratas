@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.frete;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

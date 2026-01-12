@@ -1,12 +1,10 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.endereco;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Cidade;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Estado;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.EnderecoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.EnderecoOutDto;
-
-import javax.lang.model.util.ElementScanner6;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoOutDto;
 
 public class EnderecoDtoMapper {
 
@@ -28,6 +26,7 @@ public class EnderecoDtoMapper {
                 enderecoDto.cep(),
                 enderecoDto.logradouro(),
                 enderecoDto.bairro(),
+                true,
                 cidade,
                 null,
                 null,

@@ -1,17 +1,10 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
-import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaTokenEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaFuncionarioEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaFuncionarioEntityRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.frete.JpaTokenEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaTokenEntityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

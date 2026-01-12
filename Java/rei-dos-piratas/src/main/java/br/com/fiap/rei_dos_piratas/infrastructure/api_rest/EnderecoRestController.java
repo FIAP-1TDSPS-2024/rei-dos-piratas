@@ -1,11 +1,9 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
-import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.EnderecoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.EnderecoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.EnderecoOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -66,12 +64,12 @@ public class EnderecoRestController {
 
     @Operation(summary = "Atualizar funcionário", description = "Atualiza dados do funcionário")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Funcionário atualizado"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "204", description = "Endereço desativado"),
+            @ApiResponse(responseCode = "404", description = "Endereço não encontrado")
     })
-    @PutMapping
-    ResponseEntity<EnderecoOutDto> update(@RequestBody Endereco endereco){
-        EnderecoOutDto enderecoAtualizado = this.controller.update(endereco);
-        return ResponseEntity.ok(enderecoAtualizado);
+    @PutMapping("/{id}")
+    ResponseEntity<EnderecoOutDto> deactivate(@PathVariable("id") Long id){
+        this.controller.deactivate(id);
+        return ResponseEntity.noContent().build();
     }
 }

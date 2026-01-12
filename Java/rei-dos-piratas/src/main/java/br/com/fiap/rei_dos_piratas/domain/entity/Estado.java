@@ -1,7 +1,5 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEstadoEntity;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

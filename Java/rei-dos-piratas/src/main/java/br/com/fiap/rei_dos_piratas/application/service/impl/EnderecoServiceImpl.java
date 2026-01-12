@@ -15,6 +15,8 @@ import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 public class EnderecoServiceImpl implements EnderecoService {
 
     private final EnderecoRepository repository;
@@ -41,7 +43,22 @@ public class EnderecoServiceImpl implements EnderecoService {
 
     @Override
     public Endereco findById(Long id) {
-        return this.repository.findById(id);
+
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        try {
+            Endereco endereco = this.repository.findById(id);
+
+            if (endereco.getCliente().getId().equals(userDetails.getId())) {
+                return endereco;
+            }
+            else {
+                throw new ResourceNotFoundException("Não foi possível encontrar um vendedor com o id " + id);
+            }
+        }
+        catch (NoSuchElementException e){
+            throw new ResourceNotFoundException("Não foi possível encontrar um vendedor com o id " + id);
+        }
     }
 
     @Transactional
@@ -88,25 +105,16 @@ public class EnderecoServiceImpl implements EnderecoService {
         return repository.save(endereco);
     }
 
-    @Transactional
     @Override
-    public Endereco update(Endereco endereco) {
-        Endereco enderecoAtualizado = this.repository.update(endereco);
-
-        if (enderecoAtualizado == null){
-            throw new ResourceNotFoundException("Não foi possível encontrar um produto com o id " + endereco.getId() + ". Crie um novo produto.");
-        }
-
-        return enderecoAtualizado;
-    }
-
-    @Override
-    public Endereco getEndercoEmpresa() {
+    public Endereco getEnderecoEmpresa() {
         return this.repository.getEnderecoEmpresa();
     }
 
+    @Transactional
     @Override
-    public void delete(Long id) {
-        this.repository.delete(id);
+    public void deactivate(Long id) {
+        Endereco endereco = this.findById(id);
+        endereco.setEnderecoAtivo(false);
+        this.repository.save(endereco);
     }
 }

@@ -22,6 +22,7 @@ public class Endereco {
     private String logradouro;
     @Length(max = 50, message = "O bairro deve possuir até 50 caracteres")
     private String bairro;
+    private boolean enderecoAtivo;
     private Cidade cidade;
     private String paisNome;
     private String paisSigla;

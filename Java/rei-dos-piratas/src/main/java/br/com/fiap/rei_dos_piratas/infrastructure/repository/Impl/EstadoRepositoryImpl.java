@@ -2,7 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Estado;
 import br.com.fiap.rei_dos_piratas.domain.repository.EstadoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaEstadoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco.JpaEstadoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaEstadoEntityRepository;
 
 public class EstadoRepositoryImpl implements EstadoRepository {

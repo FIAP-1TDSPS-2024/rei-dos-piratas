@@ -2,8 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Cidade;
 import br.com.fiap.rei_dos_piratas.domain.repository.CidadeRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaCidadeMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaEstadoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco.JpaCidadeMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaCidadeEntityRepository;
 
 public class CidadeRepositoryImpl implements CidadeRepository {

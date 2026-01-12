@@ -3,7 +3,6 @@ package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaPedidoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaClienteMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaEnderecoMapper;
 
 public class JpaPedidoMapper {
 

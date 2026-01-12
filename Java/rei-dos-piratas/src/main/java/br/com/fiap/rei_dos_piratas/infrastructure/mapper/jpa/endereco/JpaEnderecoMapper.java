@@ -1,10 +1,9 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaCidadeEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEnderecoEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEstadoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaEnderecoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaCarrinhoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaClienteMapper;
 
 public class JpaEnderecoMapper {
 
@@ -24,6 +23,7 @@ public class JpaEnderecoMapper {
                         endereco.getCep(),
                         endereco.getLogradouro(),
                         endereco.getBairro(),
+                        endereco.isEnderecoAtivo(),
                         JpaCidadeMapper.toEntity(endereco.getCidade()),
                         "Brasil",
                         "BRA",
@@ -44,6 +44,7 @@ public class JpaEnderecoMapper {
                 endereco.getCep(),
                 endereco.getLogradouro(),
                 endereco.getBairro(),
+                endereco.isEnderecoAtivo(),
                 JpaCidadeMapper.toJpaEntity(endereco.getCidade()),
                 JpaClienteMapper.toJpaEntity(
                         endereco.getCliente(),

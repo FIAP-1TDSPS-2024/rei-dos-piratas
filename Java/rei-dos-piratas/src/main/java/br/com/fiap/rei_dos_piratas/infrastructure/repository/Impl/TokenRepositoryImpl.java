@@ -2,8 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaProdutoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaTokenMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.frete.JpaTokenMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaTokenEntityRepository;
 
 public class TokenRepositoryImpl implements TokenRepository {

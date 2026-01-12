@@ -7,7 +7,6 @@ public interface EnderecoService {
     Page<Endereco> findAll(int pageNumber, int pageSize);
     Endereco findById(Long id);
     Endereco save(Endereco endereco);
-    Endereco update(Endereco endereco);
-    Endereco getEndercoEmpresa();
-    void delete(Long id);
+    Endereco getEnderecoEmpresa();
+    void deactivate(Long id);;
 }

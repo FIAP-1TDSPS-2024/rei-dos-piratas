@@ -3,10 +3,10 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.EnderecoDtoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.endereco.EnderecoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.EnderecoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.EnderecoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.EnderecoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoOutDto;
 
 import java.util.List;
 
@@ -47,13 +47,7 @@ public class EnderecoControllerImpl implements EnderecoController {
     }
 
     @Override
-    public EnderecoOutDto update(Endereco endereco) {
-        Endereco enderecoAtualizado = this.service.update(endereco);
-        return EnderecoDtoMapper.toDto(enderecoAtualizado);
-    }
-
-    @Override
-    public void delete(Long id) {
-        this.service.delete(id);
+    public void deactivate(Long id) {
+        this.service.deactivate(id);
     }
 }

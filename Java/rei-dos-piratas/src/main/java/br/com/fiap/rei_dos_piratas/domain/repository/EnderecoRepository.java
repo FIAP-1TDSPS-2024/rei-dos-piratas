@@ -7,8 +7,6 @@ public interface EnderecoRepository {
     Page<Endereco> findAllByClienteId(Long clienteId, int pageNumber, int pageSize);
     Endereco findById(Long id);
     Endereco save(Endereco endereco);
-    Endereco update(Endereco endereco);
     Endereco VerificaEnderecoDuplicado(String cep, int numero, Long clienteId);
     Endereco getEnderecoEmpresa();
-    void delete(Long id);
 }

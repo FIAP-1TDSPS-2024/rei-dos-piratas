@@ -1,14 +1,16 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
+package br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco;
 
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaDadosEmpresaEntity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Where(clause = "ENDERECO_ATIVO = 1")
 @Entity
 @Table(name = "ENDERECO")
 public class JpaEnderecoEntity {
@@ -28,6 +30,8 @@ public class JpaEnderecoEntity {
     @Column(nullable = false, length = 50)
     private String bairro;
 
+    private boolean enderecoAtivo;
+
     @ManyToOne()
     @JoinColumn(name = "cidade_id")
     private JpaCidadeEntity cidade;
@@ -40,12 +44,13 @@ public class JpaEnderecoEntity {
     @JoinColumn(name = "empresa_id")
     private JpaDadosEmpresaEntity empresa;
 
-    public JpaEnderecoEntity(Long id, int numero, String cep, String logradouro, String bairro, JpaCidadeEntity cidade, JpaClienteEntity cliente) {
+    public JpaEnderecoEntity(Long id, int numero, String cep, String logradouro, String bairro, Boolean enderecoAtivo, JpaCidadeEntity cidade, JpaClienteEntity cliente) {
         this.id = id;
         this.numero = numero;
         this.cep = cep;
         this.logradouro = logradouro;
         this.bairro = bairro;
+        this.enderecoAtivo = enderecoAtivo;
         this.cidade = cidade;
         this.cliente = cliente;
     }

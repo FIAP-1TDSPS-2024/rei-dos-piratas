@@ -1,8 +1,7 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Cidade;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaCidadeEntity;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEstadoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaCidadeEntity;
 
 public class JpaCidadeMapper {
 

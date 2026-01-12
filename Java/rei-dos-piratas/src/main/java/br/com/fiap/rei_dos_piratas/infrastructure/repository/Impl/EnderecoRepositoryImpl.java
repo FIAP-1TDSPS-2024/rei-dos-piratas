@@ -3,13 +3,10 @@ package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.repository.EnderecoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaEnderecoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaEnderecoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco.JpaEnderecoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaEnderecoEntityRepository;
 import org.springframework.data.domain.Pageable;
-
-import java.util.Optional;
 
 public class EnderecoRepositoryImpl implements EnderecoRepository {
 
@@ -22,7 +19,7 @@ public class EnderecoRepositoryImpl implements EnderecoRepository {
     @Override
     public Page<Endereco> findAllByClienteId(Long clienteId, int pageNumber, int pageSize) {
         return PageMapper.fromFrameworkPage(
-                this.repository.findAll(
+                this.repository.findAllByEnderecoAtivoIsTrue(
                         Pageable
                                 .ofSize(pageSize)
                                 .withPage(pageNumber)
@@ -44,20 +41,6 @@ public class EnderecoRepositoryImpl implements EnderecoRepository {
     }
 
     @Override
-    public Endereco update(Endereco endereco) {
-        Optional<JpaEnderecoEntity> enderecoExistente = this.repository.findById(endereco.getId());
-
-        if (enderecoExistente.isPresent()) {
-            return JpaEnderecoMapper.toEntity(
-                    this.repository.save(
-                            JpaEnderecoMapper.toJpaEntity(endereco)));
-        }
-        else{
-            return null;
-        }
-    }
-
-    @Override
     public Endereco VerificaEnderecoDuplicado(String cep, int numero, Long clienteId) {
         return JpaEnderecoMapper
                 .toEntity(this.repository
@@ -69,10 +52,5 @@ public class EnderecoRepositoryImpl implements EnderecoRepository {
         return JpaEnderecoMapper
                 .toEntity(this.repository
                         .findFirstByEmpresa_Id(1L));
-    }
-
-    @Override
-    public void delete(Long id) {
-        this.repository.deleteById(id);
     }
 }

@@ -1,7 +1,7 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.frete;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
-import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaTokenEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.frete.JpaTokenEntity;
 
 public class JpaTokenMapper {
 
