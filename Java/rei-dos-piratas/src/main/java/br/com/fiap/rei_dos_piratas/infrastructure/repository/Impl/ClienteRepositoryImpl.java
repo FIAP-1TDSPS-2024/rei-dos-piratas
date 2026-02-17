@@ -94,4 +94,14 @@ public class ClienteRepositoryImpl implements ClienteRepository {
             return null;
         }
     }
+
+    @Override
+    public Cliente findByEmail(String email) {
+        JpaClienteEntity cliente = this.repository.findFirstByEmail(email);
+        if (cliente != null) {
+            return JpaClienteMapper.toEntity(cliente);
+        } else {
+            return null;
+        }
+    }
 }

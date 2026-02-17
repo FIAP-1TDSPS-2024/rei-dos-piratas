@@ -11,4 +11,5 @@ public interface ClienteRepository {
     Cliente update(Cliente cliente);
     void delete(Long id);
     Cliente findByUsername(String username);
+    Cliente findByEmail(String email);
 }
