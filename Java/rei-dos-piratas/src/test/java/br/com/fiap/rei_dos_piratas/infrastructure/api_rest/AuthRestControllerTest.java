@@ -3,7 +3,6 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.LoginRequest;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -38,7 +39,20 @@ class AuthRestControllerTest {
     void loginCliente_DeveRetornarToken() throws Exception {
         LoginRequest request = new LoginRequest("joao", "senha123");
 
-        AuthResponse response = new AuthResponse("token-abc", "joao", "joao@example.com", java.util.List.of("CLIENT"));
+        // Criar ClienteOutDto para o mock
+        ClienteOutDto clienteOutDto = new ClienteOutDto(
+                1L,
+                "joao",
+                "João Silva",
+                "joao@example.com",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 1, 1),
+                br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum.M,
+                null
+        );
+
+        AuthResponse response = new AuthResponse("token-abc", clienteOutDto, java.util.List.of("CLIENT"));
 
         when(authController.login(any(LoginRequest.class))).thenReturn(response);
 
@@ -52,20 +66,38 @@ class AuthRestControllerTest {
                         .content(mapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("token-abc"))
-                .andExpect(jsonPath("$.username").value("joao"))
-                .andExpect(jsonPath("$.email").value("joao@example.com"))
+                .andExpect(jsonPath("$.cliente.userName").value("joao"))
+                .andExpect(jsonPath("$.cliente.email").value("joao@example.com"))
                 .andExpect(jsonPath("$.roles[0]").value("CLIENT"));
     }
 
     @Test
     void cadastroCliente_DeveRetornarClienteCriado() throws Exception {
-        EnderecoInDto endereco = new EnderecoInDto(12345, "12345678", "Rua X", "Bairro Y", "Cidade", "Estado", "SP");
-        ClienteInDto in = new ClienteInDto("jonas", "Jonas", "joao@example.com", "SenhaSegura123", java.time.LocalDate.of(1990,1,1), br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum.M, endereco, "12345678900");
+        ClienteInDto in = new ClienteInDto(
+                "jonas",
+                "Jonas Silva",
+                "joao@example.com",
+                "SenhaSegura123",
+                java.time.LocalDate.of(1990,1,1),
+                br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum.M,
+                "12345678900",
+                "11987654321"
+        );
 
-        // criar ClienteOutDto completo a partir do DTO de entrada para manter consistência
-        br.com.fiap.rei_dos_piratas.domain.entity.Cliente clienteEntity = br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper.toEntity(in);
-        clienteEntity.setId(1L);
-        ClienteOutDto out = br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper.toDto(clienteEntity);
+        // Criar ClienteOutDto para o mock
+        ClienteOutDto clienteOutDto = new ClienteOutDto(
+                1L,
+                "jonas",
+                "Jonas",
+                "joao@example.com",
+                true,
+                LocalDate.now(),
+                LocalDate.of(1990, 1, 1),
+                br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum.M,
+                null
+        );
+
+        AuthResponse out = new AuthResponse("token-abc", clienteOutDto, java.util.List.of("CLIENT"));
 
         when(authController.cadastrar(any(ClienteInDto.class))).thenReturn(out);
 
@@ -77,8 +109,10 @@ class AuthRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(in)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.userName").value("jonas"))
-                .andExpect(jsonPath("$.email").value("joao@example.com"));
+                .andExpect(jsonPath("$.token").value("token-abc"))
+                .andExpect(jsonPath("$.cliente.id").value(1))
+                .andExpect(jsonPath("$.cliente.userName").value("jonas"))
+                .andExpect(jsonPath("$.cliente.email").value("joao@example.com"))
+                .andExpect(jsonPath("$.roles[0]").value("CLIENT"));
     }
 }

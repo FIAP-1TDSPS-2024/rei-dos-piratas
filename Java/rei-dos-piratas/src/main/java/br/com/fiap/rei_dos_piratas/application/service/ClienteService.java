@@ -8,6 +8,8 @@ public interface ClienteService {
 
     Cliente findById(Long id);
 
+    Cliente findByUsername(String username);
+
     Cliente create(Cliente cliente);
 
     Cliente update(Cliente cliente);

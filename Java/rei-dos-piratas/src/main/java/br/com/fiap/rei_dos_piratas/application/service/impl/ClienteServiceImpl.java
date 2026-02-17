@@ -41,6 +41,15 @@ public class ClienteServiceImpl implements ClienteService {
         }
     }
 
+    public Cliente findByUsername(String username) {
+        try {
+            return this.repository.findByUsername(username);
+        }
+        catch (NoSuchElementException e){
+            throw new ResourceNotFoundException("Não foi possível encontrar um cliente com o username " + username);
+        }
+    }
+
     @Override
     @Transactional
     public Cliente create(Cliente cliente) {
