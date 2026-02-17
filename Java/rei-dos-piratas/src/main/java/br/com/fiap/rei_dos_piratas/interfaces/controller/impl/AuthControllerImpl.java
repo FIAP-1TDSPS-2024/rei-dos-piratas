@@ -35,11 +35,10 @@ public class AuthControllerImpl implements AuthController {
         this.funcionarioService = funcionarioService;
     }
 
-    // TODO: Implementar login com email ao invés de username
     @Override
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+                new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
         List<String> roles = authentication.getAuthorities().stream()
@@ -55,7 +54,7 @@ public class AuthControllerImpl implements AuthController {
             }
         }
 
-        Cliente cliente = this.clienteService.findByUsername(request.username());
+        Cliente cliente = this.clienteService.findByEmail(request.email());
         if (cliente == null || !cliente.isUsuarioAtivo()) {
             throw new RegraDeNegocioException("O usuário deve estar ativo para o login ser acessado. Contate o suporte para ativá-lo novamente");
         }
@@ -72,7 +71,7 @@ public class AuthControllerImpl implements AuthController {
         Cliente novoCliente = this.clienteService.create(cliente);
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(clienteInDto.userName(), clienteInDto.senha())
+                new UsernamePasswordAuthenticationToken(clienteInDto.email(), clienteInDto.senha())
         );
 
         List<String> roles = authentication.getAuthorities().stream()

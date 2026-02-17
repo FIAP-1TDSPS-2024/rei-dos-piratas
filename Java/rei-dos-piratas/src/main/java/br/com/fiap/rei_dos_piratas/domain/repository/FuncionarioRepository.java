@@ -12,4 +12,5 @@ public interface FuncionarioRepository {
     Funcionario update(Funcionario funcionario);
     Page<Funcionario> findAllByUsuarioAtivoTrue(int pageNumber, int pageSize);
     Funcionario findByUsername(String username);
+    Funcionario findByEmail(String email);
 }

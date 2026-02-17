@@ -10,6 +10,8 @@ public interface ClienteService {
 
     Cliente findByUsername(String username);
 
+    Cliente findByEmail(String email);
+
     Cliente create(Cliente cliente);
 
     Cliente update(Cliente cliente);

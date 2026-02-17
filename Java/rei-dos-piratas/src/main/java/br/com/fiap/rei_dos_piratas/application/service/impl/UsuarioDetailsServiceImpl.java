@@ -27,26 +27,26 @@ public class UsuarioDetailsServiceImpl implements UsuarioDetailsService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Cliente cliente = clienteRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Cliente cliente = clienteRepository.findByEmail(email);
         if (cliente != null) {
             return new CustomUserDetails(
                     cliente.getId(),
-                    cliente.getUsername(),
+                    cliente.getEmail(),
                     cliente.getPassword(),
                     List.of(new SimpleGrantedAuthority("ROLE_" + cliente.getRole().name())));
         }
 
-        Funcionario funcionario = funcionarioRepository.findByUsername(username);
+        Funcionario funcionario = funcionarioRepository.findByEmail(email);
         if (funcionario != null) {
             return new CustomUserDetails(
                     funcionario.getId(),
-                    funcionario.getUsername(),
+                    funcionario.getEmail(),
                     funcionario.getPassword(),
                     List.of(new SimpleGrantedAuthority("ROLE_" + funcionario.getRole().name())));
         }
 
-        throw new UsernameNotFoundException("Usuário não encontrado");
+        throw new UsernameNotFoundException("Usuário não encontrado com o e-mail: " + email);
     }
 
 }

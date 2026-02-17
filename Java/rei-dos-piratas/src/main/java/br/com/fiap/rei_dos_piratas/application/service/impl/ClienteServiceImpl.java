@@ -51,6 +51,16 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    public Cliente findByEmail(String email) {
+        try {
+            return this.repository.findByEmail(email);
+        }
+        catch (NoSuchElementException e){
+            throw new ResourceNotFoundException("Não foi possível encontrar um cliente com o e-mail " + email);
+        }
+    }
+
+    @Override
     @Transactional
     public Cliente create(Cliente cliente) {
         //Encriptar senha para salvar em banco

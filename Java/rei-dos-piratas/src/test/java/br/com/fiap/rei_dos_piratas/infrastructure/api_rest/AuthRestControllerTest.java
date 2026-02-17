@@ -37,7 +37,7 @@ class AuthRestControllerTest {
 
     @Test
     void loginCliente_DeveRetornarToken() throws Exception {
-        LoginRequest request = new LoginRequest("joao", "senha123");
+        LoginRequest request = new LoginRequest("joao@example.com", "senha123");
 
         // Criar ClienteOutDto para o mock
         ClienteOutDto clienteOutDto = new ClienteOutDto(
