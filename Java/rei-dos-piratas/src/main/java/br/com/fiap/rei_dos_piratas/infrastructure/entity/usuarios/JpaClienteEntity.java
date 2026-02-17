@@ -29,7 +29,7 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 11)
     private String celular;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

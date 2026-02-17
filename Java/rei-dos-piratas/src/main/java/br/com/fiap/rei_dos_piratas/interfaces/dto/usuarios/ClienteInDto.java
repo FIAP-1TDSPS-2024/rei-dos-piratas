@@ -38,6 +38,6 @@ public record ClienteInDto(
         @CPF(message = "Insira um CPF válido")
         String cpf,
 
-        @Pattern(regexp = "[0-9]{10}", message = "O celular do usuário deve ter 10 dígitos com DDD, sendo apenas números")
+        @Pattern(regexp = "[0-9]{11}", message = "O celular do usuário deve ter 11 dígitos com DDD, sendo apenas números")
         String celular
 ) {}
