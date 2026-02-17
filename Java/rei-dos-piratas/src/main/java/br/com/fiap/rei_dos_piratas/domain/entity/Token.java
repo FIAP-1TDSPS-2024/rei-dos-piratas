@@ -31,7 +31,9 @@ public class Token {
         this.dataCriacao = LocalDate.now();
 
         //Conversao de expiração em segundos para expiração em dias
-        int expiresInDays = expiresInSeconds/86400;
+        //Subtração de 5 dias de expiração, pois o token e refresh token melhor envio expiram juntos com 30 dias
+        //Convertendo a expiração para 25 dias, o token pode ser renovado sem problemas
+        int expiresInDays = (expiresInSeconds/86400) - 5;
 
         //Definição de data de expiração do Token
         this.dataExpiracao = dataCriacao.plusDays(expiresInDays);

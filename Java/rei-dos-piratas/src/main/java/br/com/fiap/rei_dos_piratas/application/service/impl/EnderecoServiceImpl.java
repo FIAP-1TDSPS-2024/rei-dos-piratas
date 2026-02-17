@@ -49,15 +49,20 @@ public class EnderecoServiceImpl implements EnderecoService {
         try {
             Endereco endereco = this.repository.findById(id);
 
-            if (endereco.getCliente().getId().equals(userDetails.getId())) {
-                return endereco;
+            if (endereco.getCliente() != null) {
+                if (endereco.getCliente().getId().equals(userDetails.getId())){
+                    return endereco;
+                }
+                else {
+                    throw new ResourceNotFoundException("Não foi possível encontrar um endereço com o id " + id);
+                }
             }
             else {
-                throw new ResourceNotFoundException("Não foi possível encontrar um vendedor com o id " + id);
+                throw new ResourceNotFoundException("Não foi possível encontrar um endereço com o id " + id);
             }
         }
         catch (NoSuchElementException e){
-            throw new ResourceNotFoundException("Não foi possível encontrar um vendedor com o id " + id);
+            throw new ResourceNotFoundException("Não foi possível encontrar um endereço com o id " + id);
         }
     }
 

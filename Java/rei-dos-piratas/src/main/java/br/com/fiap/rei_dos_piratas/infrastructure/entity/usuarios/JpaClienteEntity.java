@@ -29,6 +29,9 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
     @Column(nullable = false, length = 11, unique = true)
     private String cpf;
 
+    @Column(nullable = false, length = 10)
+    private String celular;
+
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private JpaCarrinhoEntity carrinho;
 
@@ -45,11 +48,13 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
                             LocalDate dataNascimento,
                             SexoEnum sexo,
                             String cpf,
+                            String celular,
                             JpaCarrinhoEntity carrinho) {
         super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.cpf = cpf;
+        this.celular = celular;
         this.carrinho = carrinho;
     }
 }

@@ -63,6 +63,7 @@ class ClienteRepositoryImplTest {
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
                 "12345678900",
+                "1191231234",
                 carrinho
         );
 
@@ -103,6 +104,7 @@ class ClienteRepositoryImplTest {
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
                 "12345678900",
+                "1191231234",
                 carrinho
         );
 
@@ -197,6 +199,7 @@ class ClienteRepositoryImplTest {
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
                 "12345678978",
+                "1191231234",
                 mockCarrinho
         );
 

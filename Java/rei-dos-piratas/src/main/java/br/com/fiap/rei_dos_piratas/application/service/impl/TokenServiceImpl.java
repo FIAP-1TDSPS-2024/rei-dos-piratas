@@ -5,17 +5,15 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.TokenRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.TokenResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenRequestDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenResponseDto;
 import com.google.gson.Gson;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -88,6 +86,7 @@ public class TokenServiceImpl implements TokenService {
             String result = null;
             try {
                 result = EntityUtils.toString(entity);
+                System.out.println(result);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

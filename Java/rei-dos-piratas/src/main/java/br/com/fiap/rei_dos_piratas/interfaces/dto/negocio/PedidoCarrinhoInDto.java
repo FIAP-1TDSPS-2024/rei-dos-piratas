@@ -3,13 +3,8 @@ package br.com.fiap.rei_dos_piratas.interfaces.dto.negocio;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
-
-public record PedidoInDto(
+public record PedidoCarrinhoInDto(
         @NotNull
-        FreteServiceDto freteService,
+        FreteServiceDto frete,
         @NotNull
-        Long EnderecoEntregaId,
-        @NotNull
-        List<ItemProdutoInDto> produtosAdicionados
-) {}
+        Long EnderecoEntregaId) {}

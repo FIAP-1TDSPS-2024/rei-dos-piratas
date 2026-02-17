@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto.frete;
+package br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token;
 
 public record TokenResponseDto(
         String token_type,

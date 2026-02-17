@@ -1,14 +1,12 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.ProdutoFreteDto;
-
-import java.math.BigDecimal;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.ProdutoCalculoFreteDto;
 
 public class ProdutoFreteDtoMapper {
 
-    public static ProdutoFreteDto toDto(Produto produto, int quantidade) {
-        return new ProdutoFreteDto(
+    public static ProdutoCalculoFreteDto toDto(Produto produto, int quantidade) {
+        return new ProdutoCalculoFreteDto(
                 produto.getId(),
                 produto.getLargura(),
                 produto.getAltura(),

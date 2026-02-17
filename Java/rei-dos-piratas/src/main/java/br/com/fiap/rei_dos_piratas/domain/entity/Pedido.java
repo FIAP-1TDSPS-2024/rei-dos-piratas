@@ -27,9 +27,13 @@ public class Pedido {
     @PastOrPresent(message = "A data de cancelamento do pedido deve estar no presente ou passado")
     private LocalDate dataCancelamento;
 
-    @Digits(fraction = 2, integer = 6, message = "O preço total do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
+    @Digits(fraction = 2, integer = 6, message = "O preço total do pedido deve ter até 8 digitos com 2 dígitos após a vírgula")
     @DecimalMin(value = "0.0", inclusive = false, message = "O preço total não pode ser negativo")
     private BigDecimal valorTotal;
+
+    @Digits(fraction = 2, integer = 6, message = "O preço do frete do pedido deve ter até 8 digitos com 2 dígitos após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "O preço do frete do pedido não pode ser negativo")
+    private BigDecimal valorFrete;
 
     @NotNull(message = "O status do pedido não pode ser nulo")
     private StatusEnum status;
@@ -40,7 +44,15 @@ public class Pedido {
     @Size(min = 1, message = "O pedido deve ter pelo menos um produto")
     private List<ItemProdutoPedido> produtosAdicionados;
 
-    public Pedido(Cliente cliente, List<ItemProdutoPedido> produtosAdicionados) {
+    @NotNull(message = "O pedido deve possuir um endereço para entrega")
+    private Endereco enderecoEntrega;
+
+    @NotNull(message = "O pedido deve definir um serviço para entrega")
+    private Long servicoEntrega;
+
+    private String notaFiscal;
+
+    public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega, BigDecimal valorFrete) {
         this.dataPedido = LocalDate.now();
         this.status = StatusEnum.AGUARDANDO_PAGAMENTO;
         this.valorTotal = produtosAdicionados
@@ -49,7 +61,10 @@ public class Pedido {
                         item.getProduto().getPreco()
                                 .multiply(BigDecimal.valueOf(item.getQuantidade())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        this.valorFrete = valorFrete;
         this.cliente = cliente;
+        this.enderecoEntrega = enderecoEntrega;
         this.produtosAdicionados = produtosAdicionados;
+        this.servicoEntrega = servicoEntrega;
     }
 }

@@ -10,6 +10,7 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaItemProdutoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,7 +123,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
     @Transactional
     @Override
-    public Pedido finalizarCompra() {
+    public Pedido finalizarCompra(Endereco enderecoEntrega, FreteServiceDto freteServiceDto) {
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Cliente cliente = clienteService.findById(userDetails.getId());
@@ -138,7 +139,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
                                                         .stream()
                                                         .map(JpaItemProdutoMapper::toPedido)
                                                         .collect(Collectors.toList());
-        Pedido pedido = new Pedido(cliente, produtosAdicionados);
+        Pedido pedido = new Pedido(cliente, enderecoEntrega, produtosAdicionados, freteServiceDto.id(), freteServiceDto.price());
 
         Pedido pedidoFinalizado = this.pedidoService.fazerPedido(pedido);
 

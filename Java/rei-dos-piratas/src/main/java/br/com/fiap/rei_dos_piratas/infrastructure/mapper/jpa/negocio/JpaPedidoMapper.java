@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaPedidoEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco.JpaEnderecoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaClienteMapper;
 
 public class JpaPedidoMapper {
@@ -13,6 +14,7 @@ public class JpaPedidoMapper {
                 jpaPedidoEntity.getDataEntrega(),
                 jpaPedidoEntity.getDataCancelamento(),
                 jpaPedidoEntity.getValorTotal(),
+                jpaPedidoEntity.getValorFrete(),
                 jpaPedidoEntity.getStatus(),
                 JpaClienteMapper
                         .toEntity(jpaPedidoEntity.getCliente()),
@@ -20,8 +22,10 @@ public class JpaPedidoMapper {
                         .getProdutosAdicionados()
                         .stream()
                         .map(JpaItemProdutoMapper::toEntity)
-                        .toList()
-        );
+                        .toList(),
+                JpaEnderecoMapper.toEntity(jpaPedidoEntity.getEnderecoEntrega()),
+                jpaPedidoEntity.getServicoEntrega(),
+                jpaPedidoEntity.getNotaFiscal());
     }
 
     public static JpaPedidoEntity toJpaEntity(Pedido pedido) {
@@ -31,6 +35,7 @@ public class JpaPedidoMapper {
                 pedido.getDataEntrega(),
                 pedido.getDataCancelamento(),
                 pedido.getValorTotal(),
+                pedido.getValorFrete(),
                 pedido.getStatus(),
                 JpaClienteMapper.toJpaEntity(
                         pedido.getCliente(),
@@ -41,8 +46,10 @@ public class JpaPedidoMapper {
                 pedido.getProdutosAdicionados()
                         .stream()
                         .map(JpaItemProdutoMapper::toJpaProdutosPedidosEntity)
-                        .toList()
-        );
+                        .toList(),
+                JpaEnderecoMapper.toJpaEntity(pedido.getEnderecoEntrega()),
+                pedido.getServicoEntrega(),
+                pedido.getNotaFiscal());
 
         jpaPedido
                 .getProdutosAdicionados()

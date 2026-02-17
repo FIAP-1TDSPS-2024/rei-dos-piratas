@@ -1,16 +1,15 @@
 package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
+import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
-import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
-import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
-import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
-import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
+import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.CarrinhoDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CarrinhoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoCarrinhoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 
 public class CarrinhoControllerImpl implements CarrinhoController {
@@ -19,9 +18,12 @@ public class CarrinhoControllerImpl implements CarrinhoController {
 
     private final ProdutoService produtoService;
 
-    public CarrinhoControllerImpl(CarrinhoService service, ProdutoService produtoService) {
+    private final EnderecoService enderecoService;
+
+    public CarrinhoControllerImpl(CarrinhoService service, ProdutoService produtoService, EnderecoService enderecoService) {
         this.service = service;
         this.produtoService = produtoService;
+        this.enderecoService = enderecoService;
     }
 
     @Override
@@ -57,8 +59,11 @@ public class CarrinhoControllerImpl implements CarrinhoController {
     }
 
     @Override
-    public PedidoOutDto finalizarCompra() {
-        Pedido pedido = this.service.finalizarCompra();
+    public PedidoOutDto finalizarCompra(PedidoCarrinhoInDto pedidoDto) {
+
+        Endereco enderecoEntrega = this.enderecoService.findById(pedidoDto.EnderecoEntregaId());
+
+        Pedido pedido = this.service.finalizarCompra(enderecoEntrega, pedidoDto.frete());
         return PedidoDtoMapper.toDto(pedido);
     }
 }

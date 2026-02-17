@@ -20,6 +20,7 @@ public class JpaClienteMapper {
                 cliente.getDataNascimento(),
                 cliente.getSexo(),
                 cliente.getCpf(),
+                cliente.getCelular(),
                 jpaCarrinho
         );
 
@@ -41,6 +42,7 @@ public class JpaClienteMapper {
                 jpaCliente.getDataNascimento(),
                 jpaCliente.getSexo(),
                 jpaCliente.getCpf(),
+                jpaCliente.getCelular(),
                 JpaCarrinhoMapper.toEntity(jpaCliente.getCarrinho()));
     }
 

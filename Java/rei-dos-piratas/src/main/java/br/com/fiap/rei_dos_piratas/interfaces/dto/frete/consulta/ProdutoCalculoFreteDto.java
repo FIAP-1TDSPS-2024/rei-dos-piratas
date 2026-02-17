@@ -1,8 +1,8 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto.frete;
+package br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta;
 
 import java.math.BigDecimal;
 
-public record ProdutoFreteDto(
+public record ProdutoCalculoFreteDto(
         Long id,
         BigDecimal width, //cm
         BigDecimal height, //cm

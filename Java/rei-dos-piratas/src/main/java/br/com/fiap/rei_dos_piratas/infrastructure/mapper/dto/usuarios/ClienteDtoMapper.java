@@ -15,7 +15,8 @@ public class ClienteDtoMapper {
                 dto.senha(),
                 dto.dataNascimento(),
                 dto.sexo(),
-                dto.cpf());
+                dto.cpf(),
+                dto.celular());
     }
 
     public static ClienteOutDto toDto(Cliente cliente){

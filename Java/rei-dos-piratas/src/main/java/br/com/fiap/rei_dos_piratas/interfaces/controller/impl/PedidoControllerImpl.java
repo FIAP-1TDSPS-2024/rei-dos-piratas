@@ -1,12 +1,10 @@
 package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
-import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
-import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
+import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
@@ -24,10 +22,13 @@ public class PedidoControllerImpl implements PedidoController {
 
     private final ProdutoService produtoService;
 
-    public PedidoControllerImpl(PedidoService service, ClienteService clienteService, ProdutoService produtoService) {
+    private final EnderecoService enderecoService;
+
+    public PedidoControllerImpl(PedidoService service, ClienteService clienteService, ProdutoService produtoService, EnderecoService enderecoService) {
         this.service = service;
         this.clienteService = clienteService;
         this.produtoService = produtoService;
+        this.enderecoService = enderecoService;
     }
 
     @Override
@@ -66,7 +67,9 @@ public class PedidoControllerImpl implements PedidoController {
                                 this.produtoService.findById(item.produtoId()),
                                 item.quantidade())).toList();
 
-        Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, items);
+        Endereco enderecoEntrega = this.enderecoService.findById(pedido.EnderecoEntregaId());
+
+        Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, enderecoEntrega, items, pedido);
 
         return PedidoDtoMapper.toDto(
                 this.service.fazerPedido(pedidoEntity));

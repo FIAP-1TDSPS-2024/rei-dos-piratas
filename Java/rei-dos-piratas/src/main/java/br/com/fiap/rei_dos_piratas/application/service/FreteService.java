@@ -1,10 +1,14 @@
 package br.com.fiap.rei_dos_piratas.application.service;
 
+import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteRequestDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 
 import java.util.List;
 
 public interface FreteService {
-    List<FreteServiceDto> calcularFreteProdutos(String cepOrigem, String cepDestino, List<ItemProdutoInDto> itens);
+    List<FreteServiceDto> calcularFreteProdutos(String cepOrigem, String cepDestino, List<ItemProdutoPedido> itens);
+    PedidoFreteResponseDto criarPedidoFrete(PedidoFreteRequestDto pedidoRequest);
 }

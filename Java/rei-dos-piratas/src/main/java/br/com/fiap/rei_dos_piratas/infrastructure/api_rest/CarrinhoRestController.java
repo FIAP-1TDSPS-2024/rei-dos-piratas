@@ -3,12 +3,14 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CarrinhoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoCarrinhoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,8 +74,8 @@ public class CarrinhoRestController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @PutMapping("/finalizar")
-    public ResponseEntity<PedidoOutDto> finalizarCompra() {
-        PedidoOutDto pedido = this.controller.finalizarCompra();
+    public ResponseEntity<PedidoOutDto> finalizarCompra(PedidoCarrinhoInDto pedidoDto) {
+        PedidoOutDto pedido = this.controller.finalizarCompra(pedidoDto);
         return ResponseEntity.ok(pedido);
     }
 }

@@ -15,7 +15,10 @@ public class JpaDadosEmpresaMapper {
                 dadosEmpresa.getCnpj(),
                 dadosEmpresa.getEmail(),
                 dadosEmpresa.getTelefone(),
-                dadosEmpresa.getDominio());
+                dadosEmpresa.getDominio(),
+                dadosEmpresa.getStateAbbr(),
+                dadosEmpresa.getStateRegister(),
+                dadosEmpresa.getEconomicActivityCode());
     }
 
     public static DadosEmpresa toEntity(JpaDadosEmpresaEntity jpaEntity) {
@@ -26,6 +29,9 @@ public class JpaDadosEmpresaMapper {
                 jpaEntity.getCnpj(),
                 jpaEntity.getEmail(),
                 jpaEntity.getTelefone(),
-                jpaEntity.getDominio());
+                jpaEntity.getDominio(),
+                jpaEntity.getStateAbbr(),
+                jpaEntity.getStateRegister(),
+                jpaEntity.getEconomicActivityCode());
     }
 }

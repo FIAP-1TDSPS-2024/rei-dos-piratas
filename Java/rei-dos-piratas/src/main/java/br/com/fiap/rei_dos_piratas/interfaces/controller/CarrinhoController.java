@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller;
 
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CarrinhoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoCarrinhoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 
 public interface CarrinhoController {
@@ -9,5 +10,5 @@ public interface CarrinhoController {
     CarrinhoOutDto removerProduto(ItemProdutoInDto itemProduto);
     CarrinhoOutDto limparCarrinho();
     CarrinhoOutDto visualizarCarrinho();
-    PedidoOutDto finalizarCompra();
+    PedidoOutDto finalizarCompra(PedidoCarrinhoInDto pedidoDto);
 }

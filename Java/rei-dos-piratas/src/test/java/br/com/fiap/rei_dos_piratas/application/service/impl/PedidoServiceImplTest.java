@@ -1,5 +1,7 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
+import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
@@ -9,6 +11,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
+import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
@@ -34,6 +37,9 @@ class PedidoServiceImplTest {
     private PedidoService pedidoService;
     private PedidoRepository pedidoRepository;
     private ProdutoRepository produtoRepository;
+    private EnderecoService enderecoService;
+    private FreteService freteService;
+    private DadosEmpresaRepository dadosEmpresaRepository;
     private br.com.fiap.rei_dos_piratas.application.service.ClienteService clienteService;
 
     @BeforeEach
@@ -52,8 +58,11 @@ class PedidoServiceImplTest {
 
         this.pedidoRepository = mock(PedidoRepository.class);
         this.produtoRepository = mock(ProdutoRepository.class);
+        this.freteService = mock(FreteService.class);
+        this.dadosEmpresaRepository = mock(DadosEmpresaRepository.class);
+        this.enderecoService = mock(EnderecoService.class);
         this.clienteService = mock(br.com.fiap.rei_dos_piratas.application.service.ClienteService.class);
-        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, clienteService);
+        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, clienteService, enderecoService, dadosEmpresaRepository, freteService);
     }
 
     @AfterEach

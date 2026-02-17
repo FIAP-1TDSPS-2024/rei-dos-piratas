@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FreteControllerConfig {
     @Bean
-    public FreteController freteController(FreteService freteService) {
-        return new FreteControllerImpl(freteService);
+    public FreteController freteController(FreteService freteService,ProdutoService produtoService) {
+        return new FreteControllerImpl(freteService, produtoService);
     }
 }

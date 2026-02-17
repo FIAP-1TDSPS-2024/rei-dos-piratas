@@ -30,6 +30,9 @@ public class Cliente extends Usuario{
     @Pattern(regexp = "[0-9]{11}", message = "O CPF do usuário deve ter 11 dígitos, sendo apenas números")
     private String cpf;
 
+    @Pattern(regexp = "[0-9]{10}", message = "O celular do usuário deve ter 10 dígitos com DDD, sendo apenas números")
+    private String celular;
+
     @NotNull(message = "O cliente deve possuir um carrinho")
     private Carrinho carrinho;
 
@@ -40,11 +43,13 @@ public class Cliente extends Usuario{
             String senha,
             LocalDate dataNascimento,
             SexoEnum sexo,
-            String cpf) {
+            String cpf,
+            String celular) {
         super(userName, nomeCompleto, email, senha, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.cpf = cpf;
+        this.celular = celular;
         this.carrinho = new Carrinho(
                 null,
                 new ArrayList<ItemProdutoCarrinho>()
@@ -62,11 +67,13 @@ public class Cliente extends Usuario{
                    LocalDate dataNascimento,
                    SexoEnum sexo,
                    String cpf,
+                   String celular,
                    Carrinho carrinho) {
         super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.cpf = cpf;
+        this.celular = celular;
         this.carrinho = carrinho;
     }
 }

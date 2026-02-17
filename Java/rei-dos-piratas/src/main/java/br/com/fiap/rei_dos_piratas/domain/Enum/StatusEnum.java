@@ -6,5 +6,6 @@ public enum StatusEnum {
     EM_TRANSITO,
     ENTREGUE,
     CANCELADO,
+    EM_RETORNO,
     RETORNADO
 }

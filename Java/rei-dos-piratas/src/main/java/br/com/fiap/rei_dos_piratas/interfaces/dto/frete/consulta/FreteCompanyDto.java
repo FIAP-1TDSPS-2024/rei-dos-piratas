@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto.frete;
+package br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta;
 
 public record FreteCompanyDto(
         // Company (flattened)
