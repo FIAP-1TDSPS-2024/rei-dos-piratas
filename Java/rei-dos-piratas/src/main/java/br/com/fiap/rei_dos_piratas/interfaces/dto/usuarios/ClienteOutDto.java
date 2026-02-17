@@ -27,6 +27,9 @@ public record ClienteOutDto(
         @Length(max = 40, message = "O e-mail deve ter até 20 caracteres")
         String email,
 
+        @NotNull
+        String celular,
+
         boolean usuarioAtivo,
 
         @Past
