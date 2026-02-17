@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class Cliente extends Usuario{
     @NotNull(message = "O sexo do usuário não pode ser nulo")
     private SexoEnum sexo;
 
-    @Pattern(regexp = "[0-9]{11}", message = "O CPF do usuário deve ter 11 dígitos, sendo apenas números")
+    @CPF(message = "Insira um CPF válido")
     private String cpf;
 
     @Pattern(regexp = "[0-9]{10}", message = "O celular do usuário deve ter 10 dígitos com DDD, sendo apenas números")

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.time.LocalDate;
 
@@ -34,7 +35,7 @@ public record ClienteInDto(
         @NotNull(message = "O sexo do usuário não pode ser nulo")
         SexoEnum sexo,
 
-        @Pattern(regexp = "[0-9]{11}", message = "O CPF do usuário deve ter 11 dígitos, sendo apenas números")
+        @CPF(message = "Insira um CPF válido")
         String cpf,
 
         @Pattern(regexp = "[0-9]{10}", message = "O celular do usuário deve ter 10 dígitos com DDD, sendo apenas números")
