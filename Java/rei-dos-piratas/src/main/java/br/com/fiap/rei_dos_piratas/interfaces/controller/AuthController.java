@@ -8,5 +8,5 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.LoginRequest;
 public interface AuthController {
     AuthResponse login(LoginRequest loginRequest);
 
-    ClienteOutDto cadastrar(ClienteInDto clienteInDto);
+    AuthResponse cadastrar(ClienteInDto clienteInDto);
 }

@@ -35,6 +35,7 @@ public class AuthControllerImpl implements AuthController {
         this.funcionarioService = funcionarioService;
     }
 
+    // TODO: Implementar login com email ao invés de username
     @Override
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
@@ -54,15 +55,33 @@ public class AuthControllerImpl implements AuthController {
             }
         }
 
-        String token = jwtUtil.generateToken(authentication);
+        Cliente cliente = this.clienteService.findByUsername(request.username());
+        if (cliente == null || !cliente.isUsuarioAtivo()) {
+            throw new RegraDeNegocioException("O usuário deve estar ativo para o login ser acessado. Contate o suporte para ativá-lo novamente");
+        }
 
-        return new AuthResponse(token, request.username(), null, roles);
+        String token = jwtUtil.generateToken(authentication);
+        ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(cliente);
+
+        return new AuthResponse(token, clienteOutDto, roles);
     }
 
     @Override
-    public ClienteOutDto cadastrar(ClienteInDto clienteInDto) {
+    public AuthResponse cadastrar(ClienteInDto clienteInDto) {
         Cliente cliente = ClienteDtoMapper.toEntity(clienteInDto);
         Cliente novoCliente = this.clienteService.create(cliente);
-        return ClienteDtoMapper.toDto(novoCliente);
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(clienteInDto.userName(), clienteInDto.senha())
+        );
+
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        String token = jwtUtil.generateToken(authentication);
+        ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(novoCliente);
+
+        return new AuthResponse(token, clienteOutDto, roles);
     }
 }

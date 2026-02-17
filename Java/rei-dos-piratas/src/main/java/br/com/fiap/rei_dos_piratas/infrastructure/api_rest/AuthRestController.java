@@ -44,8 +44,8 @@ public class AuthRestController {
             @ApiResponse(responseCode = "500", description = "Erro interno")
     })
     @PostMapping("/cadastro")
-    public ResponseEntity<ClienteOutDto> cadastro(@Valid @RequestBody ClienteInDto clienteInDto) {
-        ClienteOutDto cliente = this.controller.cadastrar(clienteInDto);
-        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(cliente);
+    public ResponseEntity<AuthResponse> cadastro(@Valid @RequestBody ClienteInDto clienteInDto) {
+        AuthResponse authResponse = this.controller.cadastrar(clienteInDto);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(authResponse);
     }
 }

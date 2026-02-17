@@ -3,8 +3,7 @@ package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 import java.util.List;
 
 public record AuthResponse(String token,
-                           String username,
-                           String email,
+                           ClienteOutDto cliente,
                            List<String> roles) {
 
     private final static String TYPE = "Bearer";
