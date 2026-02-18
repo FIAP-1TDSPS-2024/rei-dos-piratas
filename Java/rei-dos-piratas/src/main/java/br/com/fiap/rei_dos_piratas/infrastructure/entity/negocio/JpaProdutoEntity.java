@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaFuncionarioEntity;
 import jakarta.persistence.*;
@@ -25,11 +26,20 @@ public class JpaProdutoEntity {
     @Column(nullable = false, length = 500)
     private String descricao;
 
+    @Column(nullable = false, length = 100)
+    private String autor;
+
+    @Column(nullable = false, length = 50)
+    private CategoriaEnum categoria;
+
     @Column(nullable = false)
     private String enderecoImagem;
 
     @Column(nullable = false)
     private BigDecimal preco;
+
+    @Column(nullable = false)
+    private BigDecimal precoOriginal;
 
     @Column(nullable = false)
     private int estoque;

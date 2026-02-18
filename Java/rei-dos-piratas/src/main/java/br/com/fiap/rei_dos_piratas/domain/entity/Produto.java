@@ -1,6 +1,9 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,11 +25,21 @@ public class Produto {
     @Length(min = 10, max = 500, message = "A descrição do produto deve ter entre 10 e 150 caracteres")
     private String descricao;
 
+    @Length(min = 3, max = 100, message = "O nome do autor do produto deve ter entre 3 e 100 caracteres")
+    private String autor;
+
+    @Enumerated(EnumType.STRING)
+    private CategoriaEnum categoria;
+
     private String enderecoImagem;
 
     @Digits(fraction = 2, integer = 6, message = "O preço do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
     @DecimalMin(value = "0.0", inclusive = false, message = "O preço não pode ser negativo")
     private BigDecimal preco;
+
+    @Digits(fraction = 2, integer = 6, message = "O preço do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "O preço não pode ser negativo")
+    private BigDecimal precoOriginal;
 
     @Digits(fraction = 0, integer = 6, message = "O estoque deve ter 6 dígitos sem dígitos após a vírgula")
     @DecimalMin(value = "0", inclusive = false, message = "O estoque não pode ser negativo")
@@ -53,11 +66,14 @@ public class Produto {
 
     private Funcionario funcionario;
 
-    public Produto(String nome, String descricao, String enderecoImagem, BigDecimal preco, int estoque, BigDecimal altura, BigDecimal largura, BigDecimal profundidade, BigDecimal peso, CondicaoEnum condicao, Funcionario funcionario) {
+    public Produto(String nome, String descricao, String autor, CategoriaEnum categoria, String enderecoImagem, BigDecimal preco, BigDecimal precoOriginal, int estoque, BigDecimal altura, BigDecimal largura, BigDecimal profundidade, BigDecimal peso, CondicaoEnum condicao, Funcionario funcionario) {
         this.nome = nome;
         this.descricao = descricao;
+        this.autor = autor;
+        this.categoria = categoria;
         this.enderecoImagem = enderecoImagem;
         this.preco = preco;
+        this.precoOriginal = precoOriginal;
         this.estoque = estoque;
         this.altura = altura;
         this.largura = largura;
