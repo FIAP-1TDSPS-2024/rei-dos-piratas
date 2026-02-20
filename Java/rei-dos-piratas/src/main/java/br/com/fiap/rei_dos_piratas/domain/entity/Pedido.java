@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -51,6 +52,8 @@ public class Pedido {
     private Long servicoEntrega;
 
     private String notaFiscal;
+
+    private UUID pedidoFrete;
 
     public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega, BigDecimal valorFrete) {
         this.dataPedido = LocalDate.now();

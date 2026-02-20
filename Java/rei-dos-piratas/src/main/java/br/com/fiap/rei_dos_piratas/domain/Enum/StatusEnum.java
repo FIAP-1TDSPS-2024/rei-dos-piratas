@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.domain.Enum;
 
 public enum StatusEnum {
     AGUARDANDO_PAGAMENTO,
+    AGUARDANDO_NF,
     PREPARANDO_ENVIO,
     EM_TRANSITO,
     ENTREGUE,

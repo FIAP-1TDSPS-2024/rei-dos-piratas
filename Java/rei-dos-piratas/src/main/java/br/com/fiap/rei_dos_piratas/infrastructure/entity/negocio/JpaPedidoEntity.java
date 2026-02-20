@@ -10,6 +10,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -53,6 +54,8 @@ public class JpaPedidoEntity {
     private Long servicoEntrega;
 
     private String notaFiscal;
+
+    private UUID pedidoFrete;
 
 
 }

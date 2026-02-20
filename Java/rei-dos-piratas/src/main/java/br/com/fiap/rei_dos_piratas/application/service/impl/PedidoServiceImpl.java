@@ -90,7 +90,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         //Verifica se o pedido está cancelado
         if (pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO){
-            pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
+            pedido.setStatus(StatusEnum.AGUARDANDO_NF);
             return this.repository.update(pedido);
         }
         else {

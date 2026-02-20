@@ -25,7 +25,8 @@ public class JpaPedidoMapper {
                         .toList(),
                 JpaEnderecoMapper.toEntity(jpaPedidoEntity.getEnderecoEntrega()),
                 jpaPedidoEntity.getServicoEntrega(),
-                jpaPedidoEntity.getNotaFiscal());
+                jpaPedidoEntity.getNotaFiscal(),
+                jpaPedidoEntity.getPedidoFrete());
     }
 
     public static JpaPedidoEntity toJpaEntity(Pedido pedido) {
@@ -49,7 +50,8 @@ public class JpaPedidoMapper {
                         .toList(),
                 JpaEnderecoMapper.toJpaEntity(pedido.getEnderecoEntrega()),
                 pedido.getServicoEntrega(),
-                pedido.getNotaFiscal());
+                pedido.getNotaFiscal(),
+                pedido.getPedidoFrete());
 
         jpaPedido
                 .getProdutosAdicionados()
