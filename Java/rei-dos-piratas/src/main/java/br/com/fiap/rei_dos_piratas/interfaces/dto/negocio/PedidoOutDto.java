@@ -20,12 +20,18 @@ public record PedidoOutDto(
         @PastOrPresent(message = "A data de entrega do pedido deve estar no presente ou passado")
         LocalDate dataEntrega,
 
+        LocalDate previsaoEntrega,
+
         @PastOrPresent(message = "A data de cancelamento do pedido deve estar no presente ou passado")
         LocalDate dataCancelamento,
 
-        @Digits(fraction = 2, integer = 6, message = "O preço total do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
+        @Digits(fraction = 2, integer = 6, message = "O preço total do pedido deve ter até 8 digitos com 2 dígitos após a vírgula")
         @DecimalMin(value = "0.0", inclusive = false, message = "O preço total não pode ser negativo")
         BigDecimal valorTotal,
+
+        @Digits(fraction = 2, integer = 6, message = "O valor do frete do pedido deve ter até 8 digitos com 2 dígitos após a vírgula")
+        @DecimalMin(value = "0.0", inclusive = false, message = "O valor do frete não pode ser negativo")
+        BigDecimal valorFrete,
 
         @NotNull(message = "O status do pedido não pode ser nulo")
         StatusEnum status,

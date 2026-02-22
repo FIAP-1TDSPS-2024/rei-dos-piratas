@@ -4,6 +4,7 @@ import java.util.List;
 
 public record AuthResponse(String token,
                            ClienteOutDto cliente,
+                           FuncionarioOutDto funcionario,
                            List<String> roles) {
 
     private final static String TYPE = "Bearer";

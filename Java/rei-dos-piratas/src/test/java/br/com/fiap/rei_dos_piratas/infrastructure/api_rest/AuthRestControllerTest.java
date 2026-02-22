@@ -53,7 +53,7 @@ class AuthRestControllerTest {
                 null
         );
 
-        AuthResponse response = new AuthResponse("token-abc", clienteOutDto, java.util.List.of("CLIENT"));
+        AuthResponse response = new AuthResponse("token-abc", clienteOutDto, null, java.util.List.of("CLIENT"));
 
         when(authController.login(any(LoginRequest.class))).thenReturn(response);
 

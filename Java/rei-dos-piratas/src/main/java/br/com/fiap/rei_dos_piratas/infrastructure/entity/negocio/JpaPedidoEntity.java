@@ -29,6 +29,8 @@ public class JpaPedidoEntity {
 
     private LocalDate dataEntrega;
 
+    private LocalDate dataPrevisaoEntrega;
+
     private LocalDate dataCancelamento;
 
     @Column(nullable = false)

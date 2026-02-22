@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -88,9 +89,16 @@ public class PedidoServiceImpl implements PedidoService {
         //Busca pedido por ID
         Pedido pedido = this.findById(id);
 
-        //Verifica se o pedido está cancelado
+        //Verifica o status do pedido para
         if (pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO){
-            pedido.setStatus(StatusEnum.AGUARDANDO_NF);
+
+            pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
+
+            //Criação de pedido de frete é feito à API melhor envio após confirmado o pagamento
+            PedidoFreteRequestDto pedidoFrete = this.montarPedidoFreteDto(pedido);
+            PedidoFreteResponseDto responsePedidoFrete = this.freteService.criarPedidoFrete(pedidoFrete);
+            pedido = this.enriquecerPedidoPorFrete(pedido, responsePedidoFrete);
+
             return this.repository.update(pedido);
         }
         else {
@@ -165,7 +173,7 @@ public class PedidoServiceImpl implements PedidoService {
             return this.repository.update(pedido);
         }
         else {
-            throw new WrongStatusException("O pedido já foi enviado. Para fazer o cancelamento, deve ser solicitada uma devolução.");
+            throw new WrongStatusException("O pedido já foi tramitado. Para fazer o cancelamento, deve ser solicitada uma devolução.");
         }
     }
 
@@ -191,6 +199,14 @@ public class PedidoServiceImpl implements PedidoService {
                 });
     }
 
+    //Método para enriquecemento de pedido com informações do pedido de frete
+    //TODO Verificar informações necessárias na response da API e cortar o restante do DTO
+    private Pedido enriquecerPedidoPorFrete(Pedido pedido, PedidoFreteResponseDto pedidoFreteResponseDto) {
+        pedido.setPedidoFrete(pedidoFreteResponseDto.id());
+        pedido.setDataPrevisaoEntrega(LocalDate.now().plusDays(pedidoFreteResponseDto.deliveryMax()));
+        return this.repository.update(pedido);
+    }
+
     private PedidoFreteRequestDto montarPedidoFreteDto(Pedido pedido) {
         //Definir empresa como remetente
         Endereco enderecoEmpresa = this.enderecoService.getEnderecoEmpresa();
@@ -207,7 +223,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         //Definir dimensões do(s) volume(s) para entrega
         List<VolumeFreteDto> volumes = new ArrayList<>();
-        volumes.add(definirDimensosVolumes(pedido));
+        volumes.add(definirDimensoesVolumes(pedido));
 
         //Definir opções de entrega:
         FreteOptionsDto opcoes = new FreteOptionsDto(
@@ -275,7 +291,7 @@ public class PedidoServiceImpl implements PedidoService {
                 .toList();
     }
 
-    private VolumeFreteDto definirDimensosVolumes(Pedido pedido) {
+    private VolumeFreteDto definirDimensoesVolumes(Pedido pedido) {
         int quantidadeTotal = pedido.getProdutosAdicionados().stream()
                 .mapToInt(ItemProdutoPedido::getQuantidade)
                 .sum();

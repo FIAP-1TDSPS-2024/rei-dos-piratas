@@ -6,13 +6,11 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.FuncionarioDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.LoginRequest;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -45,6 +43,8 @@ public class AuthControllerImpl implements AuthController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
+        System.out.println(roles);
+
         //verifica se o usuário do funcionário está ativo para fazer o login
         if (roles.contains("ROLE_ADMIN") || roles.contains("ROLE_USER")) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -52,17 +52,21 @@ public class AuthControllerImpl implements AuthController {
             if (!funcionario.isUsuarioAtivo()){
                 throw new RegraDeNegocioException("O usuário deve estar ativo para o login ser acessado. Contate seu supervisor para ativá-lo novamente");
             }
+
+            String token = jwtUtil.generateToken(authentication);
+            FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
+            return new AuthResponse(token, null, funcionarioOutDto, roles);
         }
+        else {
+            Cliente cliente = this.clienteService.findByEmail(request.email());
+            if (cliente == null || !cliente.isUsuarioAtivo()) {
+                throw new RegraDeNegocioException("O usuário deve estar ativo para o login ser acessado. Contate o suporte para ativá-lo novamente");
+            }
 
-        Cliente cliente = this.clienteService.findByEmail(request.email());
-        if (cliente == null || !cliente.isUsuarioAtivo()) {
-            throw new RegraDeNegocioException("O usuário deve estar ativo para o login ser acessado. Contate o suporte para ativá-lo novamente");
+            String token = jwtUtil.generateToken(authentication);
+            ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(cliente);
+            return new AuthResponse(token, clienteOutDto, null, roles);
         }
-
-        String token = jwtUtil.generateToken(authentication);
-        ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(cliente);
-
-        return new AuthResponse(token, clienteOutDto, roles);
     }
 
     @Override
@@ -81,6 +85,6 @@ public class AuthControllerImpl implements AuthController {
         String token = jwtUtil.generateToken(authentication);
         ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(novoCliente);
 
-        return new AuthResponse(token, clienteOutDto, roles);
+        return new AuthResponse(token, clienteOutDto, null, roles);
     }
 }

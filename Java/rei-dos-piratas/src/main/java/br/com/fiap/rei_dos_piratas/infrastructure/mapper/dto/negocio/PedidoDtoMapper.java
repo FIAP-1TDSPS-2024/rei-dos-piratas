@@ -20,8 +20,10 @@ public class PedidoDtoMapper {
                 pedido.getId(),
                 pedido.getDataPedido(),
                 pedido.getDataEntrega(),
+                pedido.getDataPrevisaoEntrega(),
                 pedido.getDataCancelamento(),
                 pedido.getValorTotal(),
+                pedido.getValorFrete(),
                 pedido.getStatus(),
                 pedido.getProdutosAdicionados()
                         .stream()

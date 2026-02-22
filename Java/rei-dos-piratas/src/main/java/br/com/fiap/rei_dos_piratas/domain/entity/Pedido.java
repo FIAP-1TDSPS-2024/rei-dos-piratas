@@ -25,6 +25,8 @@ public class Pedido {
     @PastOrPresent(message = "A data de entrega do pedido deve estar no presente ou passado")
     private LocalDate dataEntrega;
 
+    private LocalDate dataPrevisaoEntrega;
+
     @PastOrPresent(message = "A data de cancelamento do pedido deve estar no presente ou passado")
     private LocalDate dataCancelamento;
 
