@@ -3,10 +3,7 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
-import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
-import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.*;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
@@ -15,6 +12,8 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,20 +70,6 @@ class PedidoServiceImplTest {
     }
 
     private Cliente criarCliente() {
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
 
         return new Cliente(
@@ -97,9 +82,33 @@ class PedidoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11992131234",
                 carrinho);
+    }
+
+    private Endereco criarEndereco(Cliente cliente) {
+        Estado estado = new Estado(
+                1L,
+                "São Paulo",
+                "SP");
+
+        Cidade cidade = new Cidade(
+                1L,
+                "São Paulo",
+                estado);
+
+        return new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                true,
+                cidade,
+                "Brasil",
+                "BR",
+                cliente);
     }
 
     private Funcionario criarFuncionario() {
@@ -116,12 +125,15 @@ class PedidoServiceImplTest {
                 BigDecimal.valueOf(1000));
     }
 
-    private Produto criarProduto(Long id, String nome, int estoque, BigDecimal preco) {
+    private Produto criarProduto(Long id, String nome, String autor, String categoria, int estoque, BigDecimal preco) {
         return new Produto(
                 id,
                 nome,
                 "Descrição do produto " + nome,
+                autor,
+                CategoriaEnum.valueOf(categoria),
                 "http://imagem.com/" + nome + ".jpg",
+                preco,
                 preco,
                 estoque,
                 BigDecimal.valueOf(20),
@@ -136,15 +148,15 @@ class PedidoServiceImplTest {
     void findAll_DeveRetornarPaginaDePedidos() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "AVENTURA", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido1 = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
-        Pedido pedido2 = new Pedido(2L, LocalDate.now(), null, null, BigDecimal.valueOf(300),
-                StatusEnum.EM_TRANSITO, cliente, itens);
+        Pedido pedido1 = new Pedido(1L, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+        Pedido pedido2 = new Pedido(2L, LocalDate.now(), null, null, null, BigDecimal.valueOf(300), BigDecimal.valueOf(21.19),
+                StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         List<Pedido> pedidos = List.of(pedido1, pedido2);
         Page<Pedido> page = new Page<>(1, 0, pedidos);
@@ -183,13 +195,13 @@ class PedidoServiceImplTest {
     void findById_DeveRetornarPedidoQuandoExistir() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -220,16 +232,16 @@ class PedidoServiceImplTest {
     void fazerPedido_DeveCriarPedidoEAtualizarEstoque() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 2));
 
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
-        Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedidoCriado = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
 
@@ -247,13 +259,13 @@ class PedidoServiceImplTest {
     void fazerPedido_DeveLancarExcecaoQuandoEstoqueInsuficiente() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 1, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 5)); // Quantidade maior que estoque
 
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, BigDecimal.valueOf(500),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(500), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.fazerPedido(pedido))
@@ -269,18 +281,18 @@ class PedidoServiceImplTest {
     void fazerPedido_DeveAtualizarEstoqueDeMultiplosProdutos() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto1 = criarProduto(1L, "Produto 1", 10, BigDecimal.valueOf(100));
-        Produto produto2 = criarProduto(2L, "Produto 2", 5, BigDecimal.valueOf(150));
+        Produto produto1 = criarProduto(1L, "Produto Teste 1", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
+        Produto produto2 = criarProduto(2L, "Produto Teste 2", "Eichiro Oda", "AVENTURA", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto1, 2));
         itens.add(new ItemProdutoPedido(produto2, 1));
 
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, BigDecimal.valueOf(350),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(350), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
-        Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(350),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedidoCriado = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(350), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
 
@@ -298,13 +310,13 @@ class PedidoServiceImplTest {
     void pagarPedido_DeveAtualizarStatusParaPreparandoEnvio() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -322,13 +334,13 @@ class PedidoServiceImplTest {
     void pagarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.EM_TRANSITO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(18.00),
+                    StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -345,13 +357,13 @@ class PedidoServiceImplTest {
     void enviarPedido_DeveAtualizarStatusParaEmTransito() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.PREPARANDO_ENVIO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(20),
+                StatusEnum.PREPARANDO_ENVIO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -369,13 +381,13 @@ class PedidoServiceImplTest {
     void enviarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -392,13 +404,13 @@ class PedidoServiceImplTest {
     void entregarPedido_DeveAtualizarStatusParaEntregue() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.EM_TRANSITO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(20),
+                StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -416,13 +428,13 @@ class PedidoServiceImplTest {
     void entregarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.PREPARANDO_ENVIO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -439,13 +451,13 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveCancelarPedidoEDevolverEstoque() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 8, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -465,15 +477,15 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveDevolverEstoqueDeMultiplosProdutos() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto1 = criarProduto(1L, "Produto 1", 8, BigDecimal.valueOf(100));
-        Produto produto2 = criarProduto(2L, "Produto 2", 4, BigDecimal.valueOf(150));
+        Produto produto1 = criarProduto(1L, "Produto 1", "Jonas Oliveira", "ACAO", 8, BigDecimal.valueOf(100));
+        Produto produto2 = criarProduto(2L, "Produto 2", "Eichiro Oda", "AVENTURA", 4, BigDecimal.valueOf(150));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto1, 2));
         itens.add(new ItemProdutoPedido(produto2, 1));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(350),
-                StatusEnum.PREPARANDO_ENVIO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -494,13 +506,13 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveLancarExcecaoQuandoJaEstaCancelado() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.CANCELADO, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.CANCELADO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -518,13 +530,13 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveLancarExcecaoQuandoJaFoiEntregue() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
-        Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, BigDecimal.valueOf(200),
-                StatusEnum.ENTREGUE, cliente, itens);
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(20),
+                StatusEnum.ENTREGUE, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 

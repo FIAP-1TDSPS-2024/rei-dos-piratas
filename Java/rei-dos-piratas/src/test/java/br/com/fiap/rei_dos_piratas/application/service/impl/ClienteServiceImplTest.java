@@ -3,10 +3,7 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
-import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
-import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
-import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,20 +39,6 @@ class ClienteServiceImplTest {
     @Test
     void listAll() {
         //O que
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Cliente cliente = new Cliente(
                 1L,
                 "jonasdasneves",
@@ -66,9 +49,31 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                endereco,
                 "12345678978",
+                "11991231234",
                 new Carrinho());
+
+        Estado estado = new Estado(
+                1L,
+                "São Paulo",
+                "SP");
+
+        Cidade cidade = new Cidade(
+                1L,
+                "São Paulo",
+                estado);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                true,
+                cidade,
+                "Brasil",
+                "BR",
+                cliente);
 
         List<Cliente> clientes = new ArrayList<Cliente>();
         clientes.add(cliente);
@@ -85,21 +90,6 @@ class ClienteServiceImplTest {
 
     @Test
     void findById() {
-        //O que
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Cliente cliente = new Cliente(
                 1L,
                 "jonasdasneves",
@@ -110,8 +100,8 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                endereco,
                 "12345678978",
+                "11991231234",
                 new Carrinho());
         
         //Quando
@@ -125,20 +115,6 @@ class ClienteServiceImplTest {
 
     @Test
     void create() {
-        //O que
-        Endereco enderecoParaCriar = new Endereco(
-                null,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         Cliente clienteParaCriar = new Cliente(
                 "jonasdasneves",
@@ -147,22 +123,8 @@ class ClienteServiceImplTest {
                 "SenhaSegura123",
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                enderecoParaCriar,
-                "12345678978");
-
-        Endereco enderecoCriado = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+                "12345678978",
+                "11991231234");
 
         Cliente clienteCriado = new Cliente(
                 1L,
@@ -174,8 +136,8 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                enderecoCriado,
                 "12345678978",
+                "11991231234",
                 new Carrinho());
 
         //Quando
@@ -189,22 +151,6 @@ class ClienteServiceImplTest {
 
     @Test
     void update() {
-
-        //O que
-        Endereco enderecoAntigo = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Cliente clienteAntigo = new Cliente(
                 1L,
                 "jonasdasneves",
@@ -215,23 +161,9 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                enderecoAntigo,
                 "12345678978",
+                "11991231234",
                 new Carrinho());
-
-        Endereco enderecoNovo = new Endereco(
-                1L,
-                123,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         Cliente clienteNovo = new Cliente(
                 1L,
@@ -243,8 +175,8 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                enderecoNovo,
                 "12345678978",
+                "11991231234",
                 new Carrinho());
 
         //Quando

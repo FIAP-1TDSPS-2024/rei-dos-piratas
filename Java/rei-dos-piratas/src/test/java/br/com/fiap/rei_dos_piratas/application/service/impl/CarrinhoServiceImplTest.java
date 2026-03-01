@@ -4,15 +4,14 @@ import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
-import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
-import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.*;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -80,9 +79,12 @@ class CarrinhoServiceImplTest {
 
         Produto produto = new Produto(
                 1L,
-                "Produto Teste para Carrinho",
+                "Produto Teste",
                 "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -91,20 +93,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
 
@@ -118,8 +106,8 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 2);
@@ -160,9 +148,12 @@ class CarrinhoServiceImplTest {
 
         Produto produto = new Produto(
                 1L,
-                "Produto Teste Estoque Baixo",
+                "Produto Teste",
                 "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -171,20 +162,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
 
@@ -198,8 +175,8 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 5); // Quantidade maior que estoque
@@ -234,9 +211,12 @@ class CarrinhoServiceImplTest {
 
         Produto produto = new Produto(
                 1L,
-                "Produto Teste para Remover",
+                "Produto Teste",
                 "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -245,20 +225,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
         produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 5));
@@ -275,8 +241,8 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 2);
@@ -315,9 +281,12 @@ class CarrinhoServiceImplTest {
 
         Produto produto = new Produto(
                 1L,
-                "Produto Teste para Remover",
+                "Produto Teste",
                 "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -326,20 +295,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
         produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 3));
@@ -356,8 +311,8 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 5);
@@ -396,9 +351,12 @@ class CarrinhoServiceImplTest {
 
         Produto produto = new Produto(
                 1L,
-                "Produto Teste Inexistente",
+                "Produto Teste",
                 "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -407,20 +365,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
 
@@ -434,8 +378,8 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         ItemProdutoPedido itemProdutoPedido = new ItemProdutoPedido(produto, 1);
@@ -472,7 +416,10 @@ class CarrinhoServiceImplTest {
                 1L,
                 "Produto Teste 1",
                 "Descrição do produto teste 1",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto1.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -486,7 +433,10 @@ class CarrinhoServiceImplTest {
                 2L,
                 "Produto Teste 2",
                 "Descrição do produto teste 2",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto2.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -495,20 +445,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.USADO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
         produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto1, 2));
@@ -526,8 +462,8 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         Carrinho carrinhoLimpo = new Carrinho(1L, new ArrayList<>());
@@ -563,7 +499,10 @@ class CarrinhoServiceImplTest {
                 1L,
                 "Produto Teste",
                 "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -572,20 +511,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
         produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 2));
@@ -602,8 +527,8 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         when(clienteService.findById(1L)).thenReturn(cliente);
@@ -635,9 +560,12 @@ class CarrinhoServiceImplTest {
 
         Produto produto = new Produto(
                 1L,
-                "Produto Teste para Pedido",
+                "Produto Teste",
                 "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -646,20 +574,6 @@ class CarrinhoServiceImplTest {
                 BigDecimal.valueOf(0.3),
                 CondicaoEnum.NOVO,
                 funcionario);
-
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
 
         List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
         produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 2));
@@ -676,22 +590,65 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinho);
 
         List<ItemProdutoPedido> produtosPedido = new ArrayList<>();
         produtosPedido.add(new ItemProdutoPedido(1L, produto, 2));
+
+        Estado estado = new Estado(
+                1L,
+                "São Paulo",
+                "SP");
+
+        Cidade cidade = new Cidade(
+                1L,
+                "São Paulo",
+                estado);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                true,
+                cidade,
+                "Brasil",
+                "BR",
+                cliente);
 
         Pedido pedidoEsperado = new Pedido(
                 1L,
                 LocalDate.now(),
                 null,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(0),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 cliente,
-                produtosPedido);
+                produtosPedido,
+                endereco,
+                3L,
+                null,
+                null);
+
+        FreteCompanyDto company = new FreteCompanyDto(
+                2L,
+                "Jadlog",
+                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
+
+        FreteServiceDto freteService = new FreteServiceDto(
+                3L,
+                ".Package",
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(0.00),
+                "R$",
+                6,
+                company);
 
         Carrinho carrinhoLimpo = new Carrinho(1L, new ArrayList<>());
 
@@ -700,7 +657,7 @@ class CarrinhoServiceImplTest {
         when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoLimpo);
 
         // Act
-        Pedido resultado = carrinhoService.finalizarCompra();
+        Pedido resultado = carrinhoService.finalizarCompra(endereco, freteService);
 
         // Assert
         verify(clienteService, times(2)).findById(1L); // Uma para finalizar e outra para limpar
@@ -714,20 +671,6 @@ class CarrinhoServiceImplTest {
     @Test
     void finalizarCompra_DeveLancarExcecaoQuandoCarrinhoVazio() {
         // Arrange
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Carrinho carrinhoVazio = new Carrinho(1L, new ArrayList<>());
 
         Cliente cliente = new Cliente(
@@ -740,14 +683,51 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                endereco,
                 "12345678900",
+                "11991231234",
                 carrinhoVazio);
+
+        Estado estado = new Estado(
+                1L,
+                "São Paulo",
+                "SP");
+
+        Cidade cidade = new Cidade(
+                1L,
+                "São Paulo",
+                estado);
+
+        Endereco endereco = new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                true,
+                cidade,
+                "Brasil",
+                "BR",
+                cliente);
+
+        FreteCompanyDto company = new FreteCompanyDto(
+                2L,
+                "Jadlog",
+                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
+
+        FreteServiceDto freteService = new FreteServiceDto(
+                3L,
+                ".Package",
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(0.00),
+                "R$",
+                6,
+                company);
 
         when(clienteService.findById(1L)).thenReturn(cliente);
 
         // Act & Assert
-        assertThatThrownBy(() -> carrinhoService.finalizarCompra())
+        assertThatThrownBy(() -> carrinhoService.finalizarCompra(endereco, freteService))
                 .isInstanceOf(RegraDeNegocioException.class)
                 .hasMessageContaining("O carrinho está vazio");
 
