@@ -52,7 +52,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CLIENTE"))) {
+        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CLIENT"))) {
             return this.repository
                         .listAllByClient(
                                 pageNumber,

@@ -1,9 +1,15 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.Cidade;
+import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
+import br.com.fiap.rei_dos_piratas.domain.entity.Estado;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
@@ -49,22 +55,57 @@ class PedidoRestControllerTest {
     @MockBean
     private PedidoController pedidoController;
 
+    private Endereco criarEndereco() {
+        Estado estado = new Estado(1L, "São Paulo", "SP");
+        Cidade cidade = new Cidade(1L, "São Paulo", estado);
+        return new Endereco(
+                1L,
+                12345,
+                "12345678",
+                "Avenida Paulista",
+                "Bela Vista",
+                true,
+                cidade,
+                "Brasil",
+                "BR",
+                null);
+    }
+
+    private FreteServiceDto criarFreteServiceDto() {
+        FreteCompanyDto company = new FreteCompanyDto(
+                2L,
+                "Jadlog",
+                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
+
+        return new FreteServiceDto(
+                3L,
+                ".Package",
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(0.00),
+                "R$",
+                6,
+                company);
+    }
+
     @Test
     @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void findAllByCliente() throws Exception {
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
                 "Produto Teste Número 01",
-                "Descrição do produto teste número 01",
+                "Descrição do produto teste número 01 com mais detalhes",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
                 BigDecimal.valueOf(100),
-                3,
+                BigDecimal.valueOf(100),
+                50,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
                 BigDecimal.valueOf(0.2),
                 BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
+                CondicaoEnum.NOVO);
 
         List<ItemProdutoOutDto> produtos = List.of(new ItemProdutoOutDto(produtoOut, 2));
 
@@ -73,7 +114,9 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(20),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtos
         );
@@ -89,7 +132,8 @@ class PedidoRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pageItems", hasSize(1)))
                 .andExpect(jsonPath("$.pageItems[0].id", is(1)))
-                .andExpect(jsonPath("$.pageItems[0].valorTotal", is(BigDecimal.valueOf(200))))
+                .andExpect(jsonPath("$.pageItems[0].valorTotal", is(200)))
+                .andExpect(jsonPath("$.pageItems[0].valorFrete", is(20)))
                 .andExpect(jsonPath("$.pageItems[0].status", is("AGUARDANDO_PAGAMENTO")));
     }
 
@@ -98,16 +142,18 @@ class PedidoRestControllerTest {
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
                 "Produto Teste Número 01",
-                "Descrição do produto teste número 01",
+                "Descrição do produto teste número 01 com mais detalhes",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
                 BigDecimal.valueOf(100),
-                3,
+                BigDecimal.valueOf(100),
+                50,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
                 BigDecimal.valueOf(0.2),
                 BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
+                CondicaoEnum.NOVO);
 
         List<ItemProdutoOutDto> produtos = new ArrayList<>();
         produtos.add(new ItemProdutoOutDto(produtoOut, 2));
@@ -117,7 +163,9 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(20),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtos
         );
@@ -127,7 +175,8 @@ class PedidoRestControllerTest {
         this.mockMvc.perform(get("/pedidos/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(BigDecimal.valueOf(200))))
+                .andExpect(jsonPath("$.valorTotal", is(200)))
+                .andExpect(jsonPath("$.valorFrete", is(20)))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
     }
@@ -138,21 +187,24 @@ class PedidoRestControllerTest {
         List<ItemProdutoInDto> produtosIn = new ArrayList<>();
         produtosIn.add(new ItemProdutoInDto(1L, 2));
 
-        PedidoInDto pedidoIn = new PedidoInDto(produtosIn);
+        FreteServiceDto frete = criarFreteServiceDto();
+        PedidoInDto pedidoIn = new PedidoInDto(frete, 1L, produtosIn);
 
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
                 BigDecimal.valueOf(0.2),
                 BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
+                CondicaoEnum.NOVO);
 
         List<ItemProdutoOutDto> produtosOut = new ArrayList<>();
         produtosOut.add(new ItemProdutoOutDto(produtoOut, 2));
@@ -162,7 +214,9 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(21.19),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtosOut
         );
@@ -174,12 +228,13 @@ class PedidoRestControllerTest {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         String pedidoJson = mapper.writeValueAsString(pedidoIn);
 
-        this.mockMvc.perform(post("/pedidos", 1L)
+        this.mockMvc.perform(post("/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(pedidoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(BigDecimal.valueOf(200))))
+                .andExpect(jsonPath("$.valorTotal", is(200)))
+                .andExpect(jsonPath("$.valorFrete", is(21.19)))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")));
     }
 
@@ -189,7 +244,10 @@ class PedidoRestControllerTest {
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -207,7 +265,9 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(20),
                 StatusEnum.PREPARANDO_ENVIO,
                 produtos
         );
@@ -226,7 +286,10 @@ class PedidoRestControllerTest {
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -244,7 +307,9 @@ class PedidoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(20),
                 StatusEnum.EM_TRANSITO,
                 produtos
         );
@@ -263,7 +328,10 @@ class PedidoRestControllerTest {
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -283,7 +351,9 @@ class PedidoRestControllerTest {
                 hoje,
                 hoje,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(20),
                 StatusEnum.ENTREGUE,
                 produtos
         );
@@ -302,7 +372,10 @@ class PedidoRestControllerTest {
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -322,7 +395,9 @@ class PedidoRestControllerTest {
                 hoje,
                 null,
                 hoje,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(20),
                 StatusEnum.CANCELADO,
                 produtos
         );

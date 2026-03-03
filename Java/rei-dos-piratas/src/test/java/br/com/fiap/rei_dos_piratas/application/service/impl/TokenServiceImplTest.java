@@ -34,6 +34,7 @@ class TokenServiceImplTest {
         this.httpClient = mock(CloseableHttpClient.class);
         this.gson = new Gson();
         this.service = new TokenServiceImpl(repository, gson, httpClient);
+        this.response = mock(CloseableHttpResponse.class);
     }
 
     @Test

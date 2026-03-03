@@ -1,11 +1,15 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CarrinhoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoCarrinhoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
@@ -48,6 +52,23 @@ class CarrinhoRestControllerTest {
     @MockBean
     private CarrinhoController carrinhoController;
 
+    private FreteServiceDto criarFreteServiceDto() {
+        FreteCompanyDto company = new FreteCompanyDto(
+                2L,
+                "Jadlog",
+                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
+
+        return new FreteServiceDto(
+                3L,
+                ".Package",
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(21.19),
+                BigDecimal.ZERO,
+                "R$",
+                6,
+                company);
+    }
+
     @Test
     @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void adicionarProduto() throws Exception {
@@ -55,9 +76,12 @@ class CarrinhoRestControllerTest {
 
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
-                "Produto Teste Número 01",
-                "Descrição do produto teste número 01",
+                "Produto Teste Numero 01",
+                "Descricao do produto teste numero 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -98,9 +122,12 @@ class CarrinhoRestControllerTest {
 
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
-                "Produto Teste Número 01",
-                "Descrição do produto teste número 01",
+                "Produto Teste Numero 01",
+                "Descricao do produto teste numero 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -155,9 +182,12 @@ class CarrinhoRestControllerTest {
     void visualizarCarrinho() throws Exception {
         ProdutoOutDto produtoOut1 = new ProdutoOutDto(
                 1L,
-                "Produto Teste Número 01",
-                "Descrição do produto teste número 01",
+                "Produto Teste Numero 01",
+                "Descricao do produto teste numero 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -169,9 +199,12 @@ class CarrinhoRestControllerTest {
 
         ProdutoOutDto produtoOut2 = new ProdutoOutDto(
                 2L,
-                "Produto Teste Número 02",
-                "Descrição do produto teste número 02",
+                "Produto Teste Numero 02",
+                "Descricao do produto teste numero 02",
+                "Eiichiro Oda",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem2.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -202,9 +235,12 @@ class CarrinhoRestControllerTest {
     void finalizarCompra() throws Exception {
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
-                "Produto Teste Número 01",
-                "Descrição do produto teste número 01",
+                "Produto Teste Numero 01",
+                "Descricao do produto teste numero 01",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
@@ -222,18 +258,30 @@ class CarrinhoRestControllerTest {
                 LocalDate.now(),
                 null,
                 null,
+                null,
                 BigDecimal.valueOf(200),
+                BigDecimal.valueOf(21.19),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
                 produtos
         );
 
-        when(this.carrinhoController.finalizarCompra()).thenReturn(pedido);
+        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(criarFreteServiceDto(), 1L);
+        when(this.carrinhoController.finalizarCompra(any(PedidoCarrinhoInDto.class))).thenReturn(pedido);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        String pedidoJson = mapper.writeValueAsString(pedidoIn);
 
         this.mockMvc.perform(put("/carrinho/finalizar")
-                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(pedidoJson)
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(BigDecimal.valueOf(200))))
+                .andExpect(jsonPath("$.valorTotal", is(200)))
+                .andExpect(jsonPath("$.valorFrete", is(21.19)))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")))
                 .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
     }

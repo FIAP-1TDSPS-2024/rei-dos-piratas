@@ -49,7 +49,7 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                "12345678978",
+                "52998224725",
                 "11991231234",
                 new Carrinho());
 
@@ -100,7 +100,7 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                "12345678978",
+                "52998224725",
                 "11991231234",
                 new Carrinho());
         
@@ -123,7 +123,7 @@ class ClienteServiceImplTest {
                 "SenhaSegura123",
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                "12345678978",
+                "52998224725",
                 "11991231234");
 
         Cliente clienteCriado = new Cliente(
@@ -136,7 +136,7 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                "12345678978",
+                "52998224725",
                 "11991231234",
                 new Carrinho());
 
@@ -161,7 +161,7 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                "12345678978",
+                "52998224725",
                 "11991231234",
                 new Carrinho());
 
@@ -175,7 +175,7 @@ class ClienteServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                "12345678978",
+                "52998224725",
                 "11991231234",
                 new Carrinho());
 

@@ -81,7 +81,7 @@ class AuthRestControllerTest {
                 "SenhaSegura123",
                 java.time.LocalDate.of(1990,1,1),
                 br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11987654321"
         );
 
@@ -99,7 +99,7 @@ class AuthRestControllerTest {
                 null
         );
 
-        AuthResponse out = new AuthResponse("token-abc", clienteOutDto, java.util.List.of("CLIENT"));
+        AuthResponse out = new AuthResponse("token-abc", clienteOutDto, null, java.util.List.of("CLIENT"));
 
         when(authController.cadastrar(any(ClienteInDto.class))).thenReturn(out);
 

@@ -106,7 +106,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -175,7 +175,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -241,7 +241,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -311,7 +311,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -378,7 +378,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -462,7 +462,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -527,7 +527,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -590,7 +590,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinho);
 
@@ -683,7 +683,7 @@ class CarrinhoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11991231234",
                 carrinhoVazio);
 

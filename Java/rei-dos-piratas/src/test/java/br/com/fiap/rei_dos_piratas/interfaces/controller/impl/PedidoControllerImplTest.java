@@ -1,16 +1,28 @@
 package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,6 +38,7 @@ class PedidoControllerImplTest {
     private PedidoService pedidoService;
     private ClienteService clienteService;
     private ProdutoService produtoService;
+    private EnderecoService enderecoService;
     private PedidoController pedidoController;
 
     @BeforeEach
@@ -33,574 +46,183 @@ class PedidoControllerImplTest {
         this.pedidoService = mock(PedidoService.class);
         this.clienteService = mock(ClienteService.class);
         this.produtoService = mock(ProdutoService.class);
-        this.pedidoController = new PedidoControllerImpl(pedidoService, clienteService, produtoService);
+        this.enderecoService = mock(EnderecoService.class);
+        this.pedidoController = new PedidoControllerImpl(pedidoService, clienteService, produtoService, enderecoService);
+
+        SimpleGrantedAuthority auth = new SimpleGrantedAuthority("ROLE_CLIENT");
+        CustomUserDetails userDetails = new CustomUserDetails(1L, "joao", "pwd", List.of(auth));
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private Cliente criarCliente() {
+        return new Cliente(
+                1L,
+                "jonasdasneves",
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                LocalDate.of(2000, 3, 16),
+                SexoEnum.M,
+                "52998224725",
+                "11999999999",
+                new Carrinho(1L, new ArrayList<>()));
+    }
+
+    private Endereco criarEndereco() {
+        Estado estado = new Estado(1L, "Sao Paulo", "SP");
+        Cidade cidade = new Cidade(1L, "Sao Paulo", estado);
+        return new Endereco(1L, 12345, "12345678", "Avenida Paulista", "Bela Vista", true, cidade, "Brasil", "BR", null);
+    }
+
+    private Produto criarProduto() {
+        Funcionario funcionario = new Funcionario(
+                "vendedor01",
+                1L,
+                "Joao Vendedor",
+                "joao@gmail.com",
+                "senha123",
+                true,
+                LocalDate.now(),
+                Role.USER,
+                null,
+                BigDecimal.valueOf(2000));
+
+        return new Produto(
+                1L,
+                "Action Figure One Piece Luffy Gear 5",
+                "Action figure do Luffy em alta qualidade com detalhes incriveis",
+                "Eiichiro Oda",
+                CategoriaEnum.AVENTURA,
+                "http://imagem.com/luffy.jpg",
+                BigDecimal.valueOf(100),
+                BigDecimal.valueOf(120),
+                3,
+                BigDecimal.valueOf(20),
+                BigDecimal.valueOf(15),
+                BigDecimal.valueOf(2),
+                BigDecimal.valueOf(3),
+                CondicaoEnum.NOVO,
+                funcionario);
+    }
+
+    private FreteServiceDto criarFrete() {
+        FreteCompanyDto company = new FreteCompanyDto(2L, "Jadlog", "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
+        return new FreteServiceDto(3L, ".Package", BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, company);
+    }
+
+    private Pedido criarPedido(StatusEnum status) {
+        Pedido pedido = new Pedido();
+        pedido.setId(1L);
+        pedido.setDataPedido(LocalDate.now());
+        pedido.setStatus(status);
+        pedido.setCliente(criarCliente());
+        pedido.setEnderecoEntrega(criarEndereco());
+        pedido.setValorFrete(BigDecimal.valueOf(21.19));
+        pedido.setValorTotal(BigDecimal.valueOf(221.19));
+        pedido.setServicoEntrega(3L);
+        pedido.setProdutosAdicionados(List.of(new ItemProdutoPedido(criarProduto(), 2)));
+        return pedido;
     }
 
     @Test
     void findAllByCliente() {
-        // Arrange
-        Long clienteId = 1L;
+        Page<Pedido> page = new Page<>(1, 0, List.of(criarPedido(StatusEnum.AGUARDANDO_PAGAMENTO)));
+        when(pedidoService.findAll(0, 10)).thenReturn(page);
 
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+        Page<PedidoOutDto> result = pedidoController.findAllByCliente(0, 10);
 
-        Cliente cliente = new Cliente(
-                1L,
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978",
-                new Carrinho());
-
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(2000));
-
-        Produto produto = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        ItemProdutoPedido item = new ItemProdutoPedido(1L, produto, 2);
-
-        Pedido pedido = new Pedido(
-                1L,
-                LocalDate.now(),
-                null,
-                null,
-                BigDecimal.valueOf(300),
-                StatusEnum.AGUARDANDO_PAGAMENTO,
-                cliente,
-                List.of(item));
-
-        List<Pedido> pedidos = new ArrayList<>();
-        pedidos.add(pedido);
-
-        Page<Pedido> pedidoPage = new Page<>(1, 0, pedidos);
-
-        when(pedidoService.findAll(0, 10)).thenReturn(pedidoPage);
-
-        // Act
-        final Page<Pedido> foundPedidoPage = pedidoService.findAll(0, 10);
-
-        // Assert
         verify(pedidoService, times(1)).findAll(0, 10);
-        assertThat(foundPedidoPage).isSameAs(pedidoPage);
+        assertThat(result.pageItems()).hasSize(1);
+        assertThat(result.pageItems().get(0).status()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
     }
 
     @Test
     void findById() {
-        // Arrange
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+        when(pedidoService.findById(1L)).thenReturn(criarPedido(StatusEnum.AGUARDANDO_PAGAMENTO));
 
-        Cliente cliente = new Cliente(
-                1L,
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978",
-                new Carrinho());
+        PedidoOutDto result = pedidoController.findById(1L);
 
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(2000));
-
-        Produto produto = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        ItemProdutoPedido item = new ItemProdutoPedido(1L, produto, 2);
-
-        Pedido pedido = new Pedido(
-                1L,
-                LocalDate.now(),
-                null,
-                null,
-                BigDecimal.valueOf(300),
-                StatusEnum.AGUARDANDO_PAGAMENTO,
-                cliente,
-                List.of(item));
-
-        when(pedidoService.findById(1L)).thenReturn(pedido);
-
-        // Act
-        final Pedido foundPedido = pedidoService.findById(1L);
-
-        // Assert
         verify(pedidoService, times(1)).findById(1L);
-        assertThat(foundPedido).isSameAs(pedido);
+        assertThat(result.id()).isEqualTo(1L);
     }
 
     @Test
     void fazerPedido() {
-        // Arrange
-        Long clienteId = 1L;
+        Cliente cliente = criarCliente();
+        Endereco endereco = criarEndereco();
+        Produto produto = criarProduto();
+        Pedido pedidoCriado = criarPedido(StatusEnum.AGUARDANDO_PAGAMENTO);
 
-        Endereco endereco = new Endereco(
+        PedidoInDto inDto = new PedidoInDto(
+                criarFrete(),
                 1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+                List.of(new ItemProdutoInDto(1L, 2))
+        );
 
-        Cliente cliente = new Cliente(
-                1L,
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978",
-                new Carrinho());
-
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(2000));
-
-        Produto produto = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        ItemProdutoPedido item = new ItemProdutoPedido(produto, 2);
-
-        Pedido pedidoCriado = new Pedido(
-                1L,
-                LocalDate.now(),
-                null,
-                null,
-                BigDecimal.valueOf(300),
-                StatusEnum.AGUARDANDO_PAGAMENTO,
-                cliente,
-                List.of(item));
-
-        when(clienteService.findById(clienteId)).thenReturn(cliente);
+        when(clienteService.findById(1L)).thenReturn(cliente);
+        when(enderecoService.findById(1L)).thenReturn(endereco);
         when(produtoService.findById(1L)).thenReturn(produto);
         when(pedidoService.fazerPedido(any(Pedido.class))).thenReturn(pedidoCriado);
 
-        // Act
-        final Pedido newPedido = pedidoService.fazerPedido(new Pedido(cliente, List.of(item)));
+        PedidoOutDto result = pedidoController.fazerPedido(inDto);
 
-        // Assert
+        verify(clienteService, times(1)).findById(1L);
+        verify(enderecoService, times(1)).findById(1L);
+        verify(produtoService, times(1)).findById(1L);
         verify(pedidoService, times(1)).fazerPedido(any(Pedido.class));
-        assertThat(newPedido).isSameAs(pedidoCriado);
+        assertThat(result.status()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
     }
 
     @Test
     void pagarPedido() {
-        // Arrange
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+        when(pedidoService.pagarPedido(1L)).thenReturn(criarPedido(StatusEnum.PREPARANDO_ENVIO));
 
-        Cliente cliente = new Cliente(
-                1L,
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978",
-                new Carrinho());
+        PedidoOutDto result = pedidoController.pagarPedido(1L);
 
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(2000));
-
-        Produto produto = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        ItemProdutoPedido item = new ItemProdutoPedido(1L, produto, 2);
-
-        Pedido pedidoPago = new Pedido(
-                1L,
-                LocalDate.now(),
-                null,
-                null,
-                BigDecimal.valueOf(300),
-                StatusEnum.PREPARANDO_ENVIO,
-                cliente,
-                List.of(item));
-
-        when(pedidoService.pagarPedido(1L)).thenReturn(pedidoPago);
-
-        // Act
-        final Pedido pedidoAtualizado = pedidoService.pagarPedido(1L);
-
-        // Assert
         verify(pedidoService, times(1)).pagarPedido(1L);
-        assertThat(pedidoAtualizado).isSameAs(pedidoPago);
-        assertThat(pedidoAtualizado.getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+        assertThat(result.status()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
     }
 
     @Test
     void enviarPedido() {
-        // Arrange
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+        when(pedidoService.enviarPedido(1L)).thenReturn(criarPedido(StatusEnum.EM_TRANSITO));
 
-        Cliente cliente = new Cliente(
-                1L,
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978",
-                new Carrinho());
+        PedidoOutDto result = pedidoController.enviarPedido(1L);
 
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(2000));
-
-        Produto produto = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        ItemProdutoPedido item = new ItemProdutoPedido(1L, produto, 2);
-
-        Pedido pedidoEnviado = new Pedido(
-                1L,
-                LocalDate.now(),
-                null,
-                null,
-                BigDecimal.valueOf(300),
-                StatusEnum.EM_TRANSITO,
-                cliente,
-                List.of(item));
-
-        when(pedidoService.enviarPedido(1L)).thenReturn(pedidoEnviado);
-
-        // Act
-        final Pedido pedidoAtualizado = pedidoService.enviarPedido(1L);
-
-        // Assert
         verify(pedidoService, times(1)).enviarPedido(1L);
-        assertThat(pedidoAtualizado).isSameAs(pedidoEnviado);
-        assertThat(pedidoAtualizado.getStatus()).isEqualTo(StatusEnum.EM_TRANSITO);
+        assertThat(result.status()).isEqualTo(StatusEnum.EM_TRANSITO);
     }
 
     @Test
     void entregarPedido() {
-        // Arrange
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+        Pedido entregue = criarPedido(StatusEnum.ENTREGUE);
+        entregue.setDataEntrega(LocalDate.now());
+        when(pedidoService.entregarPedido(1L)).thenReturn(entregue);
 
-        Cliente cliente = new Cliente(
-                1L,
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978",
-                new Carrinho());
+        PedidoOutDto result = pedidoController.entregarPedido(1L);
 
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(2000));
-
-        Produto produto = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        ItemProdutoPedido item = new ItemProdutoPedido(1L, produto, 2);
-
-        Pedido pedidoEntregue = new Pedido(
-                1L,
-                LocalDate.now(),
-                LocalDate.now(),
-                null,
-                BigDecimal.valueOf(300),
-                StatusEnum.ENTREGUE,
-                cliente,
-                List.of(item));
-
-        when(pedidoService.entregarPedido(1L)).thenReturn(pedidoEntregue);
-
-        // Act
-        final Pedido pedidoAtualizado = pedidoService.entregarPedido(1L);
-
-        // Assert
         verify(pedidoService, times(1)).entregarPedido(1L);
-        assertThat(pedidoAtualizado).isSameAs(pedidoEntregue);
-        assertThat(pedidoAtualizado.getStatus()).isEqualTo(StatusEnum.ENTREGUE);
+        assertThat(result.status()).isEqualTo(StatusEnum.ENTREGUE);
     }
 
     @Test
     void cancelarPedido() {
-        // Arrange
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
+        Pedido cancelado = criarPedido(StatusEnum.CANCELADO);
+        cancelado.setDataCancelamento(LocalDate.now());
+        when(pedidoService.cancelarPedido(1L)).thenReturn(cancelado);
 
-        Cliente cliente = new Cliente(
-                1L,
-                "jonasdasneves",
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
-                SexoEnum.M,
-                endereco,
-                "12345678978",
-                new Carrinho());
+        PedidoOutDto result = pedidoController.cancelarPedido(1L);
 
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(2000));
-
-        Produto produto = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        ItemProdutoPedido item = new ItemProdutoPedido(1L, produto, 2);
-
-        Pedido pedidoCancelado = new Pedido(
-                1L,
-                LocalDate.now(),
-                null,
-                LocalDate.now(),
-                BigDecimal.valueOf(300),
-                StatusEnum.CANCELADO,
-                cliente,
-                List.of(item));
-
-        when(pedidoService.cancelarPedido(1L)).thenReturn(pedidoCancelado);
-
-        // Act
-        final Pedido pedidoAtualizado = pedidoService.cancelarPedido(1L);
-
-        // Assert
         verify(pedidoService, times(1)).cancelarPedido(1L);
-        assertThat(pedidoAtualizado).isSameAs(pedidoCancelado);
-        assertThat(pedidoAtualizado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(result.status()).isEqualTo(StatusEnum.CANCELADO);
     }
 }

@@ -62,7 +62,7 @@ class ClienteRepositoryImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "1191231234",
                 carrinho
         );
@@ -103,7 +103,7 @@ class ClienteRepositoryImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "1191231234",
                 carrinho
         );
@@ -125,21 +125,6 @@ class ClienteRepositoryImplTest {
 
     @Test
     void create_shouldThrowWhenUserNameExists() {
-        //O que
-        Endereco enderecoParaCriar = new Endereco(
-                null,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Cliente cliente = new Cliente(
                 "jonasdasneves",
                 "Jonas da Silva Campos Melo",
@@ -147,7 +132,8 @@ class ClienteRepositoryImplTest {
                 "SenhaSegura123",
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                "12345678978");
+                "52998224725",
+                "11991231234");
 
         when(jpaRepository.findFirstByUserName("jonasdasneves")).thenReturn(new JpaClienteEntity());
 
@@ -157,21 +143,6 @@ class ClienteRepositoryImplTest {
     @Test
     void create_shouldSaveClienteWhenNoDuplicates() {
         //O que
-        Endereco enderecoParaCriar = new Endereco(
-                null,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR"
-        );
-
         Cliente cliente = new Cliente(
                 "jonasdasneves",
                 "Jonas da Silva Campos Melo",
@@ -179,7 +150,8 @@ class ClienteRepositoryImplTest {
                 "SenhaSegura123",
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
-                "12345678978"
+                "52998224725",
+                "11991231234"
         );
 
         // Create a properly initialized JpaCarrinhoEntity
@@ -198,13 +170,13 @@ class ClienteRepositoryImplTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
-                "12345678978",
+                "52998224725",
                 "1191231234",
                 mockCarrinho
         );
 
         when(jpaRepository.findFirstByUserName("jonasdasneves")).thenReturn(null);
-        when(jpaRepository.findFirstByCpf("12345678978")).thenReturn(null);
+        when(jpaRepository.findFirstByCpf("52998224725")).thenReturn(null);
         when(jpaRepository.findFirstByEmail("jonas@gmail.com")).thenReturn(null);
         when(jpaRepository.save(any(JpaClienteEntity.class))).thenReturn(savedEntity);
 

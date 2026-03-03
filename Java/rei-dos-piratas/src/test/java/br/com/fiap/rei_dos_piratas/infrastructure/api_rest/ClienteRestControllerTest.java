@@ -47,20 +47,6 @@ class ClienteRestControllerTest {
     @Test
     void findAll() throws Exception {
         //O que
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Cliente cliente = new Cliente(
                 1L,
                 "jonasdasneves",
@@ -71,8 +57,8 @@ class ClienteRestControllerTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                endereco,
-                "12345678978",
+                "52998224725",
+                "11991231234",
                 new Carrinho());
 
         List<ClienteOutDto> clientes = new ArrayList<ClienteOutDto>();
@@ -96,20 +82,6 @@ class ClienteRestControllerTest {
     @Test
     void findById() throws Exception {
         //O que
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR");
-
         Cliente cliente = new Cliente(
                 1L,
                 "jonasdasneves",
@@ -120,8 +92,8 @@ class ClienteRestControllerTest {
                 LocalDate.now(),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                endereco,
-                "12345678978",
+                "52998224725",
+                "11991231234",
                 new Carrinho());
 
         ClienteOutDto clienteDto = ClienteDtoMapper.toDto(cliente);
@@ -138,21 +110,6 @@ class ClienteRestControllerTest {
 
     @Test
     void update() throws Exception {
-        Endereco endereco = new Endereco(
-                1L,
-                12345,
-                "12345678",
-                "Avenida Paulista",
-                "Bela Vista",
-                10L,
-                "São Paulo",
-                20L,
-                "São Paulo",
-                "SP",
-                "Brasil",
-                "BR"
-        );
-
         Cliente cliente = new Cliente(
                 1L,
                 "jonasdasneves",
@@ -161,10 +118,10 @@ class ClienteRestControllerTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                LocalDate.of(2000, 3, 16),
+                LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
-                endereco,
-                "12345678978",
+                "52998224725",
+                "11991231234",
                 new Carrinho());
 
         ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(cliente);

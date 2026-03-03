@@ -19,7 +19,8 @@ public class EnderecoRepositoryImpl implements EnderecoRepository {
     @Override
     public Page<Endereco> findAllByClienteId(Long clienteId, int pageNumber, int pageSize) {
         return PageMapper.fromFrameworkPage(
-                this.repository.findAllByEnderecoAtivoIsTrue(
+                this.repository.findAllByCliente_IdAndEnderecoAtivoIsTrue(
+                        clienteId,
                         Pageable
                                 .ofSize(pageSize)
                                 .withPage(pageNumber)

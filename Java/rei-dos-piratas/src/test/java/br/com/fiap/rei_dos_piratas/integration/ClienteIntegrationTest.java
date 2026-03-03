@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -41,22 +40,14 @@ public class ClienteIntegrationTest {
                                    "senha": "SenhaSegura",
                                    "dataNascimento": "2004-03-13",
                                    "sexo": "M",
-                                   "cpf": "18123697822",
-                                   "endereco": {
-                                     "numero": 123,
-                                     "cep": "04567812",
-                                     "logradouro": "Avenida Paulista",
-                                     "bairro": "Bela Vista",
-                                     "cidade": "São Paulo",
-                                     "estadoNome": "São Paulo",
-                                     "estadoSigla": "SP"
-                                   }
+                                   "cpf": "52998224725",
+                                   "celular": "11991231234"
                                  }
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.userName", is("jonasDasNeves")))
-                .andExpect(jsonPath("$.email", is("jonas@example.com")));
+                .andExpect(jsonPath("$.cliente.id").exists())
+                .andExpect(jsonPath("$.cliente.userName", is("jonasDasNeves")))
+                .andExpect(jsonPath("$.cliente.email", is("jonas@example.com")));
 
         Page<Cliente> clientes = clienteRepository.listAll(0,10);
         assert clientes.pageItems().get(0).getUsername().equals("jonasDasNeves");

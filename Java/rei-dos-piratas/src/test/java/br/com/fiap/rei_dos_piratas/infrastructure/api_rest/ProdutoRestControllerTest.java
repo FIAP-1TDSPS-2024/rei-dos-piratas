@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
@@ -28,7 +29,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,15 +54,17 @@ class ProdutoRestControllerTest {
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 50,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
                 BigDecimal.valueOf(0.2),
                 BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
+                CondicaoEnum.NOVO);
 
         List<ProdutoOutDto> produtos = new ArrayList<>();
         produtos.add(produto);
@@ -73,8 +80,8 @@ class ProdutoRestControllerTest {
                 .andExpect(jsonPath("$.pageItems", hasSize(1)))
                 .andExpect(jsonPath("$.pageItems[0].id", is(1)))
                 .andExpect(jsonPath("$.pageItems[0].nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.pageItems[0].preco", is(BigDecimal.valueOf(100))))
-                .andExpect(jsonPath("$.pageItems[0].estoque", is(BigDecimal.valueOf(50))));
+                .andExpect(jsonPath("$.pageItems[0].preco", is(100)))
+                .andExpect(jsonPath("$.pageItems[0].estoque", is(50)));
     }
 
     @Test
@@ -83,15 +90,17 @@ class ProdutoRestControllerTest {
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
                 BigDecimal.valueOf(100),
-                3,
+                BigDecimal.valueOf(100),
+                50,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
                 BigDecimal.valueOf(0.2),
                 BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
+                CondicaoEnum.NOVO);
 
         when(this.produtoController.findById(1L)).thenReturn(produto);
 
@@ -99,7 +108,7 @@ class ProdutoRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.preco", is(BigDecimal.valueOf(100))))
+                .andExpect(jsonPath("$.preco", is(100)))
                 .andExpect(jsonPath("$.condicao", is("NOVO")));
     }
 
@@ -108,13 +117,16 @@ class ProdutoRestControllerTest {
         ProdutoInDto produtoIn = new ProdutoInDto(
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
+                BigDecimal.valueOf(1),
+                BigDecimal.valueOf(1),
                 CondicaoEnum.NOVO,
                 1L
         );
@@ -123,15 +135,17 @@ class ProdutoRestControllerTest {
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
                 BigDecimal.valueOf(100),
-                3,
+                BigDecimal.valueOf(100),
+                50,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
                 BigDecimal.valueOf(0.2),
                 BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
+                CondicaoEnum.NOVO);
 
         when(this.produtoController.create(any(ProdutoInDto.class))).thenReturn(produtoOut);
 
@@ -146,7 +160,7 @@ class ProdutoRestControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.preco", is(BigDecimal.valueOf(100))))
+                .andExpect(jsonPath("$.preco", is(100)))
                 .andExpect(jsonPath("$.condicao", is("NOVO")));
     }
 
@@ -154,32 +168,36 @@ class ProdutoRestControllerTest {
     void update() throws Exception {
         Produto produto = new Produto(
                 1L,
-                "Produto Teste Número 01",
-                "Descrição do produto teste número 01 com mais detalhes",
-                "http://exemplo.com/imagem.jpg",
+                "Produto Teste",
+                "Descrição do produto teste",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
+                "http://imagem.com/produto.jpg",
+                BigDecimal.valueOf(100),
                 BigDecimal.valueOf(100),
                 3,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
+                BigDecimal.valueOf(1),
+                BigDecimal.valueOf(1),
                 CondicaoEnum.NOVO,
-                null
-        );
+                null);
 
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
+                "Jonas Oliveira",
+                CategoriaEnum.AVENTURA,
                 "http://exemplo.com/imagem.jpg",
                 BigDecimal.valueOf(100),
-                3,
+                BigDecimal.valueOf(100),
+                50,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
                 BigDecimal.valueOf(0.2),
                 BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
+                CondicaoEnum.NOVO);
 
         when(this.produtoController.update(any(Produto.class))).thenReturn(produtoOut);
 
@@ -189,12 +207,13 @@ class ProdutoRestControllerTest {
         String produtoJson = mapper.writeValueAsString(produto);
 
         this.mockMvc.perform(put("/produtos")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(produtoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.preco", is(BigDecimal.valueOf(100))));
+                .andExpect(jsonPath("$.preco", is(100)));
     }
 
     @Test

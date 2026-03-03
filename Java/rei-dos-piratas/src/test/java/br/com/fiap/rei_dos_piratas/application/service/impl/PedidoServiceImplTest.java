@@ -14,6 +14,7 @@ import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,7 +51,7 @@ class PedidoServiceImplTest {
         SecurityContextHolder.clearContext();
 
         // Cria usuário cliente
-        SimpleGrantedAuthority auth = new SimpleGrantedAuthority("ROLE_CLIENTE");
+        SimpleGrantedAuthority auth = new SimpleGrantedAuthority("ROLE_CLIENT");
         CustomUserDetails userDetails = new CustomUserDetails(1L, "joao", "pwd", List.of(auth));
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -82,7 +85,7 @@ class PedidoServiceImplTest {
                 LocalDate.now(),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
-                "12345678900",
+                "52998224725",
                 "11992131234",
                 carrinho);
     }
@@ -164,12 +167,12 @@ class PedidoServiceImplTest {
         // Mock do repository
         when(pedidoRepository.listAllByClient(0, 10, 1L)).thenReturn(page);
 
-        // Cria CustomUserDetails com ROLE_CLIENTE corretamente
+        // Cria CustomUserDetails com ROLE_CLIENT corretamente
         CustomUserDetails userDetails = new CustomUserDetails(
                 1L,
                 "joao",
                 "pwd",
-                List.of(new SimpleGrantedAuthority("ROLE_CLIENTE"))
+                List.of(new SimpleGrantedAuthority("ROLE_CLIENT"))
         );
 
         // Define autenticação no SecurityContext
@@ -240,7 +243,7 @@ class PedidoServiceImplTest {
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
-        Pedido pedidoCriado = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+        Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
@@ -251,7 +254,9 @@ class PedidoServiceImplTest {
         // Assert
         verify(produtoRepository, times(1)).update(produto);
         verify(pedidoRepository, times(1)).create(pedido);
+        assertThat(resultado).isNotNull();
         assertThat(resultado.getId()).isEqualTo(1L);
+        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
         assertThat(produto.getEstoque()).isEqualTo(8); // 10 - 2
     }
 
@@ -259,7 +264,7 @@ class PedidoServiceImplTest {
     void fazerPedido_DeveLancarExcecaoQuandoEstoqueInsuficiente() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 4, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 5)); // Quantidade maior que estoque
@@ -303,7 +308,7 @@ class PedidoServiceImplTest {
         verify(produtoRepository, times(2)).update(any(Produto.class));
         verify(pedidoRepository, times(1)).create(pedido);
         assertThat(produto1.getEstoque()).isEqualTo(8);
-        assertThat(produto2.getEstoque()).isEqualTo(4);
+        assertThat(produto2.getEstoque()).isEqualTo(9);
     }
 
     @Test
@@ -318,15 +323,62 @@ class PedidoServiceImplTest {
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
+        // Mock DadosEmpresa
+        DadosEmpresa dadosEmpresa = new DadosEmpresa(
+                1L,
+                "Rei dos Piratas LTDA",
+                "Rei dos Piratas",
+                "12345678901234",
+                "contato@reidospiratas.com.br",
+                "1133334444",
+                "reidospiratas.com.br",
+                "SP",
+                "00000000000191",
+                "4721100");
+
+        // Mock Endereco Empresa
+        Endereco enderecoEmpresa = new Endereco(
+                1L,
+                123,
+                "12345678",
+                "Avenida Brasil",
+                "Centro",
+                true,
+                new Cidade(1L, "São Paulo", new Estado(1L, "São Paulo", "SP")),
+                "Brasil",
+                "BR",
+                null);
+
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(dadosEmpresaRepository.get()).thenReturn(dadosEmpresa);
+        when(enderecoService.getEnderecoEmpresa()).thenReturn(enderecoEmpresa);
+        when(enderecoService.findById(1L)).thenReturn(criarEndereco(cliente));
+
+        // Mock PedidoFreteResponseDto
+        PedidoFreteResponseDto pedidoFreteResponse = new PedidoFreteResponseDto(
+                UUID.randomUUID(),
+                "PROTOCOL123456",
+                3,
+                1,
+                BigDecimal.valueOf(21.19),
+                BigDecimal.valueOf(21.19),
+                BigDecimal.ZERO,
+                5,
+                6,
+                "posted",
+                false,
+                LocalDateTime.now(),
+                LocalDateTime.now());
+
+        when(freteService.criarPedidoFrete(any())).thenReturn(pedidoFreteResponse);
 
         // Act
         Pedido resultado = pedidoService.pagarPedido(1L);
 
         // Assert
         verify(pedidoRepository, times(1)).findById(1L);
-        verify(pedidoRepository, times(1)).update(pedido);
+        verify(pedidoRepository, times(2)).update(pedido);  // Chamado em enriquecerPedidoPorFrete e em pagarPedido
         assertThat(resultado.getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
     }
 
@@ -451,7 +503,7 @@ class PedidoServiceImplTest {
     void cancelarPedido_DeveCancelarPedidoEDevolverEstoque() {
         // Arrange
         Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
+        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 8, BigDecimal.valueOf(100));
 
         List<ItemProdutoPedido> itens = new ArrayList<>();
         itens.add(new ItemProdutoPedido(produto, 2));

@@ -170,7 +170,7 @@ class ProdutoServiceImplTest {
         assertThat(resultado.getId()).isEqualTo(1L);
         assertThat(resultado.getNome()).isEqualTo("Produto Novo");
         assertThat(resultado.getEstoque()).isEqualTo(15);
-        assertThat(resultado.getPreco()).isEqualTo(250.0f);
+        assertThat(resultado.getPreco()).isEqualTo(BigDecimal.valueOf(250));
     }
 
     @Test
@@ -237,7 +237,7 @@ class ProdutoServiceImplTest {
         assertThat(resultado).isEqualTo(produtoAtualizado);
         assertThat(resultado.getNome()).isEqualTo("Produto Atualizado");
         assertThat(resultado.getEstoque()).isEqualTo(25);
-        assertThat(resultado.getPreco()).isEqualTo(300.0f);
+        assertThat(resultado.getPreco()).isEqualTo(BigDecimal.valueOf(300));
     }
 
     @Test
@@ -286,7 +286,7 @@ class ProdutoServiceImplTest {
 
         // Assert
         verify(produtoRepository, times(1)).update(produtoComPrecoAtualizado);
-        assertThat(resultado.getPreco()).isEqualTo(150.0f);
+        assertThat(resultado.getPreco()).isEqualTo(BigDecimal.valueOf(150));
     }
 
     @Test

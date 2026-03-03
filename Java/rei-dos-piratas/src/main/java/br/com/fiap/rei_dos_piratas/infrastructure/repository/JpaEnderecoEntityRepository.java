@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaEnderecoEntityRepository extends JpaRepository<JpaEnderecoEntity, Long> {
     JpaEnderecoEntity findFirstByCepAndNumeroAndCliente_Id(String cep, int numero, Long clienteId);
-    Page<JpaEnderecoEntity> findAllByEnderecoAtivoIsTrue(Pageable pageable);
+    Page<JpaEnderecoEntity> findAllByCliente_IdAndEnderecoAtivoIsTrue(Long clienteId, Pageable pageable);
     JpaEnderecoEntity findFirstByEmpresa_Id(Long empresaId);
 }

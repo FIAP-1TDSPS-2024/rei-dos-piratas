@@ -2,18 +2,20 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.FuncionarioService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoInDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,13 +35,11 @@ class ProdutoControllerImplTest {
         this.produtoController = new ProdutoControllerImpl(produtoService, funcionarioService);
     }
 
-    @Test
-    void findById() {
-        // Arrange
-        Funcionario funcionario = new Funcionario(
+    private Funcionario criarFuncionario() {
+        return new Funcionario(
                 "vendedor01",
                 1L,
-                "João Vendedor",
+                "Joao Vendedor",
                 "joao@gmail.com",
                 "senha123",
                 true,
@@ -47,207 +47,97 @@ class ProdutoControllerImplTest {
                 Role.USER,
                 null,
                 BigDecimal.valueOf(1000));
+    }
 
-        Produto produto = new Produto(
-                1L,
+    private Produto criarProduto(Long id) {
+        return new Produto(
+                id,
                 "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
+                "Action figure do Luffy em alta qualidade com detalhes incriveis",
+                "Eiichiro Oda",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/luffy.jpg",
                 BigDecimal.valueOf(100),
+                BigDecimal.valueOf(120),
                 3,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
+                BigDecimal.valueOf(2),
+                BigDecimal.valueOf(3),
                 CondicaoEnum.NOVO,
-                funcionario);
+                criarFuncionario());
+    }
 
+    @Test
+    void findById() {
+        Produto produto = criarProduto(1L);
         when(produtoService.findById(1L)).thenReturn(produto);
 
-        // Act
-        final Produto foundProduto = produtoService.findById(1L);
+        ProdutoOutDto dto = produtoController.findById(1L);
 
-        // Assert
         verify(produtoService, times(1)).findById(1L);
-        assertThat(foundProduto).isSameAs(produto);
+        assertThat(dto.id()).isEqualTo(1L);
+        assertThat(dto.autor()).isEqualTo("Eiichiro Oda");
+        assertThat(dto.categoria()).isEqualTo(CategoriaEnum.AVENTURA);
     }
 
     @Test
     void findAll() {
-        // Arrange
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(1000));
+        Page<Produto> page = new Page<>(1, 0, List.of(criarProduto(1L), criarProduto(2L)));
+        when(produtoService.findAll(0, 10)).thenReturn(page);
 
-        Produto produto1 = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
+        Page<ProdutoOutDto> result = produtoController.findAll(0, 10);
 
-        Produto produto2 = new Produto(
-                2L,
-                "Action Figure One Piece Zoro Sanzen Sekai",
-                "Action figure do Zoro com as três espadas em posição de ataque",
-                "http://imagem.com/zoro.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        List<Produto> produtos = new ArrayList<>();
-        produtos.add(produto1);
-        produtos.add(produto2);
-
-        Page<Produto> produtoPage = new Page<>(1, 0, produtos);
-
-        when(produtoService.findAll(0, 10)).thenReturn(produtoPage);
-
-        // Act
-        final Page<Produto> foundProdutoPage = produtoService.findAll(0, 10);
-
-        // Assert
         verify(produtoService, times(1)).findAll(0, 10);
-        assertThat(foundProdutoPage).isSameAs(produtoPage);
+        assertThat(result.pageItems()).hasSize(2);
+        assertThat(result.pageItems().get(0).id()).isEqualTo(1L);
     }
 
     @Test
     void create() {
-        // Arrange
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(1000));
-
-        Produto produtoParaCriar = new Produto(
+        ProdutoInDto dtoIn = new ProdutoInDto(
                 "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
+                "Action figure do Luffy em alta qualidade com detalhes incriveis",
+                "Eiichiro Oda",
+                CategoriaEnum.AVENTURA,
                 "http://imagem.com/luffy.jpg",
                 BigDecimal.valueOf(100),
+                BigDecimal.valueOf(120),
                 3,
                 BigDecimal.valueOf(20),
                 BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
+                BigDecimal.valueOf(2),
+                BigDecimal.valueOf(3),
                 CondicaoEnum.NOVO,
-                funcionario);
+                1L);
 
-        Produto produtoCriado = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
+        Funcionario funcionario = criarFuncionario();
+        Produto produtoCriado = criarProduto(1L);
 
         when(funcionarioService.findById(1L)).thenReturn(funcionario);
         when(produtoService.create(any(Produto.class))).thenReturn(produtoCriado);
 
-        // Act
-        final Produto newProduto = produtoService.create(produtoParaCriar);
+        ProdutoOutDto result = produtoController.create(dtoIn);
 
-        // Assert
+        verify(funcionarioService, times(1)).findById(1L);
         verify(produtoService, times(1)).create(any(Produto.class));
-        assertThat(newProduto).isSameAs(produtoCriado);
+        assertThat(result.id()).isEqualTo(1L);
     }
 
     @Test
     void update() {
-        // Arrange
-        Funcionario funcionario = new Funcionario(
-                "vendedor01",
-                1L,
-                "João Vendedor",
-                "joao@gmail.com",
-                "senha123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(1000));
+        Produto produtoNovo = criarProduto(1L);
+        when(produtoService.create(any(Produto.class))).thenReturn(produtoNovo);
 
-        Produto produtoAntigo = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis",
-                "http://imagem.com/luffy.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
+        ProdutoOutDto result = produtoController.update(produtoNovo);
 
-        Produto produtoNovo = new Produto(
-                1L,
-                "Action Figure One Piece Luffy Gear 5 Edição Especial",
-                "Action figure do Luffy em alta qualidade com detalhes incríveis edição especial",
-                "http://imagem.com/luffy-special.jpg",
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO,
-                funcionario);
-
-        when(produtoService.findById(1L)).thenReturn(produtoAntigo);
-        when(produtoService.create(produtoNovo)).thenReturn(produtoNovo);
-
-        // Act
-        final Produto updatedProduto = produtoService.create(produtoNovo);
-
-        // Assert
         verify(produtoService, times(1)).create(any(Produto.class));
-        assertThat(updatedProduto).isSameAs(produtoNovo).isNotSameAs(produtoAntigo);
+        assertThat(result.nome()).contains("Luffy Gear 5");
     }
 
     @Test
     void delete() {
-        // Arrange
-        doNothing().when(produtoService).delete(1L);
-
-        // Act
-        produtoService.delete(1L);
-
-        // Assert
+        produtoController.delete(1L);
         verify(produtoService, times(1)).delete(1L);
     }
 }
-
