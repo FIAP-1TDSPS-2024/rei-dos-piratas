@@ -1,21 +1,14 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
-import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
-import br.com.fiap.rei_dos_piratas.application.service.TokenService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
-import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
-import com.google.gson.Gson;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.FreteTokenClient;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenRequestDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,17 +17,13 @@ class TokenServiceImplTest {
 
     private TokenServiceImpl service;
     private TokenRepository repository;
-    private CloseableHttpClient httpClient;
-    private CloseableHttpResponse response;
-    private Gson gson;
+    private FreteTokenClient apiFrete;
 
     @BeforeEach
     void setUp() {
         this.repository = mock(TokenRepository.class);
-        this.httpClient = mock(CloseableHttpClient.class);
-        this.gson = new Gson();
-        this.service = new TokenServiceImpl(repository, gson, httpClient);
-        this.response = mock(CloseableHttpResponse.class);
+        this.apiFrete = mock(FreteTokenClient.class);
+        this.service = new TokenServiceImpl(repository, apiFrete);
     }
 
     @Test
@@ -78,26 +67,33 @@ class TokenServiceImplTest {
     }
 
     @Test
-    void deveGerarNovoTokenComSucesso() throws Exception {
+    void deveGerarNovoTokenComSucesso() {
+        // Arrange
+        String refreshToken = "refresh_token_test";
+        TokenResponseDto tokenResponse = new TokenResponseDto(
+                "Bearer",
+                2592000,
+                "new_access_token",
+                "new_refresh_token"
+        );
 
-        String json = """
-        {
-          "access_token": "abc",
-          "refresh_token": "def",
-          "expires_in": 2592000
-        }
-        """;
+        Token expectedToken = new Token(
+                tokenResponse.access_token(),
+                tokenResponse.refresh_token(),
+                tokenResponse.expires_in()
+        );
 
-        HttpEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
+        when(apiFrete.renovarToken(any(TokenRequestDto.class))).thenReturn(tokenResponse);
+        when(repository.save(any(Token.class))).thenReturn(expectedToken);
 
-        when(response.getEntity()).thenReturn(entity);
-        when(httpClient.execute(any(HttpPost.class))).thenReturn(response);
-        when(repository.save(any())).thenAnswer(i -> i.getArgument(0));
+        // Act
+        Token result = service.gerarNovoToken(refreshToken);
 
-        Token token = service.gerarNovoToken("refresh");
-
-        assertNotNull(token);
-        verify(repository).save(any());
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedToken, result);
+        verify(apiFrete).renovarToken(any(TokenRequestDto.class));
+        verify(repository).save(any(Token.class));
     }
 
 

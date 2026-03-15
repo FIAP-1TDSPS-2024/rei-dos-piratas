@@ -2,8 +2,10 @@ package br.com.fiap.rei_dos_piratas;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
+@EnableFeignClients
 public class ReiDosPiratasApplication {
 
 	public static void main(String[] args) {
