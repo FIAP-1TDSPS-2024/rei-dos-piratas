@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
@@ -8,7 +9,9 @@ import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaPedidoMa
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaPedidoEntityRepository;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public class PedidoRepositoryImpl implements PedidoRepository {
@@ -67,5 +70,19 @@ public class PedidoRepositoryImpl implements PedidoRepository {
         else{
             return null;
         }
+    }
+
+    @Override
+    public List<Pedido> findByIdsAndStatus(List<Long> ids, StatusEnum status) {
+        return this.repository.findByIdsAndStatus(ids, status)
+                .stream()
+                .map(JpaPedidoMapper::toEntity)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void updateStatusBatch(List<Long> ids, StatusEnum newStatus) {
+        this.repository.updateStatusBatch(ids, newStatus);
     }
 }

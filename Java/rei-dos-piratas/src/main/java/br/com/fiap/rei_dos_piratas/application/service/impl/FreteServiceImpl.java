@@ -9,6 +9,8 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.FreteAppClient;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete.ProdutoFreteDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteRequestDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenResponseDto;
@@ -55,5 +57,20 @@ public class FreteServiceImpl implements FreteService {
     @Override
     public PedidoFreteResponseDto criarPedidoFrete(PedidoFreteRequestDto pedidoRequest){
         return this.apiFrete.criarPedidoFrete(pedidoRequest);
+    }
+
+    @Override
+    public CompraFreteResponseDto organizarPedidoFrete(List<String> pedidos) {
+        return this.apiFrete.pagarPedidoFrete(pedidos);
+    }
+
+    @Override
+    public GeracaoEtiquetasResponseDto gerarEtiquetasPedidoFrete(List<String> pedidos) {
+        return this.apiFrete.gerarEtiquetas(pedidos);
+    }
+
+    @Override
+    public String imprimirEtiquetasPedidoFrete(List<String> pedidos) {
+        return this.apiFrete.gerarLinkImpressaoEtiquetas(pedidos);
     }
 }

@@ -2,13 +2,20 @@ package br.com.fiap.rei_dos_piratas.application.service;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
+
+import java.util.List;
+import java.util.Map;
 
 public interface PedidoService {
-    public Page<Pedido> findAll(int pageNumber, int pageSize);
-    public Pedido findById(Long id);
-    public Pedido fazerPedido(Pedido pedido);
-    public Pedido pagarPedido(Long id);
-    public Pedido enviarPedido(Long id);
-    public Pedido entregarPedido(Long id);
-    public Pedido cancelarPedido(Long id);
+    Page<Pedido> findAll(int pageNumber, int pageSize);
+    Pedido findById(Long id);
+    Pedido fazerPedido(Pedido pedido);
+    Pedido pagarPedido(Long id);
+    String organizarPedidosParaEnvio(List<Long> pedidos);
+    Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos);
+    String imprimirEtiquetasEnvio(List<Long> pedidos);
+    Pedido enviarPedido(Long id);
+    Pedido entregarPedido(Long id);
+    Pedido cancelarPedido(Long id);
 }

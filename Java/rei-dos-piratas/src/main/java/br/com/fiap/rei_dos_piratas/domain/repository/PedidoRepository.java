@@ -4,6 +4,9 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+
+import java.util.List;
 
 public interface PedidoRepository {
     Page<Pedido> listAll(int pageNumber, int pageSize);
@@ -11,4 +14,8 @@ public interface PedidoRepository {
     Pedido findById(Long id);
     Pedido create(Pedido pedido);
     Pedido update(Pedido pedido);
+
+    // Métodos de batch para otimização de performance
+    List<Pedido> findByIdsAndStatus(List<Long> ids, StatusEnum status);
+    void updateStatusBatch(List<Long> ids, StatusEnum newStatus);
 }

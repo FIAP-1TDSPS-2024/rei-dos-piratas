@@ -13,6 +13,9 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.StatusPedidoEtiqueta;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,9 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class PedidoServiceImpl implements PedidoService {
 
@@ -110,18 +111,133 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Transactional
     @Override
+    public String organizarPedidosParaEnvio(List<Long> pedidos) {
+
+        // Busca todos os pedidos com status PREPARANDO_ENVIO em uma única consulta
+        List<Pedido> pedidosParaOrganizacao = this.repository.findByIdsAndStatus(
+                pedidos,
+                StatusEnum.PREPARANDO_ENVIO
+        );
+
+        // Se nenhum pedido válido foi encontrado, retorna mensagem
+        if (pedidosParaOrganizacao.isEmpty()) {
+            return "Nenhum pedido encontrado com status PREPARANDO_ENVIO";
+        }
+
+        // Extrai os IDs dos pedidos de frete
+        List<String> pedidosFrete = pedidosParaOrganizacao
+                .stream()
+                .map(pedido -> pedido.getPedidoFrete().toString())
+                .toList();
+
+        // Chama o serviço de frete
+        CompraFreteResponseDto response = this.freteService.organizarPedidoFrete(pedidosFrete);
+
+        if (response.message() != null) {
+            return response.message();
+        } else {
+            // Atualiza todos os pedidos em lote para o novo status
+            List<Long> idsParaAtualizar = pedidosParaOrganizacao
+                    .stream()
+                    .map(Pedido::getId)
+                    .toList();
+
+            this.repository.updateStatusBatch(idsParaAtualizar, StatusEnum.AGUARDANDO_GERACAO_ETIQUETA);
+
+            return null;
+        }
+    }
+
+    @Override
+    public Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos) {
+        // Busca todos os pedidos com status AGUARDANDO_GERACAO_ETIQUETA em uma única consulta
+        List<Pedido> pedidosParaOrganizacao = this.repository.findByIdsAndStatus(
+                pedidos,
+                StatusEnum.AGUARDANDO_GERACAO_ETIQUETA
+        );
+
+        // Se nenhum pedido válido foi encontrado, retorna mapa vazio
+        if (pedidosParaOrganizacao.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        // Cria mapeamento de UUID frete -> ID pedido para correlacionar as respostas
+        Map<String, Long> freteParaPedidoMap = pedidosParaOrganizacao
+                .stream()
+                .collect(HashMap::new,
+                    (map, pedido) -> map.put(pedido.getPedidoFrete().toString(), pedido.getId()),
+                    HashMap::putAll);
+
+        // Extrai os IDs dos pedidos de frete
+        List<String> pedidosFrete = pedidosParaOrganizacao
+                .stream()
+                .map(pedido -> pedido.getPedidoFrete().toString())
+                .toList();
+
+        // Chama o serviço de frete
+        GeracaoEtiquetasResponseDto response = this.freteService.gerarEtiquetasPedidoFrete(pedidosFrete);
+
+        // Mapeamento do resultado: converte UUID frete -> mensagem para ID pedido -> mensagem
+        Map<Long, String> resultado = new HashMap<>();
+
+        if (response.pedidos() != null && !response.pedidos().isEmpty()) {
+            // Mapeia as mensagens específicas de cada pedido de frete para o ID do pedido interno
+            response.pedidos().forEach((freteId, statusEtiqueta) -> {
+                Long pedidoId = freteParaPedidoMap.get(freteId);
+                if (pedidoId != null) {
+                    String mensagem = statusEtiqueta.status() ?
+                        "Etiqueta gerada com sucesso" :
+                        "Erro ao gerar etiqueta: " + statusEtiqueta.message();
+                    resultado.put(pedidoId, mensagem);
+                }
+            });
+        } else {
+            // Fallback para erro geral quando não há informações específicas dos pedidos
+            pedidosParaOrganizacao.forEach(pedido ->
+                resultado.put(pedido.getId(), "Erro ao processar geração de etiquetas")
+            );
+        }
+
+        return resultado;
+    }
+
+    @Override
+    public String imprimirEtiquetasEnvio(List<Long> pedidos) {
+        // Busca todos os pedidos com status AGUARDANDO_GERACAO_ETIQUETA em uma única consulta
+        List<Pedido> pedidosParaImpressao = this.repository.findByIdsAndStatus(
+                pedidos,
+                StatusEnum.AGUARDANDO_POSTAGEM
+        );
+
+        // Se nenhum pedido válido foi encontrado, retorna mensagem
+        if (pedidosParaImpressao.isEmpty()) {
+            return null;
+        }
+
+        // Extrai os IDs dos pedidos de frete
+        List<String> pedidosFrete = pedidosParaImpressao
+                .stream()
+                .map(pedido -> pedido.getPedidoFrete().toString())
+                .toList();
+
+        // Chama o serviço de frete e retorna
+        return this.freteService.imprimirEtiquetasPedidoFrete(pedidosFrete);
+    }
+
+    @Transactional
+    @Override
     public Pedido enviarPedido(Long id) {
         //Busca pedido por ID
         Pedido pedido = this.findById(id);
 
         //Verifica se o pedido está cancelado
-        if (pedido.getStatus() == StatusEnum.PREPARANDO_ENVIO){
+        if (pedido.getStatus() == StatusEnum.AGUARDANDO_POSTAGEM){
             pedido.setStatus(StatusEnum.EM_TRANSITO);
             return this.repository.update(pedido);
         }
         else {
             throw new WrongStatusException(
-                    "O pedido deve estar no estado " + StatusEnum.PREPARANDO_ENVIO +
+                    "O pedido deve estar no estado " + StatusEnum.AGUARDANDO_POSTAGEM +
                     " para ser enviado para entrega, mas ele está no estado " + pedido.getStatus());
         }
     }

@@ -9,9 +9,4 @@ public record GeracaoEtiquetasResponseDto(
         @JsonProperty("generate_key")
         String generateKey,
         Map<String, StatusPedidoEtiqueta> pedidos
-) {
-    private record StatusPedidoEtiqueta(
-            String message,
-            Boolean status
-    ) {}
-}
+) {}
