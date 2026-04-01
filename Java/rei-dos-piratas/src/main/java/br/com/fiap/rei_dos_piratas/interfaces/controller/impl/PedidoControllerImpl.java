@@ -13,6 +13,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
+import java.util.Map;
 
 public class PedidoControllerImpl implements PedidoController {
 
@@ -79,6 +80,21 @@ public class PedidoControllerImpl implements PedidoController {
     public PedidoOutDto pagarPedido(Long id) {
         return PedidoDtoMapper.toDto(
                 this.service.pagarPedido(id));
+    }
+
+    @Override
+    public String organizarPedidosParaEnvio(List<Long> pedidos) {
+        return this.service.organizarPedidosParaEnvio(pedidos);
+    }
+
+    @Override
+    public Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos) {
+        return this.service.gerarEtiquetasParaEnvio(pedidos);
+    }
+
+    @Override
+    public String imprimirEtiquetasEnvio(List<Long> pedidos) {
+        return this.service.imprimirEtiquetasEnvio(pedidos);
     }
 
     @Override

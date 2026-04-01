@@ -17,6 +17,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiqueta
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.StatusPedidoEtiqueta;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,7 +122,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         // Se nenhum pedido válido foi encontrado, retorna mensagem
         if (pedidosParaOrganizacao.isEmpty()) {
-            return "Nenhum pedido encontrado com status PREPARANDO_ENVIO";
+            throw new ResourceNotFoundException("Nenhum pedido encontrado com status PREPARANDO_ENVIO na lista passada");
         }
 
         // Extrai os IDs dos pedidos de frete
@@ -158,7 +159,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         // Se nenhum pedido válido foi encontrado, retorna mapa vazio
         if (pedidosParaOrganizacao.isEmpty()) {
-            return new HashMap<>();
+            throw new ResourceNotFoundException("Nenhum pedido encontrado com status AGUARDANDO_ETIQUETA na lista passada");
         }
 
         // Cria mapeamento de UUID frete -> ID pedido para correlacionar as respostas
@@ -211,7 +212,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         // Se nenhum pedido válido foi encontrado, retorna mensagem
         if (pedidosParaImpressao.isEmpty()) {
-            return null;
+            throw new ResourceNotFoundException("Nenhum pedido válido encontrado para impressão na lista passada");
         }
 
         // Extrai os IDs dos pedidos de frete

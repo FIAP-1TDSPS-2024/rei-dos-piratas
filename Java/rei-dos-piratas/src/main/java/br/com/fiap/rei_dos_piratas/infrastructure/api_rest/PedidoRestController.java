@@ -11,6 +11,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @Tag(name = "Pedidos", description = "Operações para criação e atualização de pedidos")
 @RestController
 @RequestMapping("/pedidos")
@@ -68,6 +71,44 @@ public class PedidoRestController {
     public ResponseEntity<PedidoOutDto> pagarPedido(@PathVariable Long id){
         PedidoOutDto pedido = this.controller.pagarPedido(id);
         return ResponseEntity.ok(pedido);
+    }
+
+    @Operation(summary = "Organizar pedidos para entrega", description = "Organiza pedidos para entrega e atualiza status")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedidos organizados"),
+            @ApiResponse(responseCode = "400", description = "Erro na organização de pedidos")
+    })
+    @PutMapping("/organizar-pedidos")
+    public ResponseEntity<String> organizarPedidosParaEnvio(@RequestBody List<Long> pedidos){
+        String message = this.controller.organizarPedidosParaEnvio(pedidos);
+        if (message != null){
+            return ResponseEntity.badRequest().body(message);
+        }
+        else {
+            return ResponseEntity.ok().build();
+        }
+    }
+
+    @Operation(summary = "Gerar etiquetas de pedidos", description = "Gerar etiquetas de pedidos para entrega e atualiza status")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Etiquetas geradas"),
+            @ApiResponse(responseCode = "400", description = "Erro na geração de etiquetas")
+    })
+    @PutMapping("/gerar-etiquetas")
+    public ResponseEntity<Map<Long, String>> gerarEtiquetasParaEnvio(@RequestBody List<Long> pedidos){
+        Map<Long, String> result = this.controller.gerarEtiquetasParaEnvio(pedidos);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Imprimir etiquetas de pedidos", description = "Imprimir etiquetas de pedidos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedidos impressos"),
+            @ApiResponse(responseCode = "400", description = "Erro na impressão de pedidos")
+    })
+    @PutMapping("/imprimir-etiquetas")
+    public ResponseEntity<String> imprimirEtiquetasParaEnvio(@RequestBody List<Long> pedidos){
+        String linkImpressao = this.controller.imprimirEtiquetasEnvio(pedidos);
+        return ResponseEntity.ok(linkImpressao);
     }
 
     @Operation(summary = "Registrar envio", description = "Marca pedido como enviado")
