@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.config.feign.FreteFeignConfig;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.ConsultaFreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.ImpressaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteRequestDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(contextId = "frete-app", name = "frete-api", configuration = FreteFeignConfig.class)
 public interface FreteAppClient {
@@ -26,8 +28,8 @@ public interface FreteAppClient {
     CompraFreteResponseDto pagarPedidoFrete(@RequestBody List<String> orders);
 
     @PostMapping("api/v2/me/shipment/generate")
-    GeracaoEtiquetasResponseDto gerarEtiquetas(@RequestBody List<String> orders);
+    GeracaoEtiquetasResponseDto gerarEtiquetas(@RequestBody Map<String, List<String>> request);
 
     @PostMapping("api/v2/me/shipment/print")
-    String gerarLinkImpressaoEtiquetas(@RequestBody List<String> orders);
+    ImpressaoEtiquetasResponseDto gerarLinkImpressaoEtiquetas(@RequestBody Map<String, List<String>> request);
 }

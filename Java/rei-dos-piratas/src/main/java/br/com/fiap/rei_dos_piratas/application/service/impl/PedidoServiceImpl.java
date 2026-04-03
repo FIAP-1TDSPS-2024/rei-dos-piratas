@@ -180,16 +180,19 @@ public class PedidoServiceImpl implements PedidoService {
 
         // Mapeamento do resultado: converte UUID frete -> mensagem para ID pedido -> mensagem
         Map<Long, String> resultado = new HashMap<>();
+        List<Long> pedidosComSucesso = new ArrayList<>();
 
         if (response.pedidos() != null && !response.pedidos().isEmpty()) {
             // Mapeia as mensagens específicas de cada pedido de frete para o ID do pedido interno
             response.pedidos().forEach((freteId, statusEtiqueta) -> {
                 Long pedidoId = freteParaPedidoMap.get(freteId);
                 if (pedidoId != null) {
-                    String mensagem = statusEtiqueta.status() ?
-                        "Etiqueta gerada com sucesso" :
-                        "Erro ao gerar etiqueta: " + statusEtiqueta.message();
-                    resultado.put(pedidoId, mensagem);
+                    if (statusEtiqueta.status()) {
+                        resultado.put(pedidoId, "Etiqueta gerada com sucesso");
+                        pedidosComSucesso.add(pedidoId);
+                    } else {
+                        resultado.put(pedidoId, "Erro ao gerar etiqueta: " + statusEtiqueta.message());
+                    }
                 }
             });
         } else {
@@ -199,12 +202,17 @@ public class PedidoServiceImpl implements PedidoService {
             );
         }
 
+        // Atualiza status dos pedidos que tiveram etiquetas geradas com sucesso
+        if (!pedidosComSucesso.isEmpty()) {
+            this.repository.updateStatusBatch(pedidosComSucesso, StatusEnum.AGUARDANDO_POSTAGEM);
+        }
+
         return resultado;
     }
 
     @Override
     public String imprimirEtiquetasEnvio(List<Long> pedidos) {
-        // Busca todos os pedidos com status AGUARDANDO_GERACAO_ETIQUETA em uma única consulta
+        // Busca todos os pedidos com status AGUARDANDO_POSTAGEM em uma única consulta
         List<Pedido> pedidosParaImpressao = this.repository.findByIdsAndStatus(
                 pedidos,
                 StatusEnum.AGUARDANDO_POSTAGEM
@@ -221,8 +229,8 @@ public class PedidoServiceImpl implements PedidoService {
                 .map(pedido -> pedido.getPedidoFrete().toString())
                 .toList();
 
-        // Chama o serviço de frete e retorna
-        return this.freteService.imprimirEtiquetasPedidoFrete(pedidosFrete);
+        // Chama o serviço de frete e retorna apenas a URL
+        return this.freteService.imprimirEtiquetasPedidoFrete(pedidosFrete).url();
     }
 
     @Transactional
