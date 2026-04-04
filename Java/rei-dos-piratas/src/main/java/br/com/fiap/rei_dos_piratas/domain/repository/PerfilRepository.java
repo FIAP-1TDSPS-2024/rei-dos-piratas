@@ -7,4 +7,6 @@ public interface PerfilRepository {
     Page<Perfil> listAll(int pageNumber, int pageSize);
     Perfil findById(Long id);
     Perfil findByNome(String nome);
+    Perfil findByIdWithRoles(Long id);
+    Perfil findByNomeWithRoles(String nome);
 }

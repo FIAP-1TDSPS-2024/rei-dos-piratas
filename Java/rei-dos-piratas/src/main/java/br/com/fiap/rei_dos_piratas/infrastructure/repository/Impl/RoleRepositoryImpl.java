@@ -40,4 +40,20 @@ public class RoleRepositoryImpl implements RoleRepository {
         return JpaRoleMapper.toEntity(
                 this.repository.findFirstByNomeIgnoreCase(nome));
     }
+
+    @Override
+    public Role findByIdWithPerfis(Long id) {
+        return JpaRoleMapper.toEntity(
+                this.repository
+                        .findByIdWithPerfis(id)
+                        .orElseThrow());
+    }
+
+    @Override
+    public Role findByNomeWithPerfis(String nome) {
+        return JpaRoleMapper.toEntity(
+                this.repository
+                        .findByNomeIgnoreCaseWithPerfis(nome)
+                        .orElseThrow());
+    }
 }

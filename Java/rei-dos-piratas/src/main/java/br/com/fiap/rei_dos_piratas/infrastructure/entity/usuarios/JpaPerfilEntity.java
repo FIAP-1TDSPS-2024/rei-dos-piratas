@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -25,4 +27,12 @@ public class JpaPerfilEntity {
 
     @Column
     private String descricao;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "PERFIL_ROLES",
+        joinColumns = @JoinColumn(name = "perfil_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private List<JpaRoleEntity> roles;
 }

@@ -7,4 +7,6 @@ public interface RoleRepository {
     Page<Role> listAll(int pageNumber, int pageSize);
     Role findById(Long id);
     Role findByNome(String nome);
+    Role findByIdWithPerfis(Long id);
+    Role findByNomeWithPerfis(String nome);
 }

@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,4 +19,5 @@ public class Role {
 
     private String descricao;
 
+    private List<Perfil> perfis;
 }
