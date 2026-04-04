@@ -3,8 +3,10 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 import br.com.fiap.rei_dos_piratas.application.service.FuncionarioService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
+import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +18,12 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 
     private final PasswordEncoder passwordEncoder;
 
-    public FuncionarioServiceImpl(FuncionarioRepository repository, PasswordEncoder passwordEncoder) {
+    private final PerfilRepository perfilRepository;
+
+    public FuncionarioServiceImpl(FuncionarioRepository repository, PasswordEncoder passwordEncoder, PerfilRepository perfilRepository) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.perfilRepository = perfilRepository;
     }
 
     @Override
@@ -42,6 +47,10 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         //Encriptar senha para salvar em banco
         String encryptedPassword = this.passwordEncoder.encode(funcionario.getPassword());
         funcionario.setSenha(encryptedPassword);
+
+        //Definir perfil do usuário
+        Perfil perfil = this.perfilRepository.findByNome(funcionario.getPerfil().getNome());
+        funcionario.setPerfil(perfil);
 
         return this.repository.create(funcionario);
     }

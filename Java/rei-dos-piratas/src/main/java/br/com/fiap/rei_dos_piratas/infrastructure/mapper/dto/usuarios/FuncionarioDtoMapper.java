@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioOutDto;
 
@@ -13,7 +14,7 @@ public class FuncionarioDtoMapper {
                 dto.nomeCompleto(),
                 dto.email(),
                 dto.senha(),
-                dto.role(),
+                new Perfil(dto.perfil().toString()),
                 dto.salario());
     }
 

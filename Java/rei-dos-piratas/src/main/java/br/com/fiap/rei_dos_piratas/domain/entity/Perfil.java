@@ -21,4 +21,7 @@ public class Perfil {
 
     private List<Role> roles;
 
+    public Perfil(String nome) {
+        this.nome = nome;
+    }
 }

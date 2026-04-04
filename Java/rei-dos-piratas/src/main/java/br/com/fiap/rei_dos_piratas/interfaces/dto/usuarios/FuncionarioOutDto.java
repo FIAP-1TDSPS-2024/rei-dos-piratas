@@ -1,6 +1,5 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;

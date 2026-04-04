@@ -5,7 +5,6 @@ import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;

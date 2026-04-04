@@ -4,8 +4,10 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
+import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,14 +18,14 @@ public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository repository;
 
-    private final ProdutoService produtoService;
-
     private final PasswordEncoder passwordEncoder;
 
-    public ClienteServiceImpl(ClienteRepository repository, ProdutoService produtoService, PasswordEncoder passwordEncoder) {
+    private final PerfilRepository perfilRepository;
+
+    public ClienteServiceImpl(ClienteRepository repository, PasswordEncoder passwordEncoder, PerfilRepository perfilRepository) {
         this.repository = repository;
-        this.produtoService = produtoService;
         this.passwordEncoder = passwordEncoder;
+        this.perfilRepository = perfilRepository;
     }
 
     @Override
@@ -66,6 +68,10 @@ public class ClienteServiceImpl implements ClienteService {
         //Encriptar senha para salvar em banco
         String encryptedPassword = this.passwordEncoder.encode(cliente.getPassword());
         cliente.setSenha(encryptedPassword);
+
+        //Definição de Perfil do usuário
+        Perfil perfil = this.perfilRepository.findByNome("CLIENT");
+        cliente.setPerfil(perfil);
 
         return this.repository.create(cliente);
     }

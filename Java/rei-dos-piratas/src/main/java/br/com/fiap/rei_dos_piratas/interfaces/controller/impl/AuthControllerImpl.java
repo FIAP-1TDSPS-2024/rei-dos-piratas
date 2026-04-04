@@ -43,10 +43,8 @@ public class AuthControllerImpl implements AuthController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        System.out.println(roles);
-
-        //verifica se o usuário do funcionário está ativo para fazer o login
-        if (roles.contains("ROLE_ADMIN") || roles.contains("ROLE_USER")) {
+        //verifica se o usuário do funcionário está ativo para fazer o login, usando uma ROLE comum a todos
+        if (roles.contains("PRODUTO_WRITE")) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             Funcionario funcionario = this.funcionarioService.findById(userDetails.getId());
             if (!funcionario.isUsuarioAtivo()){
