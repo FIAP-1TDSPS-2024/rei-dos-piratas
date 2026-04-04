@@ -1,16 +1,12 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
-import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Setter
@@ -30,10 +26,10 @@ public class JpaFuncionarioEntity extends JpaUsuarioEntity {
                                 String senha,
                                 boolean usuarioAtivo,
                                 LocalDate dataCadastro,
-                                Role role,
+                                JpaPerfilEntity perfil,
                                 LocalDate dataDemissao,
                                 BigDecimal salario) {
-        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, role);
+        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, perfil);
         this.dataDemissao = dataDemissao;
         this.salario = salario;
     }

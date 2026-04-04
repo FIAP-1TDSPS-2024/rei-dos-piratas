@@ -1,9 +1,13 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios;
 
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.entity.Role;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaPerfilEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaRoleEntity;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JpaRoleMapper {
 
@@ -18,8 +22,8 @@ public class JpaRoleMapper {
                 jpaRoleEntity.getDescricao(),
                 jpaRoleEntity.getPerfis() != null ?
                     jpaRoleEntity.getPerfis().stream()
-                        .map(JpaPerfilMapper::toEntityWithoutRoles)
-                        .toList() :
+                        .map(JpaRoleMapper::mapPerfilWithoutRoles)
+                        .collect(Collectors.toList()) :
                     Collections.emptyList()
         );
     }
@@ -29,15 +33,17 @@ public class JpaRoleMapper {
             return null;
         }
 
+        List<JpaPerfilEntity> jpaPerfis = role.getPerfis() != null ?
+            role.getPerfis().stream()
+                .map(JpaRoleMapper::mapJpaPerfilWithoutRoles)
+                .collect(Collectors.toList()) :
+            Collections.emptyList();
+
         return new JpaRoleEntity(
                 role.getId(),
                 role.getNome(),
                 role.getDescricao(),
-                role.getPerfis() != null ?
-                    role.getPerfis().stream()
-                        .map(JpaPerfilMapper::toJpaEntityWithoutRoles)
-                        .toList() :
-                    Collections.emptyList()
+                jpaPerfis
         );
     }
 
@@ -64,6 +70,32 @@ public class JpaRoleMapper {
                 role.getNome(),
                 role.getDescricao(),
                 Collections.emptyList()
+        );
+    }
+
+    // Private helper methods to avoid circular dependency
+    private static Perfil mapPerfilWithoutRoles(JpaPerfilEntity jpaPerfilEntity) {
+        if (jpaPerfilEntity == null) {
+            return null;
+        }
+        return new Perfil(
+                jpaPerfilEntity.getId(),
+                jpaPerfilEntity.getNome(),
+                jpaPerfilEntity.getDescricao(),
+                Collections.emptyList()
+        );
+    }
+
+    private static JpaPerfilEntity mapJpaPerfilWithoutRoles(Perfil perfil) {
+        if (perfil == null) {
+            return null;
+        }
+        return new JpaPerfilEntity(
+                perfil.getId(),
+                perfil.getNome(),
+                perfil.getDescricao(),
+                Collections.emptyList(), // roles - empty list
+                Collections.emptyList()  // usuarios - empty list
         );
     }
 

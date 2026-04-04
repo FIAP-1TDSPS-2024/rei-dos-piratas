@@ -1,6 +1,5 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,7 +40,8 @@ public class JpaUsuarioEntity {
     @Column(nullable = false)
     private LocalDate dataCadastro;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 11)
-    private Role role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "perfil_id")
+    private JpaPerfilEntity perfil;
 }

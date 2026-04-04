@@ -1,6 +1,5 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaEnderecoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaCarrinhoEntity;
@@ -45,12 +44,13 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
                             String senha,
                             boolean usuarioAtivo,
                             LocalDate dataCadastro,
+                            JpaPerfilEntity perfil,
                             LocalDate dataNascimento,
                             SexoEnum sexo,
                             String cpf,
                             String celular,
                             JpaCarrinhoEntity carrinho) {
-        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
+        super(id, userName, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, perfil);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.cpf = cpf;

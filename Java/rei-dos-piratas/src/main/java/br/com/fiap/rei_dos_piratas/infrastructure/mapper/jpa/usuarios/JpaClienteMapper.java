@@ -17,6 +17,7 @@ public class JpaClienteMapper {
                 cliente.getSenha(),
                 cliente.isUsuarioAtivo(),
                 cliente.getDataCadastro(),
+                JpaPerfilMapper.toJpaEntityWithoutRoles(cliente.getPerfil()),
                 cliente.getDataNascimento(),
                 cliente.getSexo(),
                 cliente.getCpf(),
@@ -39,11 +40,13 @@ public class JpaClienteMapper {
                 jpaCliente.getSenha(),
                 jpaCliente.isUsuarioAtivo(),
                 jpaCliente.getDataCadastro(),
+                JpaPerfilMapper.toEntityWithoutRoles(jpaCliente.getPerfil()),
                 jpaCliente.getDataNascimento(),
                 jpaCliente.getSexo(),
                 jpaCliente.getCpf(),
                 jpaCliente.getCelular(),
-                JpaCarrinhoMapper.toEntity(jpaCliente.getCarrinho()));
+                JpaCarrinhoMapper.toEntity(jpaCliente.getCarrinho())
+        );
     }
 
     private JpaClienteMapper() {

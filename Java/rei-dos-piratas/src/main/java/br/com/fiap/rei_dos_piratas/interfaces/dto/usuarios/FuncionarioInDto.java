@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Email;
@@ -26,7 +27,7 @@ public record FuncionarioInDto(
         @Length(min=8, max = 20, message = "A senha deve possuir de 8 a 20 caracteres")
         String senha,
 
-        Role role,
+        Perfil role,
 
         @Digits(fraction = 2, integer = 6, message = "O salario deve ter até 8 digitos com 2 dígitos após a vírgula")
         @DecimalMin(value = "0.0", message = "O salario não pode ser negativo")

@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
@@ -29,8 +30,8 @@ public record FuncionarioOutDto(
         @NotNull(message = "A data de cadastro do usuário não pode ser nula")
         LocalDate dataCadastro,
 
-        @NotNull(message = "O Role do vendedor não pode ser nulo na exibição para o usuário")
-        Role role,
+        @NotNull(message = "O Perfil do vendedor não pode ser nulo na exibição para o usuário")
+        Perfil role,
 
         @PastOrPresent(message = "A data de demissao deve ser passada")
         LocalDate dataDemissao,

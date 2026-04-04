@@ -1,6 +1,5 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -9,12 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.br.CPF;
-import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @Getter
 @Setter
@@ -46,14 +42,14 @@ public class Cliente extends Usuario{
             SexoEnum sexo,
             String cpf,
             String celular) {
-        super(userName, nomeCompleto, email, senha, Role.CLIENT);
+        super(userName, nomeCompleto, email, senha, null);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.cpf = cpf;
         this.celular = celular;
         this.carrinho = new Carrinho(
                 null,
-                new ArrayList<ItemProdutoCarrinho>()
+                new ArrayList<>()
         );
     }
 
@@ -65,12 +61,13 @@ public class Cliente extends Usuario{
                    String senha,
                    boolean usuarioAtivo,
                    LocalDate dataCadastro,
+                   Perfil perfil,
                    LocalDate dataNascimento,
                    SexoEnum sexo,
                    String cpf,
                    String celular,
                    Carrinho carrinho) {
-        super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, Role.CLIENT);
+        super(userName, id, nomeCompleto, email, senha, usuarioAtivo, dataCadastro, perfil);
         this.dataNascimento = dataNascimento;
         this.sexo = sexo;
         this.cpf = cpf;

@@ -35,4 +35,7 @@ public class JpaPerfilEntity {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private List<JpaRoleEntity> roles;
+
+    @OneToMany(mappedBy = "perfil", orphanRemoval = false)
+    private List<JpaUsuarioEntity> usuarios;
 }

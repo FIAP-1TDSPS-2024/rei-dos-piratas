@@ -43,15 +43,29 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/error", "/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/frete").permitAll()
+                        .requestMatchers("/auth/**", "/error", "/health", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        //Consulta de frete
+                        .requestMatchers("/frete/**").permitAll()
+                        //Visualização de produtos
                         .requestMatchers(HttpMethod.GET,"/produtos/**").permitAll()
-                        .requestMatchers("/carrinho/**", "/enderecos").hasRole("CLIENT")
-                        .requestMatchers("/produtos/**").hasAnyRole("USER", "ADMIN")
+                        //Gerenciamento de carrinho
+                        .requestMatchers("/carrinho/**").hasRole("CARRINHO_MANAGE")
+                        //Gerenciamento de endereços
+                        .requestMatchers("/enderecos/**").hasRole("ENDERECO_MANAGE")
+                        //Criação e gestão de produtos
+                        .requestMatchers(HttpMethod.PUT, "/produtos/**").hasAnyRole("PRODUTO_WRITE")
+                        .requestMatchers(HttpMethod.POST, "/produtos/**").hasAnyRole("PRODUTO_WRITE")
+                        .requestMatchers(HttpMethod.DELETE, "/produtos/**").hasAnyRole("PRODUTO_WRITE")
+                        //Gerenciamento funcionários
                         .requestMatchers(HttpMethod.GET, "/funcionarios/**").hasAnyRole("FUNCIONARIO", "ADMIN")
-                        .requestMatchers("/funcionarios/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/pedidos/cancelamento/**", "/pedidos/pagamento/**").hasRole("CLIENT")
-                        .requestMatchers(HttpMethod.PUT, "/pedidos/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/pedidos/**").hasAnyRole("CLIENT","USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
+                        .requestMatchers(HttpMethod.POST, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
+                        .requestMatchers(HttpMethod.DELETE, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
+                        //Operações de pedidos
+                        .requestMatchers(HttpMethod.PUT, "/pedidos/pagamento/**").hasRole("PEDIDO_PAGAMENTO")
+                        .requestMatchers(HttpMethod.PUT, "/pedidos/cancelamento/**").hasRole("PEDIDO_CANCEL")
+                        .requestMatchers(HttpMethod.PUT, "/pedidos/**").hasAnyRole("PEDIDO_WRITE")
+                        .requestMatchers(HttpMethod.GET, "/pedidos/**").hasAnyRole("PEDIDO_READ")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())

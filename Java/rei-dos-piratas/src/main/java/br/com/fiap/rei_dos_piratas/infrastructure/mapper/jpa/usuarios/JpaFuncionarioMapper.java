@@ -15,25 +15,25 @@ public class JpaFuncionarioMapper {
                 funcionario.getSenha(),
                 funcionario.isUsuarioAtivo(),
                 funcionario.getDataCadastro(),
-                funcionario.getRole(),
+                JpaPerfilMapper.toJpaEntityWithoutRoles(funcionario.getPerfil()),
                 funcionario.getDataDemissao(),
                 funcionario.getSalario()
         );
     }
 
-    public static Funcionario toEntity(JpaFuncionarioEntity jpaVendedor) {
-        if (jpaVendedor == null) return null;
+    public static Funcionario toEntity(JpaFuncionarioEntity jpaFuncionario) {
+        if (jpaFuncionario == null) return null;
         return new Funcionario(
-                jpaVendedor.getUserName(),
-                jpaVendedor.getId(),
-                jpaVendedor.getNomeCompleto(),
-                jpaVendedor.getEmail(),
-                jpaVendedor.getSenha(),
-                jpaVendedor.isUsuarioAtivo(),
-                jpaVendedor.getDataCadastro(),
-                jpaVendedor.getRole(),
-                jpaVendedor.getDataDemissao(),
-                jpaVendedor.getSalario()
+                jpaFuncionario.getUserName(),
+                jpaFuncionario.getId(),
+                jpaFuncionario.getNomeCompleto(),
+                jpaFuncionario.getEmail(),
+                jpaFuncionario.getSenha(),
+                jpaFuncionario.isUsuarioAtivo(),
+                jpaFuncionario.getDataCadastro(),
+                JpaPerfilMapper.toEntityWithoutRoles(jpaFuncionario.getPerfil()),
+                jpaFuncionario.getDataDemissao(),
+                jpaFuncionario.getSalario()
         );
     }
 

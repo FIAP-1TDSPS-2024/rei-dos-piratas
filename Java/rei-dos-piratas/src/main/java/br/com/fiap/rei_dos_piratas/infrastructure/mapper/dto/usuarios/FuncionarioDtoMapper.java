@@ -26,7 +26,7 @@ public class FuncionarioDtoMapper {
                 funcionario.getEmail(),
                 funcionario.isUsuarioAtivo(),
                 funcionario.getDataCadastro(),
-                funcionario.getRole(),
+                funcionario.getPerfil(),
                 funcionario.getDataDemissao(),
                 funcionario.getSalario());
     }

@@ -1,12 +1,10 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,9 +15,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -51,17 +48,20 @@ public abstract class Usuario implements UsuarioDetails {
     @NotNull(message = "A data de cadastro do usuário não pode ser nula")
     private LocalDate dataCadastro;
 
-    private Role role;
-
     private Perfil perfil;
 
     @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (perfil == null || perfil.getRoles() == null) {
+            return List.of();
+        }
 
-        return List.of()
-
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return perfil
+                .getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getNome()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -74,25 +74,18 @@ public abstract class Usuario implements UsuarioDetails {
         return this.userName;
     }
 
-    public Usuario(String userName, String nomeCompleto, String email, String senha, Role role) {
-
+    public Usuario(String userName, String nomeCompleto, String email, String senha, Perfil perfil) {
         this.usuarioAtivo = true;
         this.dataCadastro = LocalDate.now();
-
         this.userName = userName;
         this.nomeCompleto = nomeCompleto;
         this.email = email;
         this.senha = senha;
-
-        if(role == null){
-            this.role = Role.USER;
-        }
-        else{
-            this.role = role;
-        }
+        this.perfil = perfil;
     }
 
-    public Usuario(String userName, Long id, String nomeCompleto, String email, String senha, boolean usuarioAtivo, LocalDate dataCadastro, Role role) {
+    public Usuario(String userName, Long id, String nomeCompleto, String email, String senha,
+                   boolean usuarioAtivo, LocalDate dataCadastro, Perfil perfil) {
         this.userName = userName;
         this.id = id;
         this.nomeCompleto = nomeCompleto;
@@ -100,12 +93,6 @@ public abstract class Usuario implements UsuarioDetails {
         this.senha = senha;
         this.usuarioAtivo = usuarioAtivo;
         this.dataCadastro = dataCadastro;
-
-        if(role == null){
-            this.role = Role.USER;
-        }
-        else{
-            this.role = role;
-        }
+        this.perfil = perfil;
     }
 }

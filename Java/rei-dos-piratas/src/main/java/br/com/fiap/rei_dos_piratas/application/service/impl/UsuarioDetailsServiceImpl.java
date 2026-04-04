@@ -7,6 +7,7 @@ import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetailsService;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,7 +35,7 @@ public class UsuarioDetailsServiceImpl implements UsuarioDetailsService {
                     cliente.getId(),
                     cliente.getEmail(),
                     cliente.getPassword(),
-                    List.of(new SimpleGrantedAuthority("ROLE_" + cliente.getRole().name())));
+                    (List<? extends GrantedAuthority>) cliente.getAuthorities());
         }
 
         Funcionario funcionario = funcionarioRepository.findByEmail(email);
@@ -43,7 +44,7 @@ public class UsuarioDetailsServiceImpl implements UsuarioDetailsService {
                     funcionario.getId(),
                     funcionario.getEmail(),
                     funcionario.getPassword(),
-                    List.of(new SimpleGrantedAuthority("ROLE_" + funcionario.getRole().name())));
+                    (List<? extends GrantedAuthority>) funcionario.getAuthorities());
         }
 
         throw new UsernameNotFoundException("Usuário não encontrado com o e-mail: " + email);
