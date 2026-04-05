@@ -54,17 +54,18 @@ public class PedidoServiceImpl implements PedidoService {
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CLIENT"))) {
-            return this.repository
-                        .listAllByClient(
+        //Verifica se usuário é um funcionário procurando uma ROLE comum a todos
+        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("PEDIDO_WRITE"))) {
+            return this.repository.listAll(
+                                pageNumber,
+                                pageSize);
+
+            }
+            else {
+                return this.repository.listAllByClient(
                                 pageNumber,
                                 pageSize,
                                 userDetails.getId());
-            }
-            else {
-                return this.repository.listAll(
-                                pageNumber,
-                                pageSize);
             }
     }
 
