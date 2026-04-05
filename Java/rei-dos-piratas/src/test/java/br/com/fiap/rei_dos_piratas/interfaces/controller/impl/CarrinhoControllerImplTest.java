@@ -40,6 +40,7 @@ class CarrinhoControllerImplTest {
     }
 
     private Produto criarProduto() {
+        Perfil perfilFuncionario = new Perfil(1L, "FUNCIONARIO", "Perfil de funcionário", null);
         Funcionario funcionario = new Funcionario(
                 "vendedor01",
                 1L,
@@ -48,7 +49,7 @@ class CarrinhoControllerImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilFuncionario,
                 null,
                 BigDecimal.valueOf(2000));
 
@@ -163,6 +164,7 @@ class CarrinhoControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de cliente", null),
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
                 "52998224725",

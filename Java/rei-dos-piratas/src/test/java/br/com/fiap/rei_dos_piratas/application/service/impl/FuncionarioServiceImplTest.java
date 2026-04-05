@@ -1,10 +1,11 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.FuncionarioService;
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
+import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,13 +24,22 @@ class FuncionarioServiceImplTest {
     private FuncionarioService funcionarioService;
     private FuncionarioRepository funcionarioRepository;
     private PasswordEncoder passwordEncoder;
+    private PerfilRepository perfilRepository;
+    private Perfil perfilPadrao;
 
     @BeforeEach
     void setUp() {
         this.funcionarioRepository = mock(FuncionarioRepository.class);
         this.passwordEncoder = mock(PasswordEncoder.class);
-        when(passwordEncoder.encode(any())).thenAnswer(invocation -> "encoded-") ;
-        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository, passwordEncoder);
+        this.perfilRepository = mock(PerfilRepository.class);
+
+        // Criar perfil padrão para testes
+        this.perfilPadrao = new Perfil(1L, "FUNCIONARIO", "Perfil de funcionário", null);
+
+        when(passwordEncoder.encode(any())).thenAnswer(invocation -> "encoded-");
+        when(perfilRepository.findByNome("FUNCIONARIO")).thenReturn(perfilPadrao);
+
+        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository, passwordEncoder, perfilRepository);
     }
 
     @Test
@@ -43,7 +53,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 
@@ -75,7 +85,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 
@@ -99,7 +109,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 
@@ -111,7 +121,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 
@@ -136,7 +146,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 
@@ -148,7 +158,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 
@@ -173,7 +183,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 
@@ -185,7 +195,7 @@ class FuncionarioServiceImplTest {
                 "SenhaSegura123",
                 false,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
                 BigDecimal.valueOf(1000));
 

@@ -31,7 +31,7 @@ public class FuncionarioIntegrationTest {
     private FuncionarioRepository funcionarioRepository;
 
     @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @WithMockUser(username = "admin", roles = {"WRITE_FUNCIONARIOS"})
     void createFuncionario_shouldPersistAndReturn() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.post("/funcionarios")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -41,7 +41,7 @@ public class FuncionarioIntegrationTest {
                                     "nomeCompleto": "Jonas da Silva Souza",
                                     "email": "jonas@example.com",
                                     "senha": "SenhaSegura1",
-                                    "role": "ADMIN",
+                                    "perfil": "ADMIN",
                                     "salario": 1000
                                   }
                                 """))

@@ -5,6 +5,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,7 @@ class ClienteControllerImplTest {
     }
 
     private Cliente criarCliente(Long id, String userName) {
+        Perfil perfilCliente = new Perfil(1L, "CLIENT", "Perfil de cliente", null);
         return new Cliente(
                 id,
                 userName,
@@ -37,6 +39,7 @@ class ClienteControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
                 "52998224725",

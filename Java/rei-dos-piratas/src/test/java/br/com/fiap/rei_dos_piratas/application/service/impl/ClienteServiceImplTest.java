@@ -1,11 +1,11 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
-import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
+import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -25,15 +25,21 @@ class ClienteServiceImplTest {
 
     private ClienteService clienteService;
     private ClienteRepository clienteRepository;
-    private ProdutoService produtoService;
+    private PerfilRepository perfilRepository;
     private PasswordEncoder passwordEncoder;
+    private Perfil perfilCliente;
 
     @BeforeEach
     void setUp() {
         this.clienteRepository = mock(ClienteRepository.class);
-        this.produtoService = mock(ProdutoService.class);
+        this.perfilRepository = mock(PerfilRepository.class);
         this.passwordEncoder = mock(PasswordEncoder.class);
-        this.clienteService = new ClienteServiceImpl(clienteRepository, produtoService, passwordEncoder);
+        this.perfilCliente = new Perfil(1L, "CLIENT", "Perfil de cliente", null);
+
+        when(perfilRepository.findByNome("CLIENT")).thenReturn(perfilCliente);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+
+        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository);
     }
 
     @Test
@@ -47,6 +53,7 @@ class ClienteServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",
@@ -85,7 +92,6 @@ class ClienteServiceImplTest {
         final Page<Cliente> foundClientePage = this.clienteService.listAll(0,10);
         verify(this.clienteRepository, times(1)).listAll(0,10);
         assertThat(foundClientePage).isSameAs(clientePage);
-
     }
 
     @Test
@@ -98,6 +104,7 @@ class ClienteServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",
@@ -115,7 +122,6 @@ class ClienteServiceImplTest {
 
     @Test
     void create() {
-
         Cliente clienteParaCriar = new Cliente(
                 "jonasdasneves",
                 "Jonas da Silva Campos Melo",
@@ -131,9 +137,10 @@ class ClienteServiceImplTest {
                 "jonasdasneves",
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
-                "SenhaSegura123",
+                "encodedPassword",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",
@@ -141,7 +148,7 @@ class ClienteServiceImplTest {
                 new Carrinho());
 
         //Quando
-        when(this.clienteRepository.create(clienteParaCriar)).thenReturn(clienteCriado);
+        when(this.clienteRepository.create(any(Cliente.class))).thenReturn(clienteCriado);
 
         //assert
         final Cliente newCliente = this.clienteService.create(clienteParaCriar);
@@ -159,6 +166,7 @@ class ClienteServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",
@@ -173,6 +181,7 @@ class ClienteServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",

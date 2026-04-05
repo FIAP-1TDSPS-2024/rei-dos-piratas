@@ -7,6 +7,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaCarrinhoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaPerfilEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaEnderecoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaCidadeEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaEstadoEntity;
@@ -52,6 +53,11 @@ class ClienteRepositoryImplTest {
         carrinho.setId(1L);
         carrinho.setProdutosAdicionados(new ArrayList<>());
 
+        JpaPerfilEntity perfil = new JpaPerfilEntity();
+        perfil.setId(1L);
+        perfil.setNome("CLIENT");
+        perfil.setDescricao("Perfil de cliente");
+
         JpaClienteEntity entity = new JpaClienteEntity(
                 1L,
                 "testuser",
@@ -60,6 +66,7 @@ class ClienteRepositoryImplTest {
                 "password123",
                 true,
                 LocalDate.now(),
+                perfil,
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
                 "52998224725",
@@ -93,6 +100,11 @@ class ClienteRepositoryImplTest {
         carrinho.setId(1L);
         carrinho.setProdutosAdicionados(new ArrayList<>());
 
+        JpaPerfilEntity perfil = new JpaPerfilEntity();
+        perfil.setId(1L);
+        perfil.setNome("CLIENT");
+        perfil.setDescricao("Perfil de cliente");
+
         JpaClienteEntity entity = new JpaClienteEntity(
                 1L,
                 "testuser",
@@ -101,6 +113,7 @@ class ClienteRepositoryImplTest {
                 "password123",
                 true,
                 LocalDate.now(),
+                perfil,
                 LocalDate.of(2000, 1, 1),
                 SexoEnum.M,
                 "52998224725",
@@ -159,6 +172,12 @@ class ClienteRepositoryImplTest {
         mockCarrinho.setId(1L);
         mockCarrinho.setProdutosAdicionados(new ArrayList<>());
 
+        // Create perfil entity
+        JpaPerfilEntity perfil = new JpaPerfilEntity();
+        perfil.setId(1L);
+        perfil.setNome("CLIENT");
+        perfil.setDescricao("Perfil de cliente");
+
         // Create a properly initialized JpaClienteEntity with carrinho using constructor
         JpaClienteEntity savedEntity = new JpaClienteEntity(
                 1L,
@@ -168,6 +187,7 @@ class ClienteRepositoryImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfil,
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
                 "52998224725",

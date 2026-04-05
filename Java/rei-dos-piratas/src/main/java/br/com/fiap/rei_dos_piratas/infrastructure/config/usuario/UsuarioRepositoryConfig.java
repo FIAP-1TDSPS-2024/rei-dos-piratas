@@ -24,7 +24,7 @@ public class UsuarioRepositoryConfig {
     }
 
     @Bean
-    public FuncionarioRepository vendedorRepository(JpaFuncionarioEntityRepository jpaFuncionarioEntityRepository) {
+    public FuncionarioRepository funcionarioRepository(JpaFuncionarioEntityRepository jpaFuncionarioEntityRepository) {
         return new FuncionarioRepositoryImpl(jpaFuncionarioEntityRepository);
     }
 

@@ -4,9 +4,9 @@ import br.com.fiap.rei_dos_piratas.application.service.FuncionarioService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoInDto;
@@ -36,6 +36,7 @@ class ProdutoControllerImplTest {
     }
 
     private Funcionario criarFuncionario() {
+        Perfil perfilFuncionario = new Perfil(1L, "FUNCIONARIO", "Perfil de funcionário", null);
         return new Funcionario(
                 "vendedor01",
                 1L,
@@ -44,7 +45,7 @@ class ProdutoControllerImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilFuncionario,
                 null,
                 BigDecimal.valueOf(1000));
     }

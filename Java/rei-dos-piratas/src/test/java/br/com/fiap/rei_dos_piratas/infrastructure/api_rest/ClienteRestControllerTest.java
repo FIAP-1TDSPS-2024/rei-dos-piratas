@@ -1,10 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
-import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
-import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
-import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
@@ -55,6 +52,7 @@ class ClienteRestControllerTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuario", null),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",
@@ -90,6 +88,7 @@ class ClienteRestControllerTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuario", null),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",
@@ -118,6 +117,7 @@ class ClienteRestControllerTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuario", null),
                 LocalDate.of(2000, 03, 16),
                 SexoEnum.M,
                 "52998224725",

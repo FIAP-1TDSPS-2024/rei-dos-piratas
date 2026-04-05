@@ -74,6 +74,7 @@ class PedidoServiceImplTest {
 
     private Cliente criarCliente() {
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
+        Perfil perfilCliente = new Perfil(1L, "CLIENT", "Perfil de cliente", null);
 
         return new Cliente(
                 1L,
@@ -83,6 +84,7 @@ class PedidoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -115,6 +117,7 @@ class PedidoServiceImplTest {
     }
 
     private Funcionario criarFuncionario() {
+        Perfil perfilAdmin = new Perfil(1L, "ADMIN", "Perfil de administrador", null);
         return new Funcionario(
                 "admin",
                 1L,
@@ -123,7 +126,7 @@ class PedidoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                perfilAdmin,
                 null,
                 BigDecimal.valueOf(1000));
     }
@@ -415,7 +418,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(20),
-                StatusEnum.PREPARANDO_ENVIO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_POSTAGEM, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -446,7 +449,7 @@ class PedidoServiceImplTest {
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.enviarPedido(1L))
                 .isInstanceOf(WrongStatusException.class)
-                .hasMessageContaining("O pedido deve estar no estado PREPARANDO_ENVIO");
+                .hasMessageContaining("O pedido deve estar no estado AGUARDANDO_POSTAGEM para ser enviado para entrega, mas ele está no estado AGUARDANDO_PAGAMENTO");
 
         verify(pedidoRepository, times(1)).findById(1L);
         verify(pedidoRepository, never()).update(any(Pedido.class));

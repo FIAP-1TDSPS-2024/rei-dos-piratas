@@ -6,7 +6,6 @@ import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
@@ -62,6 +61,7 @@ class PedidoControllerImplTest {
     }
 
     private Cliente criarCliente() {
+        Perfil perfilCliente = new Perfil(1L, "CLIENT", "Perfil de cliente", null);
         return new Cliente(
                 1L,
                 "jonasdasneves",
@@ -70,11 +70,12 @@ class PedidoControllerImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(2000, 3, 16),
                 SexoEnum.M,
                 "52998224725",
                 "11999999999",
-                new Carrinho(1L, new ArrayList<>()));
+                new Carrinho());
     }
 
     private Endereco criarEndereco() {
@@ -84,6 +85,7 @@ class PedidoControllerImplTest {
     }
 
     private Produto criarProduto() {
+        Perfil perfilFuncionario = new Perfil(1L, "FUNCIONARIO", "Perfil de funcionário", null);
         Funcionario funcionario = new Funcionario(
                 "vendedor01",
                 1L,
@@ -92,7 +94,7 @@ class PedidoControllerImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilFuncionario,
                 null,
                 BigDecimal.valueOf(2000));
 

@@ -73,7 +73,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -95,6 +95,7 @@ class CarrinhoServiceImplTest {
                 funcionario);
 
         Carrinho carrinho = new Carrinho(1L, new ArrayList<>());
+        Perfil perfilCliente = new Perfil(1L, "CLIENT", "Perfil de cliente", null);
 
         Cliente cliente = new Cliente(
                 1L,
@@ -104,6 +105,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                perfilCliente,
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -142,7 +144,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -173,6 +175,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de cliente", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -205,7 +208,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -239,6 +242,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de cliente", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -275,7 +279,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -309,6 +313,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuário", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -345,7 +350,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -376,6 +381,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuário", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -408,7 +414,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -460,6 +466,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuário", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -491,7 +498,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -525,6 +532,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuário", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -554,7 +562,7 @@ class CarrinhoServiceImplTest {
                 "senha123",
                 true,
                 LocalDate.now(),
-                Role.ADMIN,
+                new Perfil(1L, "ADMIN", "Perfil de administrador", null),
                 null,
                 BigDecimal.valueOf(5000));
 
@@ -588,6 +596,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuário", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",
@@ -681,6 +690,7 @@ class CarrinhoServiceImplTest {
                 "SenhaSegura123",
                 true,
                 LocalDate.now(),
+                new Perfil(1L, "CLIENT", "Perfil de usuário", null),
                 LocalDate.of(1990, 5, 15),
                 SexoEnum.M,
                 "52998224725",

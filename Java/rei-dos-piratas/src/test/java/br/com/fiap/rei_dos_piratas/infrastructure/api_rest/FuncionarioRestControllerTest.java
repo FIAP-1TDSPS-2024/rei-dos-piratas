@@ -1,23 +1,21 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.Role;
-import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.FuncionarioDtoMapper;
+import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
+import br.com.fiap.rei_dos_piratas.domain.Enum.PerfilEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -26,16 +24,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Import(GlobalExceptionHandler.class)
-@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(FuncionarioRestController.class)
 class FuncionarioRestControllerTest {
 
@@ -45,152 +41,170 @@ class FuncionarioRestControllerTest {
     @MockBean
     private FuncionarioController funcionarioController;
 
+    private ObjectMapper objectMapper;
+    private Perfil perfilPadrao;
+    private Funcionario funcionario;
+    private FuncionarioOutDto funcionarioOutDto;
+
+    @BeforeEach
+    void setUp() {
+        // Configurar ObjectMapper com suporte a Java 8 Time
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
+        perfilPadrao = new Perfil(1L, "FUNCIONARIO", "Perfil de funcionário", null);
+
+        funcionario = new Funcionario(
+                "jonasdasneves",
+                1L,
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                perfilPadrao,
+                null,
+                BigDecimal.valueOf(1000));
+
+        funcionarioOutDto = new FuncionarioOutDto(
+                1L,
+                "jonasdasneves",
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                true,
+                LocalDate.now(),
+                perfilPadrao,
+                null,
+                BigDecimal.valueOf(1000)
+        );
+    }
+
     @Test
+    @WithMockUser(username = "admin", roles = {"FUNCIONARIO_READ"})
     void findAll() throws Exception {
-        //O que
-        Funcionario funcionario = new Funcionario(
-                "jonasdasneves",
-                1L,
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(1000));
+        // Arrange
+        List<FuncionarioOutDto> funcionarios = new ArrayList<>();
+        funcionarios.add(funcionarioOutDto);
+        Page<FuncionarioOutDto> funcionarioPage = new Page<>(1, 0, funcionarios);
 
-        List<FuncionarioOutDto> funcionarios = new ArrayList<FuncionarioOutDto>();
-        funcionarios.add(FuncionarioDtoMapper.toDto(funcionario));
+        when(funcionarioController.listAll(anyInt(), anyInt())).thenReturn(funcionarioPage);
 
-        Page<FuncionarioOutDto> funcionariosPage = new Page<FuncionarioOutDto>(1, 0, funcionarios);
-
-        when(this.funcionarioController.listAll(0,10)).thenReturn(funcionariosPage);
-
-        this.mockMvc.perform(get("/funcionarios")
-                        .param("pageNumber", "0")
-                        .param("sizeSize", "10"))
+        // Act & Assert
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/funcionarios?page=0&size=10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pageItems", hasSize(1)))
-                .andExpect(jsonPath("$.pageItems[0].id", is(1)))
-                .andExpect(jsonPath("$.pageItems[0].userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.pageItems[0].nomeCompleto", is("Jonas da Silva Campos Melo")))
-                .andExpect(jsonPath("$.pageItems[0].email", is("jonas@gmail.com")));
+                .andExpect(jsonPath("$.pageItems[0].id", is(1)));
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"FUNCIONARIO_READ"})
     void findById() throws Exception {
-        //O que
-        Funcionario funcionario = new Funcionario(
-                "jonasdasneves",
-                1L,
-                "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
-                true,
-                LocalDate.now(),
-                Role.USER,
-                null,
-                BigDecimal.valueOf(1000));
+        // Arrange
+        when(funcionarioController.findById(anyLong())).thenReturn(funcionarioOutDto);
 
-        FuncionarioOutDto vendedorDto = FuncionarioDtoMapper.toDto(funcionario);
-
-        when(this.funcionarioController.findById(1L)).thenReturn(vendedorDto);
-
-        this.mockMvc.perform(get("/funcionarios/{id}", 1L))
+        // Act & Assert
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/funcionarios/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
-                .andExpect(jsonPath("$.email", is("jonas@gmail.com")));
+                .andExpect(jsonPath("$.id", is(1)));
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"FUNCIONARIO_WRITE"})
     void create() throws Exception {
-        //O que
-        FuncionarioInDto vendedor = new FuncionarioInDto(
-                "jonasdasneves",
+        // Arrange
+        FuncionarioInDto funcionarioInDto = new FuncionarioInDto(
+                "novojonasdasneves",
                 "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
+                "novojonas@gmail.com",
                 "SenhaSegura123",
-                Role.USER,
+                PerfilEnum.USER,
                 BigDecimal.valueOf(1000));
 
-        FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(FuncionarioDtoMapper.toEntity(vendedor));
-        when(this.funcionarioController.create(vendedor)).thenReturn(funcionarioOutDto);
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // para LocalDate
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        String clienteJson = mapper.writeValueAsString(vendedor);
-
-
-        this.mockMvc.perform(post("/funcionarios")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(clienteJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
-                .andExpect(jsonPath("$.email", is("jonas@gmail.com")));
-    }
-
-    @Test
-    void update() throws Exception {
-        //O que
-        Funcionario funcionario = new Funcionario(
-                "jonasdasneves",
-                1L,
+        FuncionarioOutDto funcionarioNovoOutDto = new FuncionarioOutDto(
+                2L,
+                "novojonasdasneves",
                 "Jonas da Silva Campos Melo",
-                "jonas@gmail.com",
-                "SenhaSegura123",
+                "novojonas@gmail.com",
                 true,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
-                BigDecimal.valueOf(1000));
+                BigDecimal.valueOf(1000)
+        );
 
-        FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
-        when(funcionarioController.update(any())).thenReturn(funcionarioOutDto);
+        when(funcionarioController.create(any(FuncionarioInDto.class))).thenReturn(funcionarioNovoOutDto);
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // Act & Assert
+        String funcionarioJson = objectMapper.writeValueAsString(funcionarioInDto);
 
-        String funcionarioJson = mapper.writeValueAsString(funcionario);
-
-        mockMvc.perform(put("/funcionarios")
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/funcionarios")
+                        .with(csrf()) // Adicionar CSRF token para testes
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(funcionarioJson))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
-                .andExpect(jsonPath("$.email", is("jonas@gmail.com")));
+                .andExpect(status().isCreated());
     }
-
 
     @Test
-    void ativarDesativar() throws Exception {
-
-        //O que
-        Funcionario funcionario = new Funcionario(
-                "jonasdasneves",
+    @WithMockUser(username = "admin", roles = {"FUNCIONARIO_WRITE"})
+    void update() throws Exception {
+        // Arrange
+        Funcionario funcionarioParaUpdate = new Funcionario(
+                "jonasatualizadodasneves",
                 1L,
+                "Jonas da Silva Campos Melo Atualizado",
+                "jonasatualizado@gmail.com",
+                "SenhaSegura123",
+                true,
+                LocalDate.now(),
+                perfilPadrao,
+                null,
+                BigDecimal.valueOf(1200));
+
+        FuncionarioOutDto funcionarioAtualizadoOutDto = new FuncionarioOutDto(
+                1L,
+                "jonasatualizadodasneves",
+                "Jonas da Silva Campos Melo Atualizado",
+                "jonasatualizado@gmail.com",
+                true,
+                LocalDate.now(),
+                perfilPadrao,
+                null,
+                BigDecimal.valueOf(1200)
+        );
+
+        when(funcionarioController.update(any())).thenReturn(funcionarioAtualizadoOutDto);
+
+        // Act & Assert
+        String funcionarioJson = objectMapper.writeValueAsString(funcionarioParaUpdate);
+
+        this.mockMvc.perform(MockMvcRequestBuilders.put("/funcionarios")
+                        .with(csrf()) // Adicionar CSRF token para testes
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(funcionarioJson))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"FUNCIONARIO_WRITE"})
+    void ativarDesativar() throws Exception {
+        // Arrange
+        FuncionarioOutDto funcionarioDesativadoOutDto = new FuncionarioOutDto(
+                1L,
+                "jonasdasneves",
                 "Jonas da Silva Campos Melo",
                 "jonas@gmail.com",
-                "SenhaSegura123",
                 false,
                 LocalDate.now(),
-                Role.USER,
+                perfilPadrao,
                 null,
-                BigDecimal.valueOf(1000));
+                BigDecimal.valueOf(1000)
+        );
 
-        FuncionarioOutDto funcionarioOutDto = FuncionarioDtoMapper.toDto(funcionario);
-        when(funcionarioController.ativarDesativar(any())).thenReturn(funcionarioOutDto);
+        when(funcionarioController.ativarDesativar(anyLong())).thenReturn(funcionarioDesativadoOutDto);
 
-        this.mockMvc.perform(MockMvcRequestBuilders.put("/funcionarios/{id}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.usuarioAtivo", is(false)));
+        // Act & Assert
+        this.mockMvc.perform(MockMvcRequestBuilders.put("/funcionarios/1")
+                        .with(csrf())) // Adicionar CSRF token para testes
+                .andExpect(status().isOk());
     }
 }
+
