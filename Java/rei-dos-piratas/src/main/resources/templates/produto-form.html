@@ -29,16 +29,16 @@
             </ol>
         </nav>
 
-        <!-- Título -->
+        <!-- T&iacute;tulo -->
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-gray-800">
                 <span th:if="${produto.id != null}"  th:text="#{produto.form.editar.page.title}">Editar Produto</span>
                 <span th:unless="${produto.id != null}" th:text="#{produto.form.novo.page.title}">Novo Produto</span>
             </h1>
-            <p class="text-gray-500" th:text="#{produto.form.subtitulo}">Preencha as informações do produto</p>
+            <p class="text-gray-500" th:text="#{produto.form.subtitulo}">Preencha as informa&ccedil;&otilde;es do produto</p>
         </div>
 
-        <!-- Erros de validação vindos da entidade de domínio -->
+        <!-- Erros de valida&ccedil;&atilde;o vindos da entidade de dom&iacute;nio -->
         <div th:if="${errosValidacao != null and !#maps.isEmpty(errosValidacao)}"
              class="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
             <p class="text-red-700 font-semibold mb-2">Corrija os erros abaixo:</p>
@@ -54,7 +54,7 @@
              class="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm"
              th:text="${erroGeral}"></div>
 
-        <!-- Formulário -->
+        <!-- Formul&aacute;rio -->
         <form th:action="@{/web/produtos/save}" method="post" th:object="${produto}" class="space-y-6">
             <input type="hidden" th:field="*{id}">
 
@@ -69,10 +69,10 @@
                        th:placeholder="#{produto.form.placeholder.nome}">
             </div>
 
-            <!-- Descrição -->
+            <!-- Descri&ccedil;&atilde;o -->
             <div>
                 <label for="descricao" class="block text-sm font-medium text-gray-700 mb-1">
-                    <span th:text="#{produto.form.descricao}">Descrição</span> <span class="text-red-500">*</span>
+                    <span th:text="#{produto.form.descricao}">Descri&ccedil;&atilde;o</span> <span class="text-red-500">*</span>
                 </label>
                 <textarea id="descricao" name="descricao" rows="4" required
                           th:field="*{descricao}"
@@ -80,13 +80,13 @@
                           th:placeholder="#{produto.form.placeholder.descricao}"></textarea>
             </div>
 
-            <!-- Preço e Categoria (lado a lado) -->
+            <!-- Pre&ccedil;o e Categoria (lado a lado) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <!-- Preço -->
+                <!-- Pre&ccedil;o -->
                 <div>
                     <label for="preco" class="block text-sm font-medium text-gray-700 mb-1">
-                        <span th:text="#{produto.form.preco}">Preço</span> <span class="text-red-500">*</span>
+                        <span th:text="#{produto.form.preco}">Pre&ccedil;o</span> <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
@@ -131,10 +131,10 @@
                        placeholder="http://...">
             </div>
 
-            <!-- Preço Original e Estoque -->
+            <!-- Pre&ccedil;o Original e Estoque -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="precoOriginal" class="block text-sm font-medium text-gray-700 mb-1">Preço Original</label>
+                    <label for="precoOriginal" class="block text-sm font-medium text-gray-700 mb-1">Pre&ccedil;o Original</label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
                         <input type="number" id="precoOriginal" name="precoOriginal" step="0.01" min="0"
@@ -152,19 +152,19 @@
                 </div>
             </div>
 
-            <!-- Condição -->
+            <!-- Condi&ccedil;&atilde;o -->
             <div>
-                <label for="condicao" class="block text-sm font-medium text-gray-700 mb-1">Condição <span class="text-red-500">*</span></label>
+                <label for="condicao" class="block text-sm font-medium text-gray-700 mb-1">Condi&ccedil;&atilde;o <span class="text-red-500">*</span></label>
                 <select id="condicao" name="condicao" required
                         th:field="*{condicao}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition bg-white">
-                    <option value="" disabled>Selecione a condição</option>
+                    <option value="" disabled>Selecione a condi&ccedil;&atilde;o</option>
                     <option th:each="cond : ${T(br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum).values()}"
-                            th:value="${cond}" th:text="${cond.name()}">Condição</option>
+                            th:value="${cond}" th:text="${cond.name()}">Condi&ccedil;&atilde;o</option>
                 </select>
             </div>
 
-            <!-- Dimensões -->
+            <!-- Dimens&otilde;es -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                     <label for="altura" class="block text-sm font-medium text-gray-700 mb-1">Altura (cm)</label>
@@ -190,20 +190,19 @@
                            th:field="*{peso}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 transition">
                 </div>
-
             </div>
 
-            <!-- Mensagem de erro (oculto por padrão) -->
+            <!-- Mensagem de erro (oculto por padr&atilde;o) -->
             <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span th:text="#{produto.form.erro.obrigatorio}">Por favor, preencha todos os campos obrigatórios.</span>
+                    <span th:text="#{produto.form.erro.obrigatorio}">Por favor, preencha todos os campos obrigat&oacute;rios.</span>
                 </div>
             </div>
 
-            <!-- Botões de ação -->
+            <!-- Bot&otilde;es de a&ccedil;&atilde;o -->
             <div class="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
                 <button type="submit" th:if="${produto.id != null}"
                         class="px-6 py-2 bg-yellow-400 text-gray-900 font-semibold rounded hover:bg-yellow-500 transition"

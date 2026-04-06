@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.config.security;
 
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtAuthenticationFilter;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.TokenBlocklistService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -40,7 +41,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JwtUtil jwtUtil,
-                                                   UserDetailsService userDetailsService) throws Exception {
+                                                   UserDetailsService userDetailsService,
+                                                   TokenBlocklistService tokenBlocklistService) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -48,6 +50,8 @@ public class SecurityConfig {
                         // Público geral
                         .requestMatchers("/auth/**", "/error", "/health", "/",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        // Logout precisa de autenticação mas deve ser acessível sem session
+                        .requestMatchers("/auth/logout").authenticated()
                         // Consulta de frete
                         .requestMatchers("/frete/**").permitAll()
                         // Visualização de produtos (API e web)
@@ -55,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/web/produtos", "/web/produtos/{id:[0-9]+}").permitAll()
                         // Login web — página pública, o token é emitido pelo /auth/login normal
                         .requestMatchers("/web/login").permitAll()
+                        // Logout web — precisa estar autenticado (o filtro extrai o token do cookie)
+                        .requestMatchers("/web/logout").authenticated()
                         // Gerenciamento de carrinho
                         .requestMatchers("/carrinho/**").hasRole("CARRINHO_MANAGE")
                         // Gerenciamento de endereços
@@ -83,7 +89,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider(userDetailsService))
                 .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtUtil, userDetailsService),
+                        new JwtAuthenticationFilter(jwtUtil, userDetailsService, tokenBlocklistService),
                         UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));

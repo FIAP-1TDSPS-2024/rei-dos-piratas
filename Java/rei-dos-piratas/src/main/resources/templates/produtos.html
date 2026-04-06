@@ -19,13 +19,13 @@
          th:text="${errorMessage}"></div>
 
     <div class="bg-white p-4 mt-4 shadow-md rounded-md">
-        <!-- Título da página -->
+        <!-- T&iacute;tulo da p&aacute;gina -->
         <div class="mb-6 flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800" th:text="#{produtos.lista}"></h1>
-                <p class="text-gray-500" th:text="#{produtos.header.subtitle}">Confira os produtos disponíveis</p>
+                <p class="text-gray-500" th:text="#{produtos.header.subtitle}">Confira os produtos dispon&iacute;veis</p>
             </div>
-            <!-- Botão Cadastrar apenas para funcionários com permissão -->
+            <!-- Bot&atilde;o Cadastrar apenas para funcion&aacute;rios com permiss&atilde;o -->
             <a sec:authorize="hasRole('PRODUTO_WRITE')"
                th:href="@{/web/produtos/novo}"
                class="px-4 py-2 bg-yellow-400 text-gray-900 font-semibold rounded hover:bg-yellow-500 transition"
@@ -43,7 +43,7 @@
                                   th:text="${produto.categoria}">ACAO</span>
                         </div>
                         <p class="text-gray-500 text-sm mb-4 line-clamp-2" th:text="${produto.descricao}">
-                            Descrição do produto.
+                            Descri&ccedil;&atilde;o do produto.
                         </p>
                         <div class="flex justify-between items-center">
                             <span class="text-lg font-bold text-gray-900"

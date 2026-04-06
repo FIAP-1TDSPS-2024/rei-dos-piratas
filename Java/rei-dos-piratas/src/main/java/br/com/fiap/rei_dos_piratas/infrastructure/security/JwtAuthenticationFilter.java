@@ -23,10 +23,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final TokenBlocklistService tokenBlocklistService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService, TokenBlocklistService tokenBlocklistService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.tokenBlocklistService = tokenBlocklistService;
     }
 
     @Override
@@ -38,7 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwt = extractJwtFromRequest(request);
 
-        if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
+        // Rejeita token presente na blocklist (logout explícito)
+        if (StringUtils.hasText(jwt) && !tokenBlocklistService.estaInvalidado(jwt) && jwtUtil.validateToken(jwt)) {
             String username = jwtUtil.extractUsername(jwt);
             List<SimpleGrantedAuthority> roles = jwtUtil.extractRole(jwt);
 

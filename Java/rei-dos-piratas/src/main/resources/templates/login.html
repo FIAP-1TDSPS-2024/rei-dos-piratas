@@ -16,7 +16,7 @@
             <span class="text-yellow-400 text-3xl">&#9678;</span>
             <span>Rei dos Piratas</span>
         </a>
-        <p class="text-gray-500 mt-1 text-sm">Acesso para funcionários</p>
+        <p class="text-gray-500 mt-1 text-sm">Compre mang&aacute;s novos e usados!</p>
     </div>
 
     <!-- Card -->
@@ -24,19 +24,28 @@
 
         <h2 class="text-xl font-bold text-gray-800 mb-6">Entrar</h2>
 
+        <!-- Mensagem de logout bem-sucedido -->
+        <div th:if="${logoutMessage}" class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md flex items-center gap-2 text-sm">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 13l4 4L19 7"/>
+            </svg>
+            <span th:text="${logoutMessage}">Voc&ecirc; saiu com sucesso.</span>
+        </div>
+
         <!-- Mensagem de erro -->
         <div id="errorMessage" class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md flex items-center gap-2 text-sm">
             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <span id="errorText">Credenciais inválidas.</span>
+            <span id="errorText">Credenciais inv&aacute;lidas.</span>
         </div>
 
         <!--
-            O formulário submete via JS para /auth/login (mesmo endpoint da API).
-            O token JWT retornado é salvo em cookie e reutilizado pelo JwtAuthenticationFilter
-            tanto para chamadas de API quanto para as páginas Thymeleaf — um único método de autenticação.
+            O formul&aacute;rio submete via JS para /auth/login (mesmo endpoint da API).
+            O token JWT retornado &eacute; salvo em cookie e reutilizado pelo JwtAuthenticationFilter
+            tanto para chamadas de API quanto para as p&aacute;ginas Thymeleaf &mdash; um &uacute;nico m&eacute;todo de autentica&ccedil;&atilde;o.
         -->
         <form id="loginForm" class="space-y-5">
 
@@ -51,7 +60,7 @@
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
                 <input type="password" id="password" name="password" required autocomplete="current-password"
                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-                       placeholder="••••••••">
+                       placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;">
             </div>
 
             <button type="submit"
@@ -85,14 +94,14 @@
             });
 
             if (!response.ok) {
-                showError('Credenciais inválidas. Verifique seu e-mail e senha.');
+                showError('Credenciais inv\u00e1lidas. Verifique seu e-mail e senha.');
                 return;
             }
 
             const data = await response.json();
 
-            // Salva o JWT em cookie acessível ao servidor (HttpOnly não pode ser definido via JS,
-            // mas o JwtAuthenticationFilter lê o cookie "jwt_token" em todas as requisições)
+            // Salva o JWT em cookie acess\u00edvel ao servidor (HttpOnly n\u00e3o pode ser definido via JS,
+            // mas o JwtAuthenticationFilter l\u00ea o cookie "jwt_token" em todas as requisi\u00e7\u00f5es)
             const expiresDate = new Date(Date.now() + 86400 * 1000).toUTCString();
             document.cookie = `jwt_token=${data.token}; path=/; expires=${expiresDate}; SameSite=Strict`;
 
