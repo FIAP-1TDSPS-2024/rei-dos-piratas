@@ -1,5 +1,5 @@
--- V9: Criação da tabela CLIENTES
--- Herança TABLE_PER_CLASS: todos os campos de JpaUsuarioEntity replicados aqui
+-- V9: CriaÃ§Ã£o da tabela CLIENTES
+-- HeranÃ§a TABLE_PER_CLASS: todos os campos de JpaUsuarioEntity replicados aqui
 CREATE TABLE CLIENTES (
     id              NUMBER NOT NULL PRIMARY KEY,
     user_name       VARCHAR2(30)  NOT NULL UNIQUE,

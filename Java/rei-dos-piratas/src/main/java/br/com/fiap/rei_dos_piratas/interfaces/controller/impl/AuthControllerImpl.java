@@ -44,7 +44,7 @@ public class AuthControllerImpl implements AuthController {
                 .collect(Collectors.toList());
 
         //verifica se o usuário do funcionário está ativo para fazer o login, usando uma ROLE comum a todos
-        if (roles.contains("PRODUTO_WRITE")) {
+        if (roles.contains("ROLE_PRODUTO_WRITE")) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             Funcionario funcionario = this.funcionarioService.findById(userDetails.getId());
             if (!funcionario.isUsuarioAtivo()){

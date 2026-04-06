@@ -92,11 +92,8 @@ public class FuncionarioRepositoryImpl implements FuncionarioRepository {
 
     @Override
     public Funcionario findByEmail(String email) {
-        JpaFuncionarioEntity funcionario = this.repository.findFirstByEmail(email);
-        if (funcionario != null) {
-            return JpaFuncionarioMapper.toEntity(funcionario);
-        } else {
-            return null;
-        }
+        return this.repository.findByEmailWithRoles(email)
+                .map(JpaFuncionarioMapper::toEntityWithRoles)
+                .orElse(null);
     }
 }

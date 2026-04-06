@@ -2,8 +2,6 @@ package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +9,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -19,49 +16,53 @@ import java.time.LocalDate;
 public class Produto {
     Long id;
 
+    @NotBlank(message = "O nome do produto é obrigatório")
     @Length(min = 10, max = 150, message = "O nome do produto deve ter entre 10 e 150 caracteres")
     private String nome;
 
-    @Length(min = 10, max = 500, message = "A descrição do produto deve ter entre 10 e 150 caracteres")
+    @NotBlank(message = "A descrição do produto é obrigatória")
+    @Length(min = 10, max = 500, message = "A descrição do produto deve ter entre 10 e 500 caracteres")
     private String descricao;
 
-    @Length(min = 3, max = 100, message = "O nome do autor do produto deve ter entre 3 e 100 caracteres")
+    @NotBlank(message = "O autor do produto é obrigatório")
+    @Length(min = 3, max = 100, message = "O nome do autor deve ter entre 3 e 100 caracteres")
     private String autor;
 
-    @Enumerated(EnumType.STRING)
+    @NotNull(message = "A categoria do produto é obrigatória")
     private CategoriaEnum categoria;
 
+    @Length(max = 255, message = "A URL da imagem deve ter até 255 caracteres")
     private String enderecoImagem;
 
-    @Digits(fraction = 2, integer = 6, message = "O preço do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
-    @DecimalMin(value = "0.0", inclusive = false, message = "O preço não pode ser negativo")
+    @NotNull(message = "O preço do produto é obrigatório")
+    @Digits(fraction = 2, integer = 6, message = "O preço deve ter até 8 dígitos com 2 após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "O preço não pode ser zero ou negativo")
     private BigDecimal preco;
 
-    @Digits(fraction = 2, integer = 6, message = "O preço do produto deve ter até 8 digitos com 2 dígitos após a vírgula")
-    @DecimalMin(value = "0.0", inclusive = false, message = "O preço não pode ser negativo")
+    @Digits(fraction = 2, integer = 6, message = "O preço original deve ter até 8 dígitos com 2 após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "O preço original não pode ser zero ou negativo")
     private BigDecimal precoOriginal;
 
-    @Digits(fraction = 0, integer = 6, message = "O estoque deve ter 6 dígitos sem dígitos após a vírgula")
-    @DecimalMin(value = "0", inclusive = false, message = "O estoque não pode ser negativo")
+    @Min(value = 1, message = "O estoque deve ser maior que zero")
     private int estoque;
 
-    @Digits(fraction = 0, integer = 6, message = "A altura do produto deve ter até 8 digitos com dois após a vírgula")
-    @DecimalMin(value = "0", inclusive = false, message = "A altura do produto não pode ser negativa")
+    @Digits(fraction = 2, integer = 6, message = "A altura deve ter até 8 dígitos com 2 após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "A altura não pode ser zero ou negativa")
     private BigDecimal altura;
 
-    @Digits(fraction = 0, integer = 6, message = "A largura do produto deve ter até 8 digitos com dois após a vírgula")
-    @DecimalMin(value = "0", inclusive = false, message = "A largura do produto não pode ser negativa")
+    @Digits(fraction = 2, integer = 6, message = "A largura deve ter até 8 dígitos com 2 após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "A largura não pode ser zero ou negativa")
     private BigDecimal largura;
 
-    @Digits(fraction = 0, integer = 6, message = "A profundidade do produto deve ter até 8 digitos com dois após a vírgula")
-    @DecimalMin(value = "0", inclusive = false, message = "A profundidade do produto não pode ser negativa")
+    @Digits(fraction = 2, integer = 6, message = "A profundidade deve ter até 8 dígitos com 2 após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "A profundidade não pode ser zero ou negativa")
     private BigDecimal profundidade;
 
-    @Digits(fraction = 0, integer = 6, message = "A profundidade do produto deve ter até 8 digitos com dois após a vírgula")
-    @DecimalMin(value = "0", inclusive = false, message = "O peso do produto não pode ser negativa")
+    @Digits(fraction = 2, integer = 6, message = "O peso deve ter até 8 dígitos com 2 após a vírgula")
+    @DecimalMin(value = "0.0", inclusive = false, message = "O peso não pode ser zero ou negativo")
     private BigDecimal peso;
 
-    @NotNull(message = "A condição do produto é obrigatória(NOVO ou USADO)")
+    @NotNull(message = "A condição do produto é obrigatória (NOVO ou USADO)")
     private CondicaoEnum condicao;
 
     private Funcionario funcionario;

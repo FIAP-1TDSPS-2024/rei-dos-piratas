@@ -8,14 +8,20 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Estado;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ValidacaoException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CidadeRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.EnderecoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.EstadoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class EnderecoServiceImpl implements EnderecoService {
 
@@ -23,12 +29,14 @@ public class EnderecoServiceImpl implements EnderecoService {
     private final ClienteService clienteService;
     private final CidadeRepository cidadeRepository;
     private final EstadoRepository estadoRepository;
+    private final Validator validator;
 
-    public EnderecoServiceImpl(EnderecoRepository repository, ClienteService clienteService, CidadeRepository cidadeRepository, EstadoRepository estadoRepository) {
+    public EnderecoServiceImpl(EnderecoRepository repository, ClienteService clienteService, CidadeRepository cidadeRepository, EstadoRepository estadoRepository, Validator validator) {
         this.repository = repository;
         this.clienteService = clienteService;
         this.cidadeRepository = cidadeRepository;
         this.estadoRepository = estadoRepository;
+        this.validator = validator;
     }
 
 
@@ -74,6 +82,8 @@ public class EnderecoServiceImpl implements EnderecoService {
                         .getAuthentication().getPrincipal();
 
         endereco.setCliente(clienteService.findById(userDetails.getId()));
+
+        validar(endereco);
 
         Endereco enderecoDuplicado = this.repository.VerificaEnderecoDuplicado(endereco.getCep(), endereco.getNumero(), endereco.getCliente().getId());
 
@@ -121,5 +131,18 @@ public class EnderecoServiceImpl implements EnderecoService {
         Endereco endereco = this.findById(id);
         endereco.setEnderecoAtivo(false);
         this.repository.save(endereco);
+    }
+
+    private void validar(Endereco endereco) {
+        Set<ConstraintViolation<Endereco>> violacoes = validator.validate(endereco);
+        if (!violacoes.isEmpty()) {
+            Map<String, String> erros = violacoes.stream()
+                    .collect(Collectors.toMap(
+                            v -> v.getPropertyPath().toString(),
+                            ConstraintViolation::getMessage,
+                            (m1, m2) -> m1
+                    ));
+            throw new ValidacaoException(erros);
+        }
     }
 }

@@ -1,5 +1,5 @@
 -- V21: Dados iniciais - Dados da empresa Rei dos Piratas
--- id fixo = 1 (registro único conforme regra de negócio)
+-- id fixo = 1 (registro Ãºnico conforme regra de negÃ³cio)
 INSERT INTO DADOS_EMPRESA (
     id,
     cnpj,
@@ -17,7 +17,7 @@ INSERT INTO DADOS_EMPRESA (
     'reidospiratas.com.br',
     'contato@reidospiratas.com.br',
     'Rei dos Piratas',
-    'Rei dos Piratas Comércio Ltda',
+    'Rei dos Piratas ComÃ©rcio Ltda',
     '11987654321',
     '4711302',
     'SP',

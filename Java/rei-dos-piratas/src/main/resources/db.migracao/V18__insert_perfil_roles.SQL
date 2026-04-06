@@ -1,4 +1,4 @@
--- V18: Associação de Roles aos Perfis
+-- V18: AssociaÃ§Ã£o de Roles aos Perfis
 
 -- ADMIN: acesso total (todas as roles)
 INSERT INTO PERFIL_ROLES (perfil_id, role_id)
@@ -20,7 +20,7 @@ INSERT INTO PERFIL_ROLES (perfil_id, role_id)
         'PEDIDO_CANCEL'
       );
 
--- CLIENT: acesso a compras e pedidos próprios
+-- CLIENT: acesso a compras e pedidos prÃ³prios
 INSERT INTO PERFIL_ROLES (perfil_id, role_id)
     SELECT p.id, r.id FROM PERFIS p, ROLES r
     WHERE p.nome = 'CLIENT'

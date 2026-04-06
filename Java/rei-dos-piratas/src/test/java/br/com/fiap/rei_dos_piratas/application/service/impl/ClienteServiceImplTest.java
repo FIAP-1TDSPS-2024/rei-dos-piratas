@@ -3,9 +3,10 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
-import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -14,11 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class ClienteServiceImplTest {
@@ -28,6 +26,7 @@ class ClienteServiceImplTest {
     private PerfilRepository perfilRepository;
     private PasswordEncoder passwordEncoder;
     private Perfil perfilCliente;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
@@ -35,11 +34,14 @@ class ClienteServiceImplTest {
         this.perfilRepository = mock(PerfilRepository.class);
         this.passwordEncoder = mock(PasswordEncoder.class);
         this.perfilCliente = new Perfil(1L, "CLIENT", "Perfil de cliente", null);
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            this.validator = factory.getValidator();
+        }
 
         when(perfilRepository.findByNome("CLIENT")).thenReturn(perfilCliente);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository);
+        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository, validator);
     }
 
     @Test

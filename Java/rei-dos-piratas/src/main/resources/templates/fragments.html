@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Fragments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav th:fragment="navbar" class="bg-gray-800 text-white rounded-md">
+    <div class="flex justify-between items-center px-4 py-3">
+        <!-- Logo -->
+        <a th:href="@{/web/produtos}" class="flex items-center space-x-2 font-bold text-lg">
+            <span class="text-yellow-400">&#9678;</span>
+            <span>Rei dos Piratas</span>
+        </a>
+
+        <!-- Links de navegação -->
+        <div class="flex items-center space-x-6">
+            <a th:href="@{/web/produtos}" class="hover:text-yellow-400 transition">Produtos</a>
+            <a sec:authorize="hasRole('PRODUTO_WRITE')"
+               th:href="@{/web/produtos/novo}"
+               class="hover:text-yellow-400 transition">Cadastrar</a>
+        </div>
+
+        <!-- Usuário autenticado -->
+        <div sec:authorize="isAuthenticated()" class="relative group">
+            <button class="flex items-center space-x-2 px-3 py-1.5 border border-gray-500 rounded-md hover:bg-gray-700 transition">
+                <img src="https://ui-avatars.com/api/?name=User&background=ffc107&color=000&size=28"
+                     class="rounded-full w-7 h-7" alt="Avatar">
+                <span class="text-sm" sec:authentication="name">Usuário</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-md shadow-lg hidden group-hover:block z-50">
+                <!-- Logout: apaga o cookie JWT e redireciona para login -->
+                <button onclick="logout()"
+                        class="w-full text-left block px-4 py-2 text-red-500 hover:bg-gray-100">
+                    Sair
+                </button>
+            </div>
+        </div>
+
+        <!-- Botão Entrar (não autenticado) -->
+        <div sec:authorize="!isAuthenticated()">
+            <a th:href="@{/web/login}"
+               class="px-3 py-1.5 border border-gray-500 rounded-md hover:bg-gray-700 transition text-sm">
+                Entrar
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===================== FOOTER ===================== -->
+<footer th:fragment="footer" class="bg-gray-800 text-gray-400 text-center py-4 rounded-md mt-4">
+    <small>&copy; 2026 Rei dos Piratas &mdash; FIAP. Todos os direitos reservados.</small>
+</footer>
+
+<script>
+    function logout() {
+        // Remove o cookie JWT e redireciona para login
+        document.cookie = 'jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+        window.location.href = '/web/login';
+    }
+</script>
+
+</body>
+</html>
+

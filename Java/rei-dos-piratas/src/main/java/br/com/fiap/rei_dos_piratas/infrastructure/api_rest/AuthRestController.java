@@ -3,7 +3,6 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.LoginRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,7 +43,7 @@ public class AuthRestController {
             @ApiResponse(responseCode = "500", description = "Erro interno")
     })
     @PostMapping("/cadastro")
-    public ResponseEntity<AuthResponse> cadastro(@Valid @RequestBody ClienteInDto clienteInDto) {
+    public ResponseEntity<AuthResponse> cadastro(@RequestBody ClienteInDto clienteInDto) {
         AuthResponse authResponse = this.controller.cadastrar(clienteInDto);
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(authResponse);
     }

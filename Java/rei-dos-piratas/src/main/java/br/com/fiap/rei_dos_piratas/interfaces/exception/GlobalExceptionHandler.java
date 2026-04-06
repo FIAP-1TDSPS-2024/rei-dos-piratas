@@ -1,12 +1,10 @@
 package br.com.fiap.rei_dos_piratas.interfaces.exception;
 
 import br.com.fiap.rei_dos_piratas.domain.exceptions.*;
-import jakarta.validation.ConstraintDefinitionException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,6 +20,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public void handleNoResourceFoundException(NoResourceFoundException e) {}
+
+    @ExceptionHandler(ValidacaoException.class)
+    public ResponseEntity<Map<String, String>> handleValidacaoException(ValidacaoException e) {
+        return ResponseEntity.badRequest().body(e.getErros());
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException e) {

@@ -13,4 +13,6 @@ public interface FuncionarioService {
     Funcionario update(Funcionario funcionario);
 
     Funcionario ativarDesativar(Long id);
+
+    Funcionario findByEmail(String email);
 }

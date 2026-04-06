@@ -9,6 +9,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,11 +27,15 @@ class ProdutoServiceImplTest {
 
     private ProdutoService produtoService;
     private ProdutoRepository produtoRepository;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
         this.produtoRepository = mock(ProdutoRepository.class);
-        this.produtoService = new ProdutoServiceImpl(produtoRepository);
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            this.validator = factory.getValidator();
+        }
+        this.produtoService = new ProdutoServiceImpl(produtoRepository, validator);
     }
 
     private Funcionario criarFuncionario() {

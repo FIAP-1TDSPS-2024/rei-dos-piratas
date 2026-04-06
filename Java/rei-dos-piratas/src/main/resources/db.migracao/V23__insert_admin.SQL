@@ -1,5 +1,5 @@
--- V23: Usu·rio admin inicial
--- Perfil ADMIN (id buscado por subquery para n„o depender de id fixo)
+-- V23: Usu√°rio admin inicial
+-- Perfil ADMIN (id buscado por subquery para n√£o depender de id fixo)
 -- Senha: admin123  ?  BCrypt strength 10
 -- Hash: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
 INSERT INTO FUNCIONARIOS (
@@ -14,7 +14,6 @@ INSERT INTO FUNCIONARIOS (
     data_demissao,
     salario
 )
-    OVERRIDING SYSTEM VALUE
 VALUES (
     1,
     'admin',

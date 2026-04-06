@@ -1,4 +1,4 @@
--- V6: Criação da tabela DADOS_EMPRESA (registro único, id fixo = 1)
+-- V6: CriaÃ§Ã£o da tabela DADOS_EMPRESA (registro Ãºnico, id fixo = 1)
 CREATE TABLE DADOS_EMPRESA (
     id                      NUMBER PRIMARY KEY,
     razao_social            VARCHAR2(255),

@@ -2,47 +2,19 @@ package br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
-import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
-import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 
+/** DTO de saída — apenas transporta dados, sem anotações de validação. */
 public record ClienteOutDto(
-        @NotNull(message = "O ID não deve estar nulo para exibição ao usuário")
         Long id,
-
-        @NotNull(message = "O nome não pode ser nulo")
-        @Length(max=30, message = "O nome de usuário deve ter de 3 a 30 caracteres")
         String userName,
-
-        @NotNull(message = "O nome completo não deve estar nulo")
-        @Length(min=5, max=50, message = "O nome completo usuário deve ter de 5 a 50 caracteres")
         String nomeCompleto,
-
-        @Email(message = "Insira um e-mail válido")
-        @Length(max = 40, message = "O e-mail deve ter até 20 caracteres")
         String email,
-
-        @NotNull
         String celular,
-
         boolean usuarioAtivo,
-
-        @Past
-        @NotNull(message = "A data de cadastro do usuário não pode ser nula")
         LocalDate dataCadastro,
-
-        @Past
-        @NotNull(message = "A data de nascimento não pode ser nula")
         LocalDate dataNascimento,
-
-        @NotNull(message = "O sexo do usuário não pode ser nulo")
         SexoEnum sexo,
-
-        @NotNull(message = "O carrinho deve ser exibido ao usuário")
         Carrinho carrinho
 ) {}

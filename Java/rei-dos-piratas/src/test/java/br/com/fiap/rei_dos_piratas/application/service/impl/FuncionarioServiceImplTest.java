@@ -6,6 +6,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,20 +28,23 @@ class FuncionarioServiceImplTest {
     private PasswordEncoder passwordEncoder;
     private PerfilRepository perfilRepository;
     private Perfil perfilPadrao;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
         this.funcionarioRepository = mock(FuncionarioRepository.class);
         this.passwordEncoder = mock(PasswordEncoder.class);
         this.perfilRepository = mock(PerfilRepository.class);
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            this.validator = factory.getValidator();
+        }
 
-        // Criar perfil padrão para testes
         this.perfilPadrao = new Perfil(1L, "FUNCIONARIO", "Perfil de funcionário", null);
 
         when(passwordEncoder.encode(any())).thenAnswer(invocation -> "encoded-");
         when(perfilRepository.findByNome("FUNCIONARIO")).thenReturn(perfilPadrao);
 
-        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository, passwordEncoder, perfilRepository);
+        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository, passwordEncoder, perfilRepository, validator);
     }
 
     @Test

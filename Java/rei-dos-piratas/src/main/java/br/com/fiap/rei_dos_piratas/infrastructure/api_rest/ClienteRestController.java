@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +58,7 @@ public class ClienteRestController {
             @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
     @PutMapping
-    public ResponseEntity<ClienteOutDto> update(@Valid @RequestBody Cliente cliente) {
+    public ResponseEntity<ClienteOutDto> update(@RequestBody Cliente cliente) {
         ClienteOutDto novoCliente = this.controller.update(cliente);
         return ResponseEntity.ok(novoCliente);
     }

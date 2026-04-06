@@ -1,13 +1,13 @@
 -- V16: Dados iniciais - Roles do sistema
--- Nomes sem prefixo ROLE_ pois o cÛdigo adiciona "ROLE_" + nome dinamicamente
-INSERT INTO ROLES (nome, descricao) VALUES ('FUNCIONARIO_READ',  'Leitura de dados de funcion·rios');
-INSERT INTO ROLES (nome, descricao) VALUES ('FUNCIONARIO_WRITE', 'CriaÁ„o e ediÁ„o de funcion·rios');
+-- Nomes sem prefixo ROLE_ pois o c√≥digo adiciona "ROLE_" + nome dinamicamente
+INSERT INTO ROLES (nome, descricao) VALUES ('FUNCIONARIO_READ',  'Leitura de dados de funcion√°rios');
+INSERT INTO ROLES (nome, descricao) VALUES ('FUNCIONARIO_WRITE', 'Cria√ß√£o e edi√ß√£o de funcion√°rios');
 INSERT INTO ROLES (nome, descricao) VALUES ('PRODUTO_READ',      'Leitura de produtos');
-INSERT INTO ROLES (nome, descricao) VALUES ('PRODUTO_WRITE',     'CriaÁ„o e ediÁ„o de produtos');
+INSERT INTO ROLES (nome, descricao) VALUES ('PRODUTO_WRITE',     'Cria√ß√£o e edi√ß√£o de produtos');
 INSERT INTO ROLES (nome, descricao) VALUES ('CARRINHO_MANAGE',   'Gerenciamento de carrinho');
 INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_READ',       'Leitura de pedidos');
-INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_WRITE',      'CriaÁ„o e ediÁ„o de pedidos');
-INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_MANAGE',     'Gerenciamento avanÁado de pedidos');
-INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_PAGAMENTO',  'OperaÁıes de pagamento de pedidos');
+INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_WRITE',      'Cria√ß√£o e edi√ß√£o de pedidos');
+INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_MANAGE',     'Gerenciamento avan√ßado de pedidos');
+INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_PAGAMENTO',  'Opera√ß√µes de pagamento de pedidos');
 INSERT INTO ROLES (nome, descricao) VALUES ('PEDIDO_CANCEL',     'Cancelamento de pedidos');
-INSERT INTO ROLES (nome, descricao) VALUES ('ENDERECO_MANAGE',   'Gerenciamento de endereÁos');
+INSERT INTO ROLES (nome, descricao) VALUES ('ENDERECO_MANAGE',   'Gerenciamento de endere√ßos');

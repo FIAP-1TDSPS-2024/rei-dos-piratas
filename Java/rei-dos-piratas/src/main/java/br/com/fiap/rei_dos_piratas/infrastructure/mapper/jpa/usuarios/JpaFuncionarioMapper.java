@@ -37,6 +37,23 @@ public class JpaFuncionarioMapper {
         );
     }
 
+    /** Mapeia incluindo as roles do perfil — usar apenas na autenticação. */
+    public static Funcionario toEntityWithRoles(JpaFuncionarioEntity jpaFuncionario) {
+        if (jpaFuncionario == null) return null;
+        return new Funcionario(
+                jpaFuncionario.getUserName(),
+                jpaFuncionario.getId(),
+                jpaFuncionario.getNomeCompleto(),
+                jpaFuncionario.getEmail(),
+                jpaFuncionario.getSenha(),
+                jpaFuncionario.isUsuarioAtivo(),
+                jpaFuncionario.getDataCadastro(),
+                JpaPerfilMapper.toEntity(jpaFuncionario.getPerfil()),
+                jpaFuncionario.getDataDemissao(),
+                jpaFuncionario.getSalario()
+        );
+    }
+
     private JpaFuncionarioMapper() {
     }
 }

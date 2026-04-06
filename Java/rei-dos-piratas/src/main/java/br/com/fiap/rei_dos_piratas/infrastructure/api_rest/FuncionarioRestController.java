@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +66,7 @@ public class FuncionarioRestController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @PostMapping
-    public ResponseEntity<FuncionarioOutDto> create(@Valid @RequestBody FuncionarioInDto vendedor) {
+    public ResponseEntity<FuncionarioOutDto> create(@RequestBody FuncionarioInDto vendedor) {
         FuncionarioOutDto novoVendedor = this.controller.create(vendedor);
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(novoVendedor);
     }
@@ -78,7 +77,7 @@ public class FuncionarioRestController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @PutMapping
-    public ResponseEntity<FuncionarioOutDto> update(@Valid @RequestBody Funcionario funcionario) {
+    public ResponseEntity<FuncionarioOutDto> update(@RequestBody Funcionario funcionario) {
         FuncionarioOutDto novoVendedor = this.controller.update(funcionario);
         return ResponseEntity.ok(novoVendedor);
     }

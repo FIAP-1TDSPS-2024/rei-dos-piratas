@@ -1,4 +1,4 @@
--- V3: Criação da tabela de associação PERFIL_ROLES (N:N entre PERFIS e ROLES)
+-- V3: CriaÃ§Ã£o da tabela de associaÃ§Ã£o PERFIL_ROLES (N:N entre PERFIS e ROLES)
 CREATE TABLE PERFIL_ROLES (
     perfil_id NUMBER NOT NULL,
     role_id   NUMBER NOT NULL,
