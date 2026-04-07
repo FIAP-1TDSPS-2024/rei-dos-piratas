@@ -1,4 +1,5 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,6 +39,22 @@ public class PedidoRestController {
 
         Page<PedidoOutDto> pagePedidos = this.controller.findAllByCliente(pageNumber, pageSize);
 
+        return ResponseEntity.ok(pagePedidos);
+    }
+
+    @Operation(summary = "Listar pedidos por status (funcionários)", description = "Retorna pedidos filtrados por status, com paginação — exclusivo para funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista retornada"),
+            @ApiResponse(responseCode = "204", description = "Nenhum pedido encontrado")
+    })
+    @GetMapping("/status/{status}")
+    @PreAuthorize("hasRole('PEDIDO_WRITE')")
+    public ResponseEntity<Page<PedidoOutDto>> findAllByStatus(
+            @PathVariable("status") StatusEnum status,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber) {
+
+        Page<PedidoOutDto> pagePedidos = this.controller.findAllByStatus(pageNumber, pageSize, status);
         return ResponseEntity.ok(pagePedidos);
     }
 

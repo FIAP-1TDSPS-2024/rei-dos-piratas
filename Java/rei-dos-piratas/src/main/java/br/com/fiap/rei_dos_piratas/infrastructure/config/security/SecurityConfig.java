@@ -72,15 +72,17 @@ public class SecurityConfig {
                         .requestMatchers("/web/produtos/novo", "/web/produtos/save",
                                 "/web/produtos/*/editar", "/web/produtos/*/excluir").hasRole("PRODUTO_WRITE")
                         // Gerenciamento funcionários
-                        .requestMatchers(HttpMethod.GET, "/funcionarios/**").hasAnyRole("FUNCIONARIO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
                         .requestMatchers(HttpMethod.POST, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
                         .requestMatchers(HttpMethod.DELETE, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
                         // Operações de pedidos
                         .requestMatchers(HttpMethod.PUT, "/pedidos/pagamento/**").hasRole("PEDIDO_PAGAMENTO")
                         .requestMatchers(HttpMethod.PUT, "/pedidos/cancelamento/**").hasRole("PEDIDO_CANCEL")
+                        .requestMatchers(HttpMethod.GET, "/pedidos/status/**").hasRole("PEDIDO_WRITE")
                         .requestMatchers(HttpMethod.PUT, "/pedidos/**").hasAnyRole("PEDIDO_WRITE")
                         .requestMatchers(HttpMethod.GET, "/pedidos/**").hasAnyRole("PEDIDO_READ")
+                        // Painel web de pedidos para funcionários
+                        .requestMatchers("/web/pedidos/**").hasRole("PEDIDO_WRITE")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())

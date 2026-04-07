@@ -40,7 +40,7 @@ public class JpaClienteMapper {
                 jpaCliente.getSenha(),
                 jpaCliente.isUsuarioAtivo(),
                 jpaCliente.getDataCadastro(),
-                JpaPerfilMapper.toEntityWithoutRoles(jpaCliente.getPerfil()),
+                JpaPerfilMapper.toEntity(jpaCliente.getPerfil()),
                 jpaCliente.getDataNascimento(),
                 jpaCliente.getSexo(),
                 jpaCliente.getCpf(),

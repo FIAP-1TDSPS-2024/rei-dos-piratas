@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{pedidos.imprimir.page.title}">Imprimir Etiquetas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+<div class="max-w-5xl mx-auto p-4">
+
+    <div th:replace="~{fragments.html :: navbar}"></div>
+
+    <!-- Mensagens flash -->
+    <div th:if="${successMessage}" class="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm"
+         th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm"
+         th:text="${errorMessage}"></div>
+
+    <!-- Link de impressão gerado -->
+    <div th:if="${urlImpressao != null}"
+         class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md flex items-center justify-between">
+        <div>
+            <p class="text-sm font-semibold text-green-800" th:text="#{pedidos.imprimir.linkPronto}">Etiquetas prontas para impressão!</p>
+            <p class="text-xs text-green-600 mt-1" th:text="${urlImpressao}"></p>
+        </div>
+        <a th:href="${urlImpressao}" target="_blank"
+           class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition ml-4"
+           th:text="#{pedidos.imprimir.abrirLink}">Abrir / Imprimir</a>
+    </div>
+
+    <div class="bg-white p-6 mt-4 shadow-md rounded-md">
+        <div class="mb-6">
+            <a th:href="@{/web/pedidos}" class="text-gray-400 text-sm hover:text-gray-600">← Voltar para Pedidos</a>
+            <h1 class="text-2xl font-bold text-gray-800 mt-1" th:text="#{pedidos.imprimir.titulo}">Imprimir Etiquetas</h1>
+            <p class="text-gray-500 text-sm mt-1" th:text="#{pedidos.imprimir.subtitulo}">
+                Selecione os pedidos com etiquetas geradas para obter o link de impressão.
+            </p>
+        </div>
+
+        <!-- Sem pedidos -->
+        <div th:if="${pedidos == null or pedidos.isEmpty()}" class="text-center py-12 text-gray-400">
+            <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            <p class="font-medium" th:text="#{pedidos.imprimir.vazio}">Não há pedidos aguardando impressão de etiqueta.</p>
+            <a th:href="@{/web/pedidos/etiquetas}"
+               class="mt-4 inline-block px-4 py-2 bg-purple-600 text-white font-semibold rounded hover:bg-purple-700 transition text-sm"
+               th:text="#{pedidos.acao.etiquetas}">Gerar Etiquetas</a>
+        </div>
+
+        <!-- Formulário -->
+        <form th:if="${pedidos != null and !pedidos.isEmpty()}"
+              th:action="@{/web/pedidos/imprimir}" method="post">
+
+            <div class="mb-3 flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                    <input type="checkbox" id="selectAll" class="rounded"
+                           onclick="document.querySelectorAll('.pedido-check').forEach(c => c.checked = this.checked)">
+                    Selecionar todos
+                </label>
+                <span class="text-xs text-gray-400"
+                      th:text="${pedidos.size() + ' pedido(s) disponível(is)'}"></span>
+            </div>
+
+            <table class="w-full text-sm text-left border-collapse">
+                <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                    <th class="px-4 py-3 border-b w-10"></th>
+                    <th class="px-4 py-3 border-b">#ID</th>
+                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.data}">Data</th>
+                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.itens}">Itens</th>
+                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.total}">Total</th>
+                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.previsao}">Previsão</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="pedido : ${pedidos}" class="hover:bg-gray-50 border-b">
+                    <td class="px-4 py-3">
+                        <input type="checkbox" name="pedidosSelecionados"
+                               th:value="${pedido.id}"
+                               class="pedido-check rounded">
+                    </td>
+                    <td class="px-4 py-3 font-mono text-gray-500" th:text="${'#' + pedido.id}"></td>
+                    <td class="px-4 py-3" th:text="${pedido.dataPedido}"></td>
+                    <td class="px-4 py-3 text-center" th:text="${pedido.produtosAdicionados.size()}"></td>
+                    <td class="px-4 py-3 font-semibold"
+                        th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+                    <td class="px-4 py-3 text-gray-500"
+                        th:text="${pedido.previsaoEntrega != null ? pedido.previsaoEntrega : '-'}"></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="mt-6 flex gap-3 justify-end">
+                <a th:href="@{/web/pedidos}"
+                   class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded hover:bg-gray-100 transition"
+                   th:text="#{common.cancelar}">Cancelar</a>
+                <button type="submit"
+                        class="px-6 py-2 bg-gray-700 text-white text-sm font-semibold rounded hover:bg-gray-800 transition"
+                        th:text="#{pedidos.imprimir.confirmar}">Gerar Link de Impressão</button>
+            </div>
+        </form>
+    </div>
+
+    <div th:replace="~{fragments.html :: footer}"></div>
+</div>
+</body>
+</html>
+

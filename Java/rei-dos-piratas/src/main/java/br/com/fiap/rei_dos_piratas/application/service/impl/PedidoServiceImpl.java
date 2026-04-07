@@ -70,6 +70,11 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     @Override
+    public Page<Pedido> findAllByStatus(int pageNumber, int pageSize, StatusEnum status) {
+        return this.repository.listAllByStatus(pageNumber, pageSize, status);
+    }
+
+    @Override
     public Pedido findById(Long id) {
         try {
             return this.repository.findById(id);

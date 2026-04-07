@@ -15,6 +15,8 @@ public interface JpaPedidoEntityRepository extends JpaRepository<JpaPedidoEntity
 
     Page<JpaPedidoEntity> findAllByCliente_Id(Long clienteId, Pageable pageable);
 
+    Page<JpaPedidoEntity> findAllByStatus(StatusEnum status, Pageable pageable);
+
     // Batch operations for performance optimization
     @Query("SELECT p FROM JpaPedidoEntity p WHERE p.id IN :ids AND p.status = :status")
     List<JpaPedidoEntity> findByIdsAndStatus(@Param("ids") List<Long> ids, @Param("status") StatusEnum status);

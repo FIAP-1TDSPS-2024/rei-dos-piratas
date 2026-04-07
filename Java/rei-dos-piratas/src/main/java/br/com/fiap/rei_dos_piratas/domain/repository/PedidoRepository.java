@@ -11,6 +11,7 @@ import java.util.List;
 public interface PedidoRepository {
     Page<Pedido> listAll(int pageNumber, int pageSize);
     Page<Pedido> listAllByClient(int pageNumber, int pageSize, Long clienteId);
+    Page<Pedido> listAllByStatus(int pageNumber, int pageSize, StatusEnum status);
     Pedido findById(Long id);
     Pedido create(Pedido pedido);
     Pedido update(Pedido pedido);

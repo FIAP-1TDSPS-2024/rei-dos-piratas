@@ -23,6 +23,9 @@
             <a sec:authorize="hasRole('PRODUTO_WRITE')"
                th:href="@{/web/produtos/novo}"
                class="hover:text-yellow-400 transition">Cadastrar</a>
+            <a sec:authorize="hasRole('PEDIDO_WRITE')"
+               th:href="@{/web/pedidos}"
+               class="hover:text-yellow-400 transition">Pedidos</a>
         </div>
 
         <!-- Usu&aacute;rio autenticado -->

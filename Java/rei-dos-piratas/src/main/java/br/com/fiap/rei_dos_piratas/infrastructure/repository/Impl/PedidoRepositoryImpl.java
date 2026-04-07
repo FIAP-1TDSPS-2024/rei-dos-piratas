@@ -44,6 +44,17 @@ public class PedidoRepositoryImpl implements PedidoRepository {
     }
 
     @Override
+    public Page<Pedido> listAllByStatus(int pageNumber, int pageSize, StatusEnum status) {
+        return PageMapper.fromFrameworkPage(
+                this.repository.findAllByStatus(
+                        status,
+                        Pageable
+                                .ofSize(pageSize)
+                                .withPage(pageNumber)
+                ).map(JpaPedidoMapper::toEntity));
+    }
+
+    @Override
     public Pedido findById(Long id) {
         return JpaPedidoMapper.toEntity(
                 this.repository

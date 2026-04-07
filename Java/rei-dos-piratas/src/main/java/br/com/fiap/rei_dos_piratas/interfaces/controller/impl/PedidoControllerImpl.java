@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
@@ -35,6 +36,22 @@ public class PedidoControllerImpl implements PedidoController {
     @Override
     public Page<PedidoOutDto> findAllByCliente(int pageNumber, int pageSize) {
         Page<Pedido> pedidosPage = this.service.findAll(pageNumber, pageSize);
+
+        List<PedidoOutDto> pedidos = pedidosPage
+                .pageItems()
+                .stream()
+                .map(PedidoDtoMapper::toDto)
+                .toList();
+
+        return new Page<PedidoOutDto>(
+                pedidosPage.numberOfPages(),
+                pedidosPage.pageNumber(),
+                pedidos);
+    }
+
+    @Override
+    public Page<PedidoOutDto> findAllByStatus(int pageNumber, int pageSize, StatusEnum status) {
+        Page<Pedido> pedidosPage = this.service.findAllByStatus(pageNumber, pageSize, status);
 
         List<PedidoOutDto> pedidos = pedidosPage
                 .pageItems()
