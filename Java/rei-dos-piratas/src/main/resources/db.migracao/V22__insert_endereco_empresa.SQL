@@ -9,7 +9,6 @@ INSERT INTO ENDERECO (
     cliente_id,
     empresa_id
 )
-OVERRIDING SYSTEM VALUE
 VALUES (
            21,
            'Jardim Guaruja',
