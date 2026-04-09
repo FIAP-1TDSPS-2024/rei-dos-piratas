@@ -1,212 +1,232 @@
 # Rei Dos Piratas
 
-> API REST para Back-End da aplicação Rei dos Piratas. Um E-commerce de mangás, focando na compra de mangás antigos de pessoas que vendem suas coleções e vendê-los para colecionadores que não querem ter o estresse de pesquisar, negociar e verificar estado de conservação. Também serão vendidos mangás lançamentos a preço competitivo para todo o Brasil.
+> API REST para Back-End da aplicacao Rei dos Piratas, um e-commerce de mangas usados e lancamentos.
 
 ---
 
-## Vídeo explicativo da solução
+## Video explicativo da solucao
 
-> Acesse o Link abaixo para assistir ao vídeo explicativo da solução.
+[Video Explicativo no YouTube](https://www.youtube.com/watch?v=wSOUlz6PsAY)
 
-[Vídeo Explicativo no YouTube](https://www.youtube.com/watch?v=wSOUlz6PsAY)
+## Integrantes do Grupo - CATECH
 
-## 👥 Integrantes do Grupo – CATECH
-
-* **RM561144**: Jonas Oliveira - Responsável por Java e banco de dados
-* **RM559336**: Wendell Dourado - Responsável por Mobile e Devops
-* **RM559622**: Daniel Batista - Responsável por .NET, IoT e QA
+- **RM561144**: Jonas Oliveira - Java e banco de dados
+- **RM559336**: Wendell Dourado - Mobile e DevOps
+- **RM559622**: Daniel Batista - .NET, IoT e QA
 
 ---
 
-## Diagrama da Aplicação
+## Diagrama da Aplicacao
 
-> Acesse o Link abaixo para acessar o diagrama UML da aplicação.
-
-[Diagrama da Aplicação no Lucidchart](https://lucid.app/lucidchart/8cb61c77-643b-4269-a160-0be5cca49936/edit?viewport_loc=-2310%2C-669%2C…)
+[Diagrama da Aplicacao no Lucidchart](https://lucid.app/lucidchart/8cb61c77-643b-4269-a160-0be5cca49936/edit)
 
 ---
 
-## Cronograma de Desenvolvimento - Java - Sprint 1
+## Cronograma de Desenvolvimento - Sprint 3 (atualizado)
 
-| Semana | Datas           | Atividade                                              |
-| ------ |-----------------|--------------------------------------------------------|
-| 1      | 22/set - 28/set | Definir diagrama UML e arquitetura                     |
-| 2      | 29/set - 05/out | Repositories, entidades JPA e mappers JPA              |
-| 2      | 29/set - 05/out | Implementação de Usuario, Cliente e Vendedor           |
-| 3      | 06/out - 08/out | Services e validations                                 |
-| 3      | 06/out - 08/out | Controllers e DTOs                                     |
-| 3      | 08/out - 10/out | RestControllers                                        |
-| 3      | 08/out - 10/out | Conexão com DB                                         |
-| 3      | 09/out - 12/out | Testes de requisição, criação de testes unitários      |
-| 3      | 09/out - 12/out | Finalização de documentação                            |
-| 3      | 12/out          | Entrega final - Sprint 1                               |
+| Sem | Dias          | Foco | Entrega |
+| --- |---------------| ---- | ------- |
+| 1 | 24/03 - 29/03 | API Melhor Envio | Cotacao de frete, criacao/organizacao de pedidos de frete e geracao de etiquetas |
+| 1 | 29/03 - 01/04 | Fluxo de pedidos | Ajustes de status: pagamento, preparacao, postagem, envio e entrega |
+| 1 | 01/04 - 03/04 | Perfis e roles | Reforma de autorizacao baseada em permissoes |
+| 2 | 03/04 - 06/04 | Front de produtos | Tela e fluxo web para cadastro/edicao/listagem |
+| 2 | 06/04 - 08/04 | Front de pedidos | Tela e fluxo web para acompanhamento e impressao de etiquetas |
+| 2 | 08/04 - 12/04 | Stabilization | Hardening, testes integrados e ajustes finais de documentacao |
 
+## Cronograma de Desenvolvimento - Sprint 4
 
-## Cronograma de Desenvolvimento - Java - Sprint 3
+> Periodo planejado: **07/05 a 20/05** (duas semanas antes de 21/05).
 
-| Semana | Dias   | Atividade                                                       |
-|--------|--------|-----------------------------------------------------------------|
-| 1      | 1 - 2  | Implementar domínio de Produtos                                 |
-| 1      | 2 - 3  | Implementar domínio de pedidos e associação                     |
-| 1      | 4 - 5  | Implementar services e controllers de produtos e pedidos        |
-| 1      | 6      | Implementar CRUD de carrinhos                                   |
-| 1      | 7      | Implementar regras de negócio de estoque e afins                |
-| 2      | 8 - 10 | Implementar configurações Spring Security                       |
-| 2      | 11     | Implementar Login e cadastro de usuarios com JWT                |
-| 2      | 12     | Implementar coleta de informações do usuario por contexto       |
-| 2      | 13     | Implementação de Documentação swagger e HATEOAS                 |
-| 2      | 14     | Entrega final - Sprint 2 - Ajustes de documentação              |
+| Sem | Datas | Foco | Entrega |
+| --- | ----- | ---- | ------- |
+| 1 | 07/05 - 09/05 | Webhooks de pedidos | Recebimento e processamento de eventos para acompanhamento de pedidos |
+| 1 | 10/05 - 12/05 | Login e autenticacao | Aprimoramento do fluxo de login com eventos/webhook e maior rastreabilidade |
+| 1 | 13/05 - 14/05 | Seguranca | Melhorias de seguranca no fluxo de autenticacao e autorizacao |
+| 2 | 15/05 - 17/05 | Cancelamento | Revisao de regras e fluxo de cancelamento com validacoes de status |
+| 2 | 18/05 - 19/05 | Envio reverso | Implementacao de fluxo de logistica reversa e acompanhamento |
+| 2 | 20/05 | Fechamento | Testes de ponta a ponta, ajustes finais e preparacao para marco de 21/05 |
+
 ---
 
-## Cronograma de Desenvolvimento - Java - Sprint 3
+## Como executar a aplicacao
 
-| Semana | Dias    | Atividade                                                       |
-|--------|---------|-----------------------------------------------------------------|
-| 1      | 1       | Implementação de historico pedidos para evitar quebras de fluxo |
-| 1      | 2 - 5   | Implementar API de frete com teste em SandBox                   |
-| 1      | 6 - 9   | Implementar API de GATEWAY de pagamentos com pagamento por PIX  |
-| 1      | 10 - 11 | Ajustes devidos das regras de negócio para confiabilidade       |
-| 1      | 12 - 13 | Implementar Refresh token no método de login                    |
-| 1      | 14      | Entrega final - Sprint 3 - Ajustes de documentação              |
----
-
-## Cronograma de Desenvolvimento - Java - Sprint 3
-
-| Semana | Dias    | Atividade                                                      |
-|--------|---------|----------------------------------------------------------------|
-| 1      | 2       | Revisão de regras de negócio conforme feedback                 |
-| 1      | 3 - 6   | Revisar webhooks dos fluxos de pagamento e entrega com API key |
-| 1      | 7 - 9   | Implementar pagamento por boleto bancário                      |
-| 1      | 10 - 11 | Ajustes devidos das regras de negócio para confiabilidade      |
-| 1      | 12 - 13 | Implementar segurança em duas etapas (opcional)                |
-| 1      | 14      | Entrega final - Sprint 3 - Ajustes de documentação             |
----
-
-## Como Executar a Aplicação
-
-1. Clone o repositório:
+### 1) Clonar e acessar a pasta
 
 ```bash
 git clone https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas.git
-```
-
-2. Acesse o diretório do projeto:
-
-```bash
 cd rei-dos-piratas/Java/rei-dos-piratas
 ```
 
-3. Compile a aplicação:
+### 2) Definir variaveis de ambiente
+
+A aplicacao usa variaveis de ambiente para conexao com banco, JWT e integracao com Melhor Envio.
+
+Variaveis obrigatorias para banco:
+
+- `DB_URL`
+- `DB_USER`
+- `DB_PASSWORD`
+
+Variavel para controle de migration:
+
+- `FLYWAY_ENABLED` (`true` para executar migrations, `false` para nao executar)
+
+Variaveis obrigatorias para API Melhor Envio:
+
+- `ME_URL`
+- `ME_CLIENT_ID`
+- `ME_SECRET`
+- `ME_REDIRECT_URI`
+
+Variaveis de seguranca JWT (recomendado definir em producao):
+
+- `JWT_SECRET`
+- `JWT_EXPIRATION`
+
+Exemplo de configuracao no PowerShell (sessao atual):
+
+```powershell
+$env:DB_URL = "jdbc:oracle:thin:@//localhost:1521/XEPDB1"
+$env:DB_USER = "seu_usuario"
+$env:DB_PASSWORD = "sua_senha"
+$env:FLYWAY_ENABLED = "true"
+
+$env:ME_URL = "https://sandbox.melhorenvio.com.br"
+$env:ME_CLIENT_ID = "seu_client_id"
+$env:ME_SECRET = "seu_client_secret"
+$env:ME_REDIRECT_URI = "https://sua-url-de-retorno"
+
+$env:JWT_SECRET = "defina-um-segredo-forte"
+$env:JWT_EXPIRATION = "86400000"
+```
+
+> Se estiver usando Docker Compose, o `compose.yaml` ja referencia um arquivo `.env` (`env_file`), entao voce pode colocar essas mesmas variaveis nele.
+
+### 3) Executar migrations
+
+As migrations Flyway estao em `src/main/resources/db.migracao` e so rodam quando `FLYWAY_ENABLED=true`.
+
+Fluxo recomendado:
+
+1. Primeira subida do ambiente/base: usar `FLYWAY_ENABLED=true`.
+2. Base ja estruturada: pode usar `FLYWAY_ENABLED=false` se nao quiser validar/aplicar scripts no startup.
+
+### 4) Compilar e subir a aplicacao
 
 ```bash
 mvn clean install
-```
-
-4. Execute a aplicação:
-
-```bash
 mvn spring-boot:run
 ```
 
-## Endpoints Disponíveis
-
-### Funcionários
-
-| Método | Endpoint                                      | Descrição                                              |
-| ------ | --------------------------------------------- |--------------------------------------------------------|
-| GET    | /vendedores                                   | Listar funcionários                                    |
-| GET    | /funcionarios/{id}                            | Buscar funcionário por id                              |
-| POST   | /funcionarios                                 | Criar funcionário                                      |
-| PUT    | /funcionarios                                 | Atualizar funcionário                                  |
-| PUT    | /funcionarios/{id}                            | Ativar/Desativar funcionário                           |
-
-### Clientes
-
-| Método | Endpoint                                      | Descrição                                              |
-| ------ | --------------------------------------------- |--------------------------------------------------------|
-| GET    | /clientes?pageNumber={n}&pageSize={m}         | Listar clientes paginados                              |
-| GET    | /clientes                                     | Buscar clientes                                        |
-| GET    | /clientes/{id}                                | Buscar cliente por id                                  |
-| POST   | /clientes                                     | Criar cliente                                          |
-| PUT    | /clientes                                     | Atualizar cliente                                      |
-| DELETE | /info?id={id}                                 | Remover cliente (rota presente na coleção Postman)     |
-
-### Produtos
-
-| Método | Endpoint                                      | Descrição                                              |
-| ------ | --------------------------------------------- |--------------------------------------------------------|
-| GET    | /produtos                                     | Listar produtos                                        |
-| GET    | /produtos/{id}                                | Buscar produto por id                                  |
-| POST   | /produtos                                     | Criar produto                                          |
-| PUT    | /produtos                                     | Atualizar produto                                      |
-| DELETE | /produtos/{id}                                | Remover produto                                        |
-
-### Pedidos
-
-| Método | Endpoint                                      | Descrição                                              |
-| ------ | --------------------------------------------- |--------------------------------------------------------|
-| GET    | /pedidos                                      | Listar pedidos                                         |
-| GET    | /pedidos/{id}                                 | Buscar pedido por id                                   |
-| POST   | /pedidos                                      | Criar pedido                                           |
-| PUT    | /pedidos/pagamento/{id}                       | Marcar pagamento do pedido                             |
-| PUT    | /pedidos/envio/{id}                           | Marcar envio/entrega do pedido                         |
-| PUT    | /pedidos/cancelamento/{id}                    | Cancelar pedido                                        |
-
-### Carrinho
-
-| Método | Endpoint                                      | Descrição                                              |
-| ------ | --------------------------------------------- |--------------------------------------------------------|
-| GET    | /carrinho                                     | Ver carrinho do usuário                                |
-| PUT    | /carrinho/adicionar                           | Adicionar item ao carrinho                             |
-| PUT    | /carrinho/remover                             | Remover item do carrinho                               |
-| PUT    | /carrinho/limpar                              | Limpar carrinho                                        |
-| PUT    | /carrinho/finalizar                           | Finalizar pedido a partir do carrinho                  |
-
-### Authentication
-
-| Método | Endpoint                                      | Descrição                                              |
-| ------ |-----------------------------------------------|--------------------------------------------------------|
-| POST   | /auth/login                                   | Autenticação / login (gera token)                      |
-| POST   | /auth/cadastro                                | Cadastro de usuário (Apenas clientes)                  |
+Aplicacao disponivel em `http://localhost:8080`.
 
 ---
 
-### OBS: O usuário administrador deve estar criado no banco com antecedência para que novos funcionários sejam criados.
+## Observacao importante sobre etiquetas (Melhor Envio)
 
-## Coleção POSTMAN
+Para gerar e **imprimir etiquetas de envio**, e necessario que exista login/autorizacao valida no Melhor Envio (token/refresh token validos para a conta usada na integracao).
 
-[Link do arquivo JSON da coleção POSTMAN para teste dos END-POINTS](API%20Rei%20dos%20Piratas.postman_collection.json)
+Sem essa autorizacao, as operacoes de frete podem falhar na etapa de organizacao, geracao ou impressao das etiquetas.
 
-## Tecnologias Utilizadas
+---
 
-* Java 17 (ou versão utilizada)
-* Spring Boot 3.5.6
-* Maven
-* Banco de dados: H2, ORACLE
+## Endpoints disponiveis
 
-## Bibliotecas e dependências (conforme pom.xml)
+### Funcionarios
 
-Dependências principais:
-* org.springframework.boot:spring-boot-starter-data-jpa — JPA + Spring Data (persistência)
-* org.springframework.boot:spring-boot-starter-web — Spring MVC / REST
-* org.springframework.boot:spring-boot-starter-validation — Bean Validation (JSR-380)
-* com.oracle.database.jdbc:ojdbc11 (scope: runtime) — Driver JDBC Oracle
-* org.projectlombok:lombok (optional) — Reduz boilerplate com anotações
+| Metodo | Endpoint | Descricao |
+| ------ | -------- | --------- |
+| GET | /vendedores | Listar funcionarios |
+| GET | /funcionarios/{id} | Buscar funcionario por id |
+| POST | /funcionarios | Criar funcionario |
+| PUT | /funcionarios | Atualizar funcionario |
+| PUT | /funcionarios/{id} | Ativar/Desativar funcionario |
 
-Ferramentas de desenvolvimento / runtime:
-* org.springframework.boot:spring-boot-devtools (scope: runtime, optional) — hot reload / dev tools
+### Clientes
 
-Dependências de teste:
-* org.springframework.boot:spring-boot-starter-test (scope: test) — JUnit, Spring Test, MockMVC, AssertJ, etc.
-* com.h2database:h2 (scope: test) — banco em memória para testes
+| Metodo | Endpoint | Descricao |
+| ------ | -------- | --------- |
+| GET | /clientes?pageNumber={n}&pageSize={m} | Listar clientes paginados |
+| GET | /clientes | Buscar clientes |
+| GET | /clientes/{id} | Buscar cliente por id |
+| POST | /clientes | Criar cliente |
+| PUT | /clientes | Atualizar cliente |
+| DELETE | /info?id={id} | Remover cliente (rota presente na colecao Postman) |
 
-Plugins relevantes configurados no build:
-* maven-compiler-plugin — processamento de anotações (Lombok)
-* jacoco-maven-plugin — cobertura de testes
-* spring-boot-maven-plugin — empacotamento/execução da aplicação
+### Produtos
 
-> Observação: versões seguem as definidas pelo Spring Boot parent (3.5.6). O driver Oracle (ojdbc11) é referenciado sem versão explícita no pom (é resolvido em tempo de execução ou via repositório configurado).
+| Metodo | Endpoint | Descricao |
+| ------ | -------- | --------- |
+| GET | /produtos | Listar produtos |
+| GET | /produtos/{id} | Buscar produto por id |
+| POST | /produtos | Criar produto |
+| PUT | /produtos | Atualizar produto |
+| DELETE | /produtos/{id} | Remover produto |
 
-## Observações
+### Pedidos
 
-> Espaço para observações adicionais, informações de configuração especial, dicas de uso ou requisitos do sistema.
+| Metodo | Endpoint | Descricao |
+| ------ | -------- | --------- |
+| GET | /pedidos | Listar pedidos |
+| GET | /pedidos/{id} | Buscar pedido por id |
+| POST | /pedidos | Criar pedido |
+| PUT | /pedidos/pagamento/{id} | Marcar pagamento do pedido |
+| PUT | /pedidos/envio/{id} | Marcar envio/entrega do pedido |
+| PUT | /pedidos/cancelamento/{id} | Cancelar pedido |
+
+### Carrinho
+
+| Metodo | Endpoint | Descricao |
+| ------ | -------- | --------- |
+| GET | /carrinho | Ver carrinho do usuario |
+| PUT | /carrinho/adicionar | Adicionar item ao carrinho |
+| PUT | /carrinho/remover | Remover item do carrinho |
+| PUT | /carrinho/limpar | Limpar carrinho |
+| PUT | /carrinho/finalizar | Finalizar pedido a partir do carrinho |
+
+### Authentication
+
+| Metodo | Endpoint | Descricao |
+| ------ | -------- | --------- |
+| POST | /auth/login | Autenticacao / login (gera token) |
+| POST | /auth/cadastro | Cadastro de usuario (apenas clientes) |
+
+---
+
+## Colecao Postman
+
+[Link do arquivo JSON da colecao Postman para teste dos endpoints](API%20Rei%20dos%20Piratas.postman_collection.json)
+
+## Tecnologias utilizadas
+
+- Java 17
+- Spring Boot 3.5.6
+- Maven
+- Banco de dados: Oracle (principal) e H2 (testes)
+
+## Dependencias principais
+
+- `org.springframework.boot:spring-boot-starter-data-jpa`
+- `org.springframework.boot:spring-boot-starter-web`
+- `org.springframework.boot:spring-boot-starter-validation`
+- `com.oracle.database.jdbc:ojdbc11` (runtime)
+- `org.projectlombok:lombok` (optional)
+
+Ferramentas adicionais:
+
+- `org.springframework.boot:spring-boot-devtools` (runtime, optional)
+- `org.springframework.boot:spring-boot-starter-test` (test)
+- `com.h2database:h2` (test)
+
+Plugins do build:
+
+- `maven-compiler-plugin`
+- `jacoco-maven-plugin`
+- `spring-boot-maven-plugin`
+
+---
+
+## Observacoes
+
+- O usuario administrador deve existir previamente no banco para criacao de novos funcionarios.
+- O modulo web (front para gestao de produtos e pedidos) esta no mesmo projeto Spring Boot via templates MVC.
