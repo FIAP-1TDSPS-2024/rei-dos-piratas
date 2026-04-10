@@ -57,15 +57,11 @@ public abstract class Usuario implements UsuarioDetails {
             return List.of();
         }
 
-        // Se o usuário for um CLIENTE, nós injetamos as permissões granulares dele
-        if (this.perfil.getNome().equalsIgnoreCase("CLIENT")) {
-            return List.of(
-                new SimpleGrantedAuthority("ROLE_CARRINHO_MANAGE"),
-                new SimpleGrantedAuthority("ROLE_ENDERECO_MANAGE")
-            );
-        }
-
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.perfil.getNome()));
+        return perfil
+                .getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getNome()))
+                .collect(Collectors.toList());
     }
 
     @Override
