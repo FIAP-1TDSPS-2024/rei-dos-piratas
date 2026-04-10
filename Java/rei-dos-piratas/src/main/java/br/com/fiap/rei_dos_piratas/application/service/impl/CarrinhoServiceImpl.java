@@ -44,8 +44,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Cliente cliente = clienteService.findById(userDetails.getId());
 
-        //Verifica o produto tem estoque suficiente para adicionar a quantidade desejada
-        //Quando for criado o pedido, essa quandidade vai ser revisada, caso o estoque tenha sido atualizado
+        // Verifica o estoque
         if (produto.getEstoque() < itemProdutoPedido.getQuantidade()) {
             throw new EstoqueInsuficienteException("Estoque insuficiente! O produto " +
                     produto.getNome() + " de ID " +
@@ -55,14 +54,21 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
         Carrinho carrinho = cliente.getCarrinho();
 
-        // Cria uma lista mutável a partir da lista atual
-        List<ItemProdutoCarrinho> items = new ArrayList<>(carrinho.getProdutosAdicionados());
+        // 1. Busca se o produto já está no carrinho
+        Optional<ItemProdutoCarrinho> itemExistente = carrinho.getProdutosAdicionados()
+                .stream()
+                .filter(item -> item.getProduto().getId().equals(produto.getId()))
+                .findFirst();
 
-        // Adiciona o novo item
-        items.add(new ItemProdutoCarrinho(produto, itemProdutoPedido.getQuantidade()));
-
-        // Atualiza o carrinho
-        carrinho.setProdutosAdicionados(items);
+        if (itemExistente.isPresent()) {
+            // 2. Se já existe, apenas SOMA a quantidade na mesma linha
+            ItemProdutoCarrinho itemAtual = itemExistente.get();
+            int novaQuantidade = itemAtual.getQuantidade() + itemProdutoPedido.getQuantidade();
+            itemAtual.setQuantidade(novaQuantidade);
+        } else {
+            // 3. Se não existe, cria o item novo
+            carrinho.getProdutosAdicionados().add(new ItemProdutoCarrinho(produto, itemProdutoPedido.getQuantidade()));
+        }
 
         return this.repository.update(carrinho);
     }
@@ -76,25 +82,30 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         Cliente cliente = clienteService.findById(userDetails.getId());
 
         Carrinho carrinho = cliente.getCarrinho();
-        List<ItemProdutoCarrinho> items = new ArrayList<>(carrinho.getProdutosAdicionados());
 
+        // 1. Corrigido o filtro: agora ele olha para o 'item' da lista
         Optional<ItemProdutoCarrinho> produtoRemovido = carrinho
                 .getProdutosAdicionados()
                 .stream()
-                .filter(item -> itemProdutoPedido.getProduto().getId().equals(produto.getId()))
+                .filter(item -> item.getProduto().getId().equals(produto.getId()))
                 .findFirst();
 
         if (produtoRemovido.isEmpty()) {
             throw new RegraDeNegocioException("Esse produto não foi incluído no carrinho.");
         }
 
-        if (produtoRemovido.get().getQuantidade() < itemProdutoPedido.getQuantidade()) {
-            items.remove(produtoRemovido.get());
-            carrinho.setProdutosAdicionados(items);
-        }
-        else {
-            produtoRemovido.get().setQuantidade(
-                    produtoRemovido.get().getQuantidade() - itemProdutoPedido.getQuantidade());
+        ItemProdutoCarrinho itemAtual = produtoRemovido.get();
+
+        // 2. Calculamos a nova quantidade
+        int novaQuantidade = itemAtual.getQuantidade() - itemProdutoPedido.getQuantidade();
+
+        // 3. Corrigida a lógica matemática: se zerar ou ficar negativo, remove da lista
+        if (novaQuantidade <= 0) {
+            // Remove o item diretamente da coleção gerenciada pelo Hibernate
+            carrinho.getProdutosAdicionados().remove(itemAtual);
+        } else {
+            // Se ainda sobrar, apenas atualiza a quantidade
+            itemAtual.setQuantidade(novaQuantidade);
         }
 
         return this.repository.update(carrinho);

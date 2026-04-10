@@ -53,15 +53,19 @@ public abstract class Usuario implements UsuarioDetails {
     @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (perfil == null || perfil.getRoles() == null) {
+        if (this.perfil == null || this.perfil.getNome() == null) {
             return List.of();
         }
 
-        return perfil
-                .getRoles()
-                .stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getNome()))
-                .collect(Collectors.toList());
+        // Se o usuário for um CLIENTE, nós injetamos as permissões granulares dele
+        if (this.perfil.getNome().equalsIgnoreCase("CLIENT")) {
+            return List.of(
+                new SimpleGrantedAuthority("ROLE_CARRINHO_MANAGE"),
+                new SimpleGrantedAuthority("ROLE_ENDERECO_MANAGE")
+            );
+        }
+
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.perfil.getNome()));
     }
 
     @Override
