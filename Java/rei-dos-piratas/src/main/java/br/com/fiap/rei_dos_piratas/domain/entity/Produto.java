@@ -43,7 +43,7 @@ public class Produto {
     @DecimalMin(value = "0.0", inclusive = false, message = "O preço original não pode ser zero ou negativo")
     private BigDecimal precoOriginal;
 
-    @Min(value = 1, message = "O estoque deve ser maior que zero")
+    @Min(value = 0, message = "O estoque não pode ser negativo")
     private int estoque;
 
     @Digits(fraction = 2, integer = 6, message = "A altura deve ter até 8 dígitos com 2 após a vírgula")

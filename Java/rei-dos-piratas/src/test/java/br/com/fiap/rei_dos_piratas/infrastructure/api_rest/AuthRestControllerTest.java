@@ -1,5 +1,8 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.TokenBlocklistService;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
@@ -34,6 +37,12 @@ class AuthRestControllerTest {
 
     @MockBean
     private AuthController authController;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
+    private TokenBlocklistService tokenBlocklistService;
 
     @Test
     void loginCliente_DeveRetornarToken() throws Exception {
@@ -80,7 +89,7 @@ class AuthRestControllerTest {
                 "joao@example.com",
                 "SenhaSegura123",
                 java.time.LocalDate.of(1990,1,1),
-                br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum.M,
+                SexoEnum.M,
                 "52998224725",
                 "11987654321"
         );
@@ -95,7 +104,7 @@ class AuthRestControllerTest {
                 true,
                 LocalDate.now(),
                 LocalDate.of(1990, 1, 1),
-                br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum.M,
+                SexoEnum.M,
                 null
         );
 
