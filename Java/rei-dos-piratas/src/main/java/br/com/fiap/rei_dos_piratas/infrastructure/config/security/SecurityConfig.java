@@ -62,7 +62,7 @@ public class SecurityConfig {
                         // Logout web — precisa estar autenticado (o filtro extrai o token do cookie)
                         .requestMatchers("/web/logout").authenticated()
                         // Gerenciamento de carrinho
-                        .requestMatchers("/carrinho/**").hasRole("CARRINHO_MANAGE")
+                        .requestMatchers("/carrinho/**").hasRole("ENDERECO_MANAGE")
                         // Gerenciamento de endereços
                         .requestMatchers("/enderecos/**").hasRole("ENDERECO_MANAGE")
                         // Criação e gestão de produtos (API e web)
