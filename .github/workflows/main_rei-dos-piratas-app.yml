@@ -52,6 +52,11 @@ jobs:
       - name: Verify downloaded JAR
         run: ls -lah artifact && ls -lah artifact/*.jar
 
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
