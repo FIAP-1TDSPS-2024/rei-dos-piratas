@@ -63,11 +63,3 @@ jobs:
           app-name: 'rei-dos-piratas-app'
           slot-name: 'Production'
           package: artifact/*.jar
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'rei-dos-piratas-app'
-          slot-name: 'Production'
-          package: artifact/*.war
