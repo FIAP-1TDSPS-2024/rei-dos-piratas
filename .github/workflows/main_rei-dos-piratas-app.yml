@@ -28,14 +28,14 @@ jobs:
         run: mvn -B clean package
         working-directory: Java/rei-dos-piratas
 
-      - name: Verify WAR exists
-        run: ls -lah Java/rei-dos-piratas/target && ls -lah Java/rei-dos-piratas/target/*.war
+      - name: Verify JAR exists
+        run: ls -lah Java/rei-dos-piratas/target && ls -lah Java/rei-dos-piratas/target/*.jar
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: Java/rei-dos-piratas/target/*.war
+          path: Java/rei-dos-piratas/target/*.jar
           if-no-files-found: error
 
   deploy:
@@ -49,15 +49,15 @@ jobs:
           name: java-app
           path: artifact
 
-      - name: Verify downloaded WAR
-        run: ls -lah artifact && ls -lah artifact/*.war
+      - name: Verify downloaded JAR
+        run: ls -lah artifact && ls -lah artifact/*.jar
 
-      - name: Login to Azure
-        uses: azure/login@v2
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C475830EA40C4E4BB2DEB4956FC4C4B5 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_014C74F78EF84685A71307A3FCB526F0 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A44B0673A6EA4EC29437BC517F0161C0 }}
+          app-name: 'rei-dos-piratas-app'
+          slot-name: 'Production'
+          package: artifact/*.jar
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
