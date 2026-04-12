@@ -56,7 +56,7 @@ public class ProdutoWebForm {
 
     public ProdutoInDto toInDto() {
         return new ProdutoInDto(
-                nome, descricao, autor, categoria, enderecoImagem,
+                id, nome, descricao, autor, categoria, enderecoImagem,
                 preco, precoOriginal, estoque, altura, largura,
                 profundidade, peso, condicao, funcionarioId
         );

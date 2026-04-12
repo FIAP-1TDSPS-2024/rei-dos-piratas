@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 /** DTO de entrada — apenas transporta dados, sem anotações de validação. */
 public record ProdutoInDto(
+        Long id,
         String nome,
         String descricao,
         String autor,

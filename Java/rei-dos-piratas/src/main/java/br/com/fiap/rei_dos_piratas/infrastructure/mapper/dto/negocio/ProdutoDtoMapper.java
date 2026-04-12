@@ -11,6 +11,7 @@ public class ProdutoDtoMapper {
             return null;
         }
         return new Produto(
+                produtoDto.id(),
                 produtoDto.nome(),
                 produtoDto.descricao(),
                 produtoDto.autor(),

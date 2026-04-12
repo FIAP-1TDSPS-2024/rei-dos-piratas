@@ -60,7 +60,7 @@ public class ProdutoControllerImpl implements ProdutoController {
 
     @Override
     public ProdutoOutDto update(Produto produto) {
-        Produto produtoAtualizado = this.service.create(produto);
+        Produto produtoAtualizado = this.service.update(produto);
         return ProdutoDtoMapper.toDto(produtoAtualizado);
     }
 
