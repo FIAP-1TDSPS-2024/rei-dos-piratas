@@ -97,6 +97,7 @@ class ProdutoControllerImplTest {
     @Test
     void create() {
         ProdutoInDto dtoIn = new ProdutoInDto(
+                null,
                 "Action Figure One Piece Luffy Gear 5",
                 "Action figure do Luffy em alta qualidade com detalhes incriveis",
                 "Eiichiro Oda",
@@ -128,11 +129,11 @@ class ProdutoControllerImplTest {
     @Test
     void update() {
         Produto produtoNovo = criarProduto(1L);
-        when(produtoService.create(any(Produto.class))).thenReturn(produtoNovo);
+        when(produtoService.update(any(Produto.class))).thenReturn(produtoNovo);
 
         ProdutoOutDto result = produtoController.update(produtoNovo);
 
-        verify(produtoService, times(1)).create(any(Produto.class));
+        verify(produtoService, times(1)).update(any(Produto.class));
         assertThat(result.nome()).contains("Luffy Gear 5");
     }
 

@@ -115,6 +115,7 @@ class ProdutoRestControllerTest {
     @Test
     void create() throws Exception {
         ProdutoInDto produtoIn = new ProdutoInDto(
+                null,
                 "Produto Teste Número 01",
                 "Descrição do produto teste número 01 com mais detalhes",
                 "Jonas Oliveira",
