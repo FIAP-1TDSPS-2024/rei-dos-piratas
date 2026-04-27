@@ -49,7 +49,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Público geral
                         .requestMatchers("/auth/**", "/error", "/health", "/",
-                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
+                                "/h2-console/**").permitAll()
                         // Logout precisa de autenticação mas deve ser acessível sem session
                         .requestMatchers("/auth/logout").authenticated()
                         // Consulta de frete
@@ -62,7 +63,7 @@ public class SecurityConfig {
                         // Logout web — precisa estar autenticado (o filtro extrai o token do cookie)
                         .requestMatchers("/web/logout").authenticated()
                         // Gerenciamento de carrinho
-                        .requestMatchers("/carrinho/**").hasRole("ENDERECO_MANAGE")
+                        .requestMatchers("/carrinho/**").hasRole("CARRINHO_MANAGE")
                         // Gerenciamento de endereços
                         .requestMatchers("/enderecos/**").hasRole("ENDERECO_MANAGE")
                         // Criação e gestão de produtos (API e web)

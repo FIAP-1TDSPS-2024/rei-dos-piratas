@@ -21,7 +21,7 @@ VALUES (
     'admin@reidospiratas.com.br',
     '$2a$12$.yviqjcXUtK7OJd6/CgBUu43wCCiyH9.PlcDZIXyXigL6dwAbGS/C',
     1,
-    SYSDATE,
+    SYSDATE, -- now(),
     (SELECT id FROM PERFIS WHERE nome = 'ADMIN'),
     NULL,
     0
