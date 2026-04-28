@@ -69,7 +69,7 @@ public class ClienteServiceImpl implements ClienteService {
         validar(cliente);
         String encryptedPassword = this.passwordEncoder.encode(cliente.getPassword());
         cliente.setSenha(encryptedPassword);
-        Perfil perfil = this.perfilRepository.findByNome("CLIENT");
+        Perfil perfil = this.perfilRepository.findByNomeWithRoles("CLIENT");
         cliente.setPerfil(perfil);
         return this.repository.create(cliente);
     }
