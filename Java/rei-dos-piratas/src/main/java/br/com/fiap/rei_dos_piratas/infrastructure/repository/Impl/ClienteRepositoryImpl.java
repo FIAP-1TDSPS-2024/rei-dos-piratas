@@ -6,9 +6,11 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedExceptio
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaCarrinhoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaPerfilEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaCarrinhoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaClienteMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaPerfilMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaClienteEntityRepository;
 import org.springframework.data.domain.Pageable;
 
@@ -56,9 +58,11 @@ public class ClienteRepositoryImpl implements ClienteRepository {
 
         JpaCarrinhoEntity jpaCarrinho = JpaCarrinhoMapper.toJpaEntity(cliente.getCarrinho());
 
+        JpaPerfilEntity jpaPerfil = JpaPerfilMapper.toJpaEntity(cliente.getPerfil());
+
         return JpaClienteMapper.toEntity(
                 this.repository
-                        .save(JpaClienteMapper.toJpaEntity(cliente, jpaCarrinho)));
+                        .save(JpaClienteMapper.toJpaEntity(cliente, jpaCarrinho, jpaPerfil)));
     }
 
     @Override
