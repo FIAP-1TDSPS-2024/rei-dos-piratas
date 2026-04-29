@@ -1,7 +1,6 @@
 package br.com.fiap.rei_dos_piratas.integration;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
-import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -14,6 +13,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,7 +51,8 @@ public class FuncionarioIntegrationTest {
                 .andExpect(jsonPath("$.userName", is("jonasDasNeves")))
                 .andExpect(jsonPath("$.email", is("jonas@example.com")));
 
-        Page<Funcionario> vendedores = funcionarioRepository.listAll(0,10);
-        assert vendedores.pageItems().get(0).getUsername().equals("jonasDasNeves");
+        Funcionario funcionarioCriado = funcionarioRepository.findByUsername("jonasDasNeves");
+        assertNotNull(funcionarioCriado);
+        assertEquals("jonas@example.com", funcionarioCriado.getEmail());
     }
 }
