@@ -77,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
                         .requestMatchers(HttpMethod.DELETE, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
                         // Operações de pedidos
+                        .requestMatchers(HttpMethod.POST, "/pedidos/**").hasRole("PEDIDO_CREATE")
                         .requestMatchers(HttpMethod.PUT, "/pedidos/pagamento/**").hasRole("PEDIDO_PAGAMENTO")
                         .requestMatchers(HttpMethod.PUT, "/pedidos/cancelamento/**").hasRole("PEDIDO_CANCEL")
                         .requestMatchers(HttpMethod.GET, "/pedidos/status/**").hasRole("PEDIDO_WRITE")
