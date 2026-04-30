@@ -147,7 +147,7 @@ Leitores e colecionadores de mangás, principalmente **jovens e adultos de class
 
 ## 📚 Referências
 
-- [Azure – Documentação Oficial](https://learn.microsoft.com/pt-br/azure/)
+- [Azure – Documentação Oficial](https://learn.microsoft.com/pt-br/azure)
 - [Spring Framework](https://spring.io/projects/spring-framework)
 - [Next.js](https://nextjs.org/docs)
 - [React Native](https://reactnative.dev/docs/getting-started)
