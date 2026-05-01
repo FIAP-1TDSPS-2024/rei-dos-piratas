@@ -43,34 +43,25 @@ stages:
     dependsOn: Build
     condition: succeeded()
     jobs:
-      - deployment: DeployWebApp
+      - job: DeployWebApp # Mudamos de 'deployment' para 'job'
         displayName: "Deploy to Azure Web App"
-        environment: "Production"
         pool:
           vmImage: "ubuntu-latest"
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                # O deployment job baixa os artefatos automaticamente, mas podemos ser explícitos
-                - task: DownloadPipelineArtifact@2
-                  displayName: "Download artifact from build job"
-                  inputs:
-                    buildType: "current"
-                    artifactName: "java-app"
-                    targetPath: "$(System.DefaultWorkingDirectory)/artifact"
+        steps: # Tiramos o 'environment' e os aninhamentos de 'strategy/runOnce'
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download artifact from build job"
+            inputs:
+              buildType: "current"
+              artifactName: "java-app"
+              targetPath: "$(System.DefaultWorkingDirectory)/artifact"
 
-                - script: ls -lah $(System.DefaultWorkingDirectory)/artifact && ls -lah $(System.DefaultWorkingDirectory)/artifact/*.jar
-                  displayName: "Verify downloaded JAR"
+          - script: ls -lah $(System.DefaultWorkingDirectory)/artifact && ls -lah $(System.DefaultWorkingDirectory)/artifact/*.jar
+            displayName: "Verify downloaded JAR"
 
-                - task: AzureWebApp@1
-                  displayName: "Deploy to Azure Web App"
-                  inputs:
-                    azureSubscription: $(azureServiceConnectionId)
-                    appType: "webAppLinux" # Mude para 'webApp' se o seu App Service for Windows
-                    appName: $(webAppName)
-                    package: "$(System.DefaultWorkingDirectory)/artifact/*.jar"
-                    # Se você realmente usa um Slot chamado Production diferente do principal, descomente as linhas abaixo:
-                    # deployToSlotOrASE: true
-                    # resourceGroupName: 'SEU_RESOURCE_GROUP'
-                    # slotName: 'Production'
+          - task: AzureWebApp@1
+            displayName: "Deploy to Azure Web App"
+            inputs:
+              azureSubscription: $(azureServiceConnectionId)
+              appType: "webAppLinux"
+              appName: $(webAppName)
+              package: "$(System.DefaultWorkingDirectory)/artifact/*.jar"
