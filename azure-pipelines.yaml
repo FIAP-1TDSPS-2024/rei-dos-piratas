@@ -43,11 +43,11 @@ stages:
     dependsOn: Build
     condition: succeeded()
     jobs:
-      - job: DeployWebApp # Mudamos de 'deployment' para 'job'
+      - job: DeployWebApp
         displayName: "Deploy to Azure Web App"
         pool:
           vmImage: "ubuntu-latest"
-        steps: # Tiramos o 'environment' e os aninhamentos de 'strategy/runOnce'
+        steps:
           - task: DownloadPipelineArtifact@2
             displayName: "Download artifact from build job"
             inputs:
