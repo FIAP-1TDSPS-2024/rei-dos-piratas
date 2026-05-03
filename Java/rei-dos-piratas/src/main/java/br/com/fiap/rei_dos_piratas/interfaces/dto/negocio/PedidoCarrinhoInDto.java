@@ -5,6 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record PedidoCarrinhoInDto(
         @NotNull
-        FreteServiceDto frete,
+        Long freteServiceId,
         @NotNull
         Long EnderecoEntregaId) {}

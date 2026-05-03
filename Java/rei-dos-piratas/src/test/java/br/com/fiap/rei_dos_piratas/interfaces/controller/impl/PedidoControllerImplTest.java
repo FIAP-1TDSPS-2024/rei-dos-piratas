@@ -11,8 +11,6 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
@@ -116,10 +114,7 @@ class PedidoControllerImplTest {
                 funcionario);
     }
 
-    private FreteServiceDto criarFrete() {
-        FreteCompanyDto company = new FreteCompanyDto(2L, "Jadlog", "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
-        return new FreteServiceDto(3L, ".Package", BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, company);
-    }
+    private static final Long FRETE_SERVICE_ID = 3L;
 
     private Pedido criarPedido(StatusEnum status) {
         Pedido pedido = new Pedido();
@@ -165,7 +160,7 @@ class PedidoControllerImplTest {
         Pedido pedidoCriado = criarPedido(StatusEnum.AGUARDANDO_PAGAMENTO);
 
         PedidoInDto inDto = new PedidoInDto(
-                criarFrete(),
+                FRETE_SERVICE_ID,
                 1L,
                 List.of(new ItemProdutoInDto(1L, 2))
         );

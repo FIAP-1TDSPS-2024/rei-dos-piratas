@@ -26,7 +26,6 @@ public class FreteControllerImpl implements FreteController {
     @Override
     public List<FreteServiceDto> calcularFreteProdutos(ConsultaFreteDto dto) {
         return this.service.calcularFreteProdutos(
-                dto.cepOrigem(),
                 dto.cepDestino(),
                 dto.itens()
                         .stream()

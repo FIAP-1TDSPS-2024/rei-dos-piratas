@@ -1,6 +1,8 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
+import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.FreteAppClient;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete.ProdutoFreteDtoMapper;
@@ -18,16 +20,22 @@ import java.util.Map;
 public class FreteServiceImpl implements FreteService {
 
     private final FreteAppClient apiFrete;
+    private final EnderecoService enderecoService;
 
-    public FreteServiceImpl(FreteAppClient apiFrete) {
+    public FreteServiceImpl(FreteAppClient apiFrete, EnderecoService enderecoService) {
         this.apiFrete = apiFrete;
+        this.enderecoService = enderecoService;
     }
 
     @Override
-    public List<FreteServiceDto> calcularFreteProdutos(String cepOrigem, String cepDestino, List<ItemProdutoPedido> itens){
+    public List<FreteServiceDto> calcularFreteProdutos(String cepDestino, List<ItemProdutoPedido> itens){
+
+        //Consultar CEP empresa
+        Endereco enderecoEmpresa = this.enderecoService.getEnderecoEmpresa();
+
         //Criar objeto para request
         ConsultaFreteServiceDto dto = new ConsultaFreteServiceDto(
-                Map.of("postal_code", cepOrigem),
+                Map.of("postal_code", enderecoEmpresa.getCep()),
                 Map.of("postal_code", cepDestino),
                 itens
                         .stream()

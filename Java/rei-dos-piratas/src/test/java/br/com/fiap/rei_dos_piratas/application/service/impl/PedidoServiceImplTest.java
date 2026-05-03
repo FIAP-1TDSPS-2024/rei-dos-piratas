@@ -131,8 +131,15 @@ class PedidoServiceImplTest {
                 BigDecimal.valueOf(1000));
     }
 
-    private Produto criarProduto(Long id, String nome, String autor, String categoria, int estoque, BigDecimal preco) {
-        return new Produto(
+    private List<FreteServiceDto> criarListaFretes(Long freteServiceId) {
+        FreteCompanyDto company = new FreteCompanyDto(2L, "Jadlog",
+                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
+        FreteServiceDto frete = new FreteServiceDto(freteServiceId, ".Package",
+                BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, company);
+        return List.of(frete);
+    }
+
+    private Produto criarProduto(Long id, String nome, String autor, String categoria, int estoque, BigDecimal preco) {        return new Produto(
                 id,
                 nome,
                 "Descrição do produto " + nome,
@@ -250,6 +257,7 @@ class PedidoServiceImplTest {
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
+        when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(criarListaFretes(1L));
 
         // Act
         Pedido resultado = pedidoService.fazerPedido(pedido);
@@ -274,6 +282,8 @@ class PedidoServiceImplTest {
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(500), BigDecimal.valueOf(0),
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+
+        when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(criarListaFretes(1L));
 
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.fazerPedido(pedido))
@@ -303,6 +313,7 @@ class PedidoServiceImplTest {
                 StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
+        when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(criarListaFretes(1L));
 
         // Act
         Pedido resultado = pedidoService.fazerPedido(pedido);

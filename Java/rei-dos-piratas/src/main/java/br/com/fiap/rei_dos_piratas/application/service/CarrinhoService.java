@@ -11,5 +11,5 @@ public interface CarrinhoService {
     Carrinho removerProduto(ItemProdutoPedido itemProdutoPedido);
     Carrinho limparCarrinho();
     Carrinho visualizarCarrinho();
-    Pedido finalizarCompra(Endereco enderecoEntrega, FreteServiceDto freteServiceDto);
+    Pedido finalizarCompra(Endereco enderecoEntrega, Long freteServiceId);
 }

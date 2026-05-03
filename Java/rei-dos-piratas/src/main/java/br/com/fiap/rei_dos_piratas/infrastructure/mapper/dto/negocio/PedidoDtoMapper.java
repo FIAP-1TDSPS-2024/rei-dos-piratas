@@ -11,8 +11,8 @@ import java.util.List;
 
 public class PedidoDtoMapper {
 
-    public static Pedido toEntity(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtos, PedidoInDto dto) {
-        return new Pedido(cliente, enderecoEntrega, produtos, dto.freteService().id(), dto.freteService().price());
+    public static Pedido toEntity(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtos, Long freteServiceId) {
+        return new Pedido(cliente, enderecoEntrega, produtos, freteServiceId);
     }
 
     public static PedidoOutDto toDto(Pedido pedido) {

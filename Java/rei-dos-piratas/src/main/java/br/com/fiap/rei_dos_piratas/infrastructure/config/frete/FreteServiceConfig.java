@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FreteServiceConfig {
     @Bean
-    public FreteService freteService(FreteAppClient apiFrete) {
-        return new FreteServiceImpl(apiFrete);
+    public FreteService freteService(FreteAppClient apiFrete, EnderecoService enderecoService) {
+        return new FreteServiceImpl(apiFrete, enderecoService);
     }
 }

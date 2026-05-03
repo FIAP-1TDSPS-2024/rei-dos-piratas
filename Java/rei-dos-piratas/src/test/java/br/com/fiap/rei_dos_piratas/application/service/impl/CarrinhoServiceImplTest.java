@@ -10,8 +10,6 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteExceptio
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -644,20 +642,7 @@ class CarrinhoServiceImplTest {
                 null,
                 null);
 
-        FreteCompanyDto company = new FreteCompanyDto(
-                2L,
-                "Jadlog",
-                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
-
-        FreteServiceDto freteService = new FreteServiceDto(
-                3L,
-                ".Package",
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(0.00),
-                "R$",
-                6,
-                company);
+        Long freteServiceId = 3L;
 
         Carrinho carrinhoLimpo = new Carrinho(1L, new ArrayList<>());
 
@@ -666,7 +651,7 @@ class CarrinhoServiceImplTest {
         when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoLimpo);
 
         // Act
-        Pedido resultado = carrinhoService.finalizarCompra(endereco, freteService);
+        Pedido resultado = carrinhoService.finalizarCompra(endereco, freteServiceId);
 
         // Assert
         verify(clienteService, times(2)).findById(1L); // Uma para finalizar e outra para limpar
@@ -719,25 +704,10 @@ class CarrinhoServiceImplTest {
                 "BR",
                 cliente);
 
-        FreteCompanyDto company = new FreteCompanyDto(
-                2L,
-                "Jadlog",
-                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
-
-        FreteServiceDto freteService = new FreteServiceDto(
-                3L,
-                ".Package",
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(0.00),
-                "R$",
-                6,
-                company);
-
         when(clienteService.findById(1L)).thenReturn(cliente);
 
         // Act & Assert
-        assertThatThrownBy(() -> carrinhoService.finalizarCompra(endereco, freteService))
+        assertThatThrownBy(() -> carrinhoService.finalizarCompra(endereco, 3L))
                 .isInstanceOf(RegraDeNegocioException.class)
                 .hasMessageContaining("O carrinho está vazio");
 

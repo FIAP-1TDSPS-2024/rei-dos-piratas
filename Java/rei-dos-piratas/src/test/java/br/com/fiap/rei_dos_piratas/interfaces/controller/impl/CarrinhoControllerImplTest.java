@@ -9,8 +9,6 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoCarrinhoInDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,10 +85,7 @@ class CarrinhoControllerImplTest {
                 null);
     }
 
-    private FreteServiceDto criarFrete() {
-        FreteCompanyDto company = new FreteCompanyDto(2L, "Jadlog", "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
-        return new FreteServiceDto(3L, ".Package", BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, company);
-    }
+    private static final Long FRETE_SERVICE_ID = 3L;
 
     @Test
     void adicionarProduto() {
@@ -153,8 +148,7 @@ class CarrinhoControllerImplTest {
     @Test
     void finalizarCompra() {
         Endereco endereco = criarEndereco();
-        FreteServiceDto frete = criarFrete();
-        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(frete, 1L);
+        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(FRETE_SERVICE_ID, 1L);
 
         Cliente cliente = new Cliente(
                 1L,
@@ -182,11 +176,11 @@ class CarrinhoControllerImplTest {
         pedido.setValorTotal(BigDecimal.valueOf(221.19));
 
         when(enderecoService.findById(1L)).thenReturn(endereco);
-        when(carrinhoService.finalizarCompra(endereco, frete)).thenReturn(pedido);
+        when(carrinhoService.finalizarCompra(endereco, FRETE_SERVICE_ID)).thenReturn(pedido);
 
         carrinhoController.finalizarCompra(pedidoIn);
 
         verify(enderecoService, times(1)).findById(1L);
-        verify(carrinhoService, times(1)).finalizarCompra(endereco, frete);
+        verify(carrinhoService, times(1)).finalizarCompra(endereco, FRETE_SERVICE_ID);
     }
 }

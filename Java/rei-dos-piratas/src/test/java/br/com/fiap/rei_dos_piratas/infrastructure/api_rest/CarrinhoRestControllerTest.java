@@ -4,8 +4,6 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.CarrinhoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CarrinhoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoOutDto;
@@ -51,23 +49,6 @@ class CarrinhoRestControllerTest {
 
     @MockBean
     private CarrinhoController carrinhoController;
-
-    private FreteServiceDto criarFreteServiceDto() {
-        FreteCompanyDto company = new FreteCompanyDto(
-                2L,
-                "Jadlog",
-                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
-
-        return new FreteServiceDto(
-                3L,
-                ".Package",
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(21.19),
-                BigDecimal.ZERO,
-                "R$",
-                6,
-                company);
-    }
 
     @Test
     @WithMockUser(username = "jonas", roles = {"CLIENT"})
@@ -265,7 +246,7 @@ class CarrinhoRestControllerTest {
                 produtos
         );
 
-        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(criarFreteServiceDto(), 1L);
+        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(3L, 1L);
         when(this.carrinhoController.finalizarCompra(any(PedidoCarrinhoInDto.class))).thenReturn(pedido);
 
         ObjectMapper mapper = new ObjectMapper();

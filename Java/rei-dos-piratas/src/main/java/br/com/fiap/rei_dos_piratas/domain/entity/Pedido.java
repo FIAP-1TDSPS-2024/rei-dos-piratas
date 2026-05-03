@@ -57,21 +57,9 @@ public class Pedido {
 
     private UUID pedidoFrete;
 
-    public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega, BigDecimal valorFrete) {
+    public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega) {
         this.dataPedido = LocalDate.now();
         this.status = StatusEnum.AGUARDANDO_PAGAMENTO;
-
-        //O valor total do pedido é calculado somando os valores dos produtos, multplicando por sua quantidade e por fim adicionando o valor do frete
-        this.valorTotal = produtosAdicionados
-                .stream()
-                .map(item -> item
-                        .getProduto()
-                        .getPreco()
-                        .multiply(BigDecimal.valueOf(item.getQuantidade())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(valorFrete);
-
-        this.valorFrete = valorFrete;
         this.cliente = cliente;
         this.enderecoEntrega = enderecoEntrega;
         this.produtosAdicionados = produtosAdicionados;

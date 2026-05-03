@@ -134,7 +134,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
     @Transactional
     @Override
-    public Pedido finalizarCompra(Endereco enderecoEntrega, FreteServiceDto freteServiceDto) {
+    public Pedido finalizarCompra(Endereco enderecoEntrega, Long freteServiceId) {
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Cliente cliente = clienteService.findById(userDetails.getId());
@@ -150,7 +150,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
                                                         .stream()
                                                         .map(JpaItemProdutoMapper::toPedido)
                                                         .collect(Collectors.toList());
-        Pedido pedido = new Pedido(cliente, enderecoEntrega, produtosAdicionados, freteServiceDto.id(), freteServiceDto.price());
+        Pedido pedido = new Pedido(cliente, enderecoEntrega, produtosAdicionados, freteServiceId);
 
         Pedido pedidoFinalizado = this.pedidoService.fazerPedido(pedido);
 

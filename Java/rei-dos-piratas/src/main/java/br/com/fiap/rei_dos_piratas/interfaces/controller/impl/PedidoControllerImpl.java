@@ -87,7 +87,7 @@ public class PedidoControllerImpl implements PedidoController {
 
         Endereco enderecoEntrega = this.enderecoService.findById(pedido.EnderecoEntregaId());
 
-        Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, enderecoEntrega, items, pedido);
+        Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, enderecoEntrega, items, pedido.freteServiceId());
 
         return PedidoDtoMapper.toDto(
                 this.service.fazerPedido(pedidoEntity));

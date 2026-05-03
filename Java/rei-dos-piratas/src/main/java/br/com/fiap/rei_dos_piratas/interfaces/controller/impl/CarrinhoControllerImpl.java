@@ -63,7 +63,7 @@ public class CarrinhoControllerImpl implements CarrinhoController {
 
         Endereco enderecoEntrega = this.enderecoService.findById(pedidoDto.EnderecoEntregaId());
 
-        Pedido pedido = this.service.finalizarCompra(enderecoEntrega, pedidoDto.frete());
+        Pedido pedido = this.service.finalizarCompra(enderecoEntrega, pedidoDto.freteServiceId());
         return PedidoDtoMapper.toDto(pedido);
     }
 }

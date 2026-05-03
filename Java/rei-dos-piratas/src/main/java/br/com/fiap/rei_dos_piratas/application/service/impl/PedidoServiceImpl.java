@@ -13,6 +13,7 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.StatusPedidoEtiqueta;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
@@ -87,6 +88,27 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     @Override
     public Pedido fazerPedido(Pedido pedido) {
+
+        List<FreteServiceDto> fretes = this.freteService.calcularFreteProdutos(
+                pedido.getEnderecoEntrega().getCep(),
+                pedido.getProdutosAdicionados());
+
+        Optional<FreteServiceDto> consultaFrete = fretes
+                .stream()
+                .findFirst()
+                .filter(frete -> frete.id().equals(pedido.getServicoEntrega()));
+
+        if (consultaFrete.isEmpty()){
+            throw new ResourceNotFoundException("Esse serviço de entrega não existe para esse serviço");
+        }
+
+        //Após consulta se ID de frete existe, o valor do frete é definido
+        //Dessa forma, evita-se adulteração de preço ou preços desatualizados
+        pedido.setValorFrete(consultaFrete.get().price());
+
+        //Definição de valor total depois de definição de valor do frete
+        pedido.setValorTotal(caucularValorTotalPedido(pedido));
+
         this.verificaEAtualizaEstoqueparaPedido(pedido);
         return this.repository.create(pedido);
     }
@@ -448,5 +470,22 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         return new VolumeFreteDto(28, 32, 52, pesoTotal);
+    }
+
+    private BigDecimal caucularValorTotalPedido(Pedido pedido){
+
+        if (pedido.getValorFrete() == null){
+            throw new IllegalArgumentException("Consulte o valor do frete do pedido antes do cálculo de valor total");
+        }
+
+        //O valor total do pedido é calculado somando os valores dos produtos, multplicando por sua quantidade e por fim adicionando o valor do frete
+        return pedido.getProdutosAdicionados()
+                .stream()
+                .map(item -> item
+                        .getProduto()
+                        .getPreco()
+                        .multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(pedido.getValorFrete());
     }
 }

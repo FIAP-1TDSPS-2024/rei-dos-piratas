@@ -8,8 +8,6 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Estado;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
@@ -71,22 +69,7 @@ class PedidoRestControllerTest {
                 null);
     }
 
-    private FreteServiceDto criarFreteServiceDto() {
-        FreteCompanyDto company = new FreteCompanyDto(
-                2L,
-                "Jadlog",
-                "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
-
-        return new FreteServiceDto(
-                3L,
-                ".Package",
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(0.00),
-                "R$",
-                6,
-                company);
-    }
+    private static final Long FRETE_SERVICE_ID = 3L;
 
     @Test
     @WithMockUser(username = "jonas", roles = {"CLIENT"})
@@ -187,8 +170,7 @@ class PedidoRestControllerTest {
         List<ItemProdutoInDto> produtosIn = new ArrayList<>();
         produtosIn.add(new ItemProdutoInDto(1L, 2));
 
-        FreteServiceDto frete = criarFreteServiceDto();
-        PedidoInDto pedidoIn = new PedidoInDto(frete, 1L, produtosIn);
+        PedidoInDto pedidoIn = new PedidoInDto(FRETE_SERVICE_ID, 1L, produtosIn);
 
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
