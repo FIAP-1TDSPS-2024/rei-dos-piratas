@@ -48,7 +48,6 @@ public class PedidoRestController {
             @ApiResponse(responseCode = "204", description = "Nenhum pedido encontrado")
     })
     @GetMapping("/status/{status}")
-    @PreAuthorize("hasRole('PEDIDO_WRITE')")
     public ResponseEntity<Page<PedidoOutDto>> findAllByStatus(
             @PathVariable("status") StatusEnum status,
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,

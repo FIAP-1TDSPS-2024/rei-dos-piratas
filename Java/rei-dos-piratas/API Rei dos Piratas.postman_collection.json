@@ -525,7 +525,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Mangá Vinland Saga Volume 1\",\n  \"descricao\": \"Primeiro volume do mangá Vinland Saga, que acompanha a jornada de Thorfinn em meio a guerras vikings e conflitos internos.\",\n  \"autor\": \"Makoto Yukimura\",\n  \"categoria\": \"AVENTURA\",\n  \"endereco_imagem\": \"https://meusite.com/imagens/vinland-saga-vol1.jpg\",\n  \"preco\": 39.90,\n  \"preco_original\": 49.90,\n  \"estoque\": 120,\n  \"altura\": 20,\n  \"largura\": 13,\n  \"profundidade\": 2,\n  \"peso\": 250,\n  \"condicao\": \"NOVO\",\n  \"funcionario_id\": 2000\n}\n",
+              "raw": "{\n  \"nome\": \"Mangá Vinland Saga Volume 1\",\n  \"descricao\": \"Primeiro volume do mangá Vinland Saga, que acompanha a jornada de Thorfinn em meio a guerras vikings e conflitos internos.\",\n  \"autor\": \"Makoto Yukimura\",\n  \"categoria\": \"AVENTURA\",\n  \"endereco_imagem\": \"https://www.amazon.com.br/Vinland-Saga-Vol-1-English-ebook/dp/B00CCOO6RK\",\n  \"preco\": 39.90,\n  \"preco_original\": 49.90,\n  \"estoque\": 120,\n  \"altura\": 20,\n  \"largura\": 13,\n  \"profundidade\": 2,\n  \"peso\": 250,\n  \"condicao\": \"NOVO\",\n  \"funcionario_id\": 1\n}\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -568,7 +568,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+              "raw": "{\n    \"id\": 84,\n    \"nome\": \"Mangá Vinland Saga Volume 1\",\n    \"descricao\": \"Primeiro volume do mangá Vinland Saga, que acompanha a jornada de Thorfinn em meio a guerras vikings e conflitos internos.\",\n    \"autor\": \"Makoto Yukimura\",\n    \"categoria\": \"AVENTURA\",\n    \"endereco_imagem\": \"https://www.amazon.com.br/Vinland-Saga-Vol-1-English-ebook/dp/B00CCOO6RK\",\n    \"preco\": 42.90,\n    \"preco_original\": 49.90,\n    \"estoque\": 120,\n    \"altura\": 20,\n    \"largura\": 13,\n    \"profundidade\": 2,\n    \"peso\": 250,\n    \"condicao\": \"NOVO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -609,15 +609,6 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
               "raw": "{{base_url}}/produtos/1",
               "host": [
@@ -638,7 +629,7 @@
         "bearer": [
           {
             "key": "token",
-            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1VTRVIiXSwic3ViIjoiYWRtaW5AZW1haWwuY29tIiwiaWF0IjoxNzcxNzg2ODAxLCJleHAiOjE3NzE4NzMyMDF9.z1QoLJLn5SbWHDdhgyq9StKZQbMroBr_cDrOfXf-yVDAovNqGss1-8q25KOUtEuA",
+            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BST0RVVE9fV1JJVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX1dSSVRFIiwiUk9MRV9QRURJRE9fQ0FOQ0VMIiwiUk9MRV9QRURJRE9fUEFHQU1FTlRPIiwiUk9MRV9GVU5DSU9OQVJJT19SRUFEIiwiUk9MRV9GVU5DSU9OQVJJT19XUklURSJdLCJzdWIiOiJhZG1pbkByZWlkb3NwaXJhdGFzLmNvbS5iciIsImlhdCI6MTc3Nzc2ODQ5OCwiZXhwIjoxNzc3ODU0ODk4fQ.xjKI8N_l37E-lr0ZKZI-i2PcNgFqTZCOyu3pFuy3nKEC3Olb73YkUmDj9Qc3J5rG",
             "type": "string"
           }
         ]
@@ -669,10 +660,325 @@
       ]
     },
     {
-      "name": "Pedidos",
+      "name": "Pedidos - Funcionarios",
       "item": [
         {
-          "name": "List pedidos",
+          "name": "List pedidos por status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pedidos/status/AGUARDANDO_PAGAMENTO",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "status",
+                "AGUARDANDO_PAGAMENTO"
+              ]
+            },
+            "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+          },
+          "response": []
+        },
+        {
+          "name": "Find pedido por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pedidos/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "1"
+              ]
+            },
+            "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+          },
+          "response": []
+        },
+        {
+          "name": "Enviar pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Successful PUT request\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pedidos/envio/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "envio",
+                "1"
+              ]
+            },
+            "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+          },
+          "response": []
+        },
+        {
+          "name": "Entregar pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Successful PUT request\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pedidos/envio/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "envio",
+                "1"
+              ]
+            },
+            "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+          },
+          "response": []
+        },
+        {
+          "name": "Organizar envio",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n    1\n]\n\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pedidos/organizar-pedidos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "organizar-pedidos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Gerar etiquetas para envio",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    1\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pedidos/gerar-etiquetas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "gerar-etiquetas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Imprimir etiquetas para envio",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    1\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/pedidos/imprimir-etiquetas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "imprimir-etiquetas"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BST0RVVE9fV1JJVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX1dSSVRFIiwiUk9MRV9QRURJRE9fQ0FOQ0VMIiwiUk9MRV9QRURJRE9fUEFHQU1FTlRPIiwiUk9MRV9GVU5DSU9OQVJJT19SRUFEIiwiUk9MRV9GVU5DSU9OQVJJT19XUklURSJdLCJzdWIiOiJhZG1pbkByZWlkb3NwaXJhdGFzLmNvbS5iciIsImlhdCI6MTc3Nzc2ODQ5OCwiZXhwIjoxNzc3ODU0ODk4fQ.xjKI8N_l37E-lr0ZKZI-i2PcNgFqTZCOyu3pFuy3nKEC3Olb73YkUmDj9Qc3J5rG",
+            "type": "string"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pedidos - Clientes",
+      "item": [
+        {
+          "name": "Cancelar pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Successful PUT request\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pedidos/cancelamento/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "cancelamento",
+                "1"
+              ]
+            },
+            "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+          },
+          "response": []
+        },
+        {
+          "name": "List  meus pedidos",
           "event": [
             {
               "listen": "test",
@@ -757,21 +1063,11 @@
             }
           ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6W10sInN1YiI6InVzdWFyaW9AZXhlbXBsby5jb20iLCJpYXQiOjE3NzU1MTMwODksImV4cCI6MTc3NTU5OTQ4OX0.jU5gsP1TvVAxBAdCC5fmUzYXkE83id1ufWqlsT66XJmC4Sxn-rLB5YLnFkwxaxN3",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n   \"frete_service\": {\n        \"id\": 3,\n        \"name\": \".Package\",\n        \"price\": 21.19,\n        \"custom_price\": 21.19,\n        \"discount\": 0.00,\n        \"currency\": \"R$\",\n        \"delivery_time\": 6,\n        \"company\": {\n            \"id\": 2,\n            \"name\": \"Jadlog\",\n            \"picture\": \"https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png\"\n        }\n    },\n    \"endereco_entrega_id\": 1,\n    \"produtos_adicionados\": [\n    {\n        \"produto_id\": 1,\n        \"quantidade\": 1\n    }\n  ]\n}\n\n\n",
+              "raw": "{\n   \"frete_service_id\": 3,\n    \"endereco_entrega_id\": 42,\n    \"produtos_adicionados\": [\n    {\n        \"produto_id\": 24,\n        \"quantidade\": 3\n    }\n  ]\n}\n\n\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -810,27 +1106,8 @@
             }
           ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0NMSUVOVCJdLCJzdWIiOiJqb3NlcGhAZXhlbXBsby5jb20iLCJpYXQiOjE3NzUxODY1OTEsImV4cCI6MTc3NTI3Mjk5MX0.2kIDFAtyLuPtlIl1SM99D415TuakawN0EHJa2hgR6pI-y4otU3poloPbT-Vtc6ai",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "PUT",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
               "raw": "{{base_url}}/pedidos/pagamento/1",
               "host": [
@@ -845,213 +1122,6 @@
             "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
           },
           "response": []
-        },
-        {
-          "name": "Enviar pedido",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Successful PUT request\", function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
-                  "});",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/pedidos/envio/1",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "pedidos",
-                "envio",
-                "1"
-              ]
-            },
-            "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
-          },
-          "response": []
-        },
-        {
-          "name": "Entregar pedido",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Successful PUT request\", function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
-                  "});",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/pedidos/envio/1",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "pedidos",
-                "envio",
-                "1"
-              ]
-            },
-            "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
-          },
-          "response": []
-        },
-        {
-          "name": "Cancelar pedido",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Successful PUT request\", function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
-                  "});",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/pedidos/cancelamento/1",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "pedidos",
-                "cancelamento",
-                "1"
-              ]
-            },
-            "description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
-          },
-          "response": []
-        },
-        {
-          "name": "Organizar envio",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "[\n    1\n]\n\n",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/pedidos/organizar-pedidos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "pedidos",
-                "organizar-pedidos"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Gerar etiquetas para envio",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "[\r\n    1\r\n]",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/pedidos/gerar-etiquetas",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "pedidos",
-                "gerar-etiquetas"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Imprimir etiquetas para envio",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/pedidos/imprimir-etiquetas",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "pedidos",
-                "imprimir-etiquetas"
-              ]
-            }
-          },
-          "response": []
         }
       ],
       "auth": {
@@ -1059,7 +1129,7 @@
         "bearer": [
           {
             "key": "token",
-            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6W10sInN1YiI6InVzdWFyaW9AZXhlbXBsby5jb20iLCJpYXQiOjE3NzU1MTMwODksImV4cCI6MTc3NTU5OTQ4OX0.jU5gsP1TvVAxBAdCC5fmUzYXkE83id1ufWqlsT66XJmC4Sxn-rLB5YLnFkwxaxN3",
+            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJ1c3VhcmlvQGV4ZW1wbG8yLmNvbSIsImlhdCI6MTc3Nzc2NjA1NiwiZXhwIjoxNzc3ODUyNDU2fQ.Y31Tf_Tq5onjJqpWx-GqYDHRApIdaXUY-A2EFfXZM7-rh4NJP8DyHR-HyelVqP-6",
             "type": "string"
           }
         ]
@@ -1110,16 +1180,6 @@
             }
           ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJDTElFTlQiXSwic3ViIjoiam9uYXNEYXNOZXZlcyIsImlhdCI6MTc2MjM5MjM3MSwiZXhwIjoxNzYyNDc4NzcxfQ.Xo8R6FYV6fFN_1Wv98vRVDNRfpWZfHSFOUM3C_QUEhKm_icI0FizdcwvbsDxpo01",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1158,7 +1218,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"produtoId\": 3,\n    \"quantidade\": 2\n}",
+              "raw": "{\n    \"produto_id\": 24,\n    \"quantidade\": 2\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1202,7 +1262,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
+              "raw": "{\n    \"produto_id\": 24,\n    \"quantidade\": 2\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1244,15 +1304,6 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas.souza@example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-04\",\n    \"role\": \"ADMIN\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
               "raw": "{{base_url}}/carrinho/limpar",
               "host": [
@@ -1288,15 +1339,6 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
               "raw": "{{base_url}}/carrinho/finalizar",
               "host": [
@@ -1317,7 +1359,7 @@
         "bearer": [
           {
             "key": "token",
-            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJDTElFTlQiXSwic3ViIjoiam9uYXNEYXNOZXZlcyIsImlhdCI6MTc2MjM5MjM3MSwiZXhwIjoxNzYyNDc4NzcxfQ.Xo8R6FYV6fFN_1Wv98vRVDNRfpWZfHSFOUM3C_QUEhKm_icI0FizdcwvbsDxpo01",
+            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJ1c3VhcmlvQGV4ZW1wbG8yLmNvbSIsImlhdCI6MTc3Nzc2NjA1NiwiZXhwIjoxNzc3ODUyNDU2fQ.Y31Tf_Tq5onjJqpWx-GqYDHRApIdaXUY-A2EFfXZM7-rh4NJP8DyHR-HyelVqP-6",
             "type": "string"
           }
         ]
@@ -1357,7 +1399,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"joseph@exemplo.com\",\r\n    \"password\": \"extended\"\r\n}",
+              "raw": "{\r\n    \"email\": \"jonas@gmail.com\",\r\n    \"password\": \"extended\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1384,7 +1426,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"user_name\": \"jonasdasneves\",\r\n  \"nome_completo\": \"Jonas de Jesus Campos de Oliveira\",\r\n  \"email\": \"usuario@exemplo.com\",\r\n  \"senha\": \"extended\",\r\n  \"data_nascimento\": \"2004-03-13\",\r\n  \"sexo\": \"M\",\r\n  \"cpf\": \"53218119898\",\r\n  \"celular\": \"11992131201\"\r\n}\r\n",
+              "raw": "{\r\n  \"user_name\": \"jonasdasneves\",\r\n  \"nome_completo\": \"Jonas de Jesus Campos de Marcelino\",\r\n  \"email\": \"usuario@exemplo.com\",\r\n  \"senha\": \"extended\",\r\n  \"data_nascimento\": \"2006-01-21\",\r\n  \"sexo\": \"M\",\r\n  \"cpf\": \"53218119898\",\r\n  \"celular\": \"11992131201\"\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1416,7 +1458,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"cep_origem\": \"05876030\",\r\n    \"cep_destino\": \"90570020\",\r\n    \"itens\": [\r\n        {\r\n            \"produto_id\": 1,\r\n            \"quantidade\": 1\r\n        }\r\n    ]\r\n}",
+              "raw": "{\r\n    \"cep_destino\": \"90570020\",\r\n    \"itens\": [\r\n        {\r\n            \"produto_id\": 1,\r\n            \"quantidade\": 1\r\n        }\r\n    ]\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1442,16 +1484,9 @@
       "item": [
         {
           "name": "Listar meus endereços",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
           "request": {
             "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin123\"\r\n}"
-            },
             "url": {
               "raw": "{{base_url}}/enderecos",
               "host": [
@@ -1467,21 +1502,11 @@
         {
           "name": "Registrar endereço",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6W10sInN1YiI6InVzdWFyaW9AZXhlbXBsby5jb20iLCJpYXQiOjE3NzU1MTMwODksImV4cCI6MTc3NTU5OTQ4OX0.jU5gsP1TvVAxBAdCC5fmUzYXkE83id1ufWqlsT66XJmC4Sxn-rLB5YLnFkwxaxN3",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"numero\": 11,\r\n  \"cep\": \"05876030\",\r\n  \"logradouro\": \"Rua Chaia Zingerevitz\",\r\n  \"bairro\": \"Jardim Guarujá\",\r\n  \"cidade\": \"São Paulo\",\r\n  \"estado_nome\": \"São Paulo\",\r\n  \"estado_sigla\": \"SP\"\r\n}\r\n",
+              "raw": "{\r\n  \"numero\": 1523,\r\n  \"cep\": \"30140010\",\r\n  \"logradouro\": \"Rua dos Timbiras\",\r\n  \"bairro\": \"Funcionários\",\r\n  \"cidade\": \"Belo Horizonte\",\r\n  \"estado_nome\": \"Minas Gerais\",\r\n  \"estado_sigla\": \"MG\"\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1502,16 +1527,9 @@
         },
         {
           "name": "Consultar endereço por ID",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
           "request": {
             "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"numero\": 123,\r\n  \"cep\": \"12345678\",\r\n  \"logradouro\": \"Rua das Flores\",\r\n  \"bairro\": \"Centro\",\r\n  \"cidade\": \"Belo Horizonte\",\r\n  \"estado_nome\": \"Minas gerais\",\r\n  \"estado_sigla\": \"MG\"\r\n}\r\n"
-            },
             "url": {
               "raw": "{{base_url}}/enderecos/1",
               "host": [
@@ -1530,10 +1548,6 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"numero\": 123,\r\n  \"cep\": \"12345678\",\r\n  \"logradouro\": \"Rua das Flores\",\r\n  \"bairro\": \"Centro\",\r\n  \"cidade\": \"Belo Horizonte\",\r\n  \"estado_nome\": \"Minas gerais\",\r\n  \"estado_sigla\": \"MG\"\r\n}\r\n"
-            },
             "url": {
               "raw": "{{base_url}}/enderecos/1",
               "host": [
@@ -1553,7 +1567,7 @@
         "bearer": [
           {
             "key": "token",
-            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6W10sInN1YiI6InVzdWFyaW9AZXhlbXBsby5jb20iLCJpYXQiOjE3NzU1MTMwODksImV4cCI6MTc3NTU5OTQ4OX0.jU5gsP1TvVAxBAdCC5fmUzYXkE83id1ufWqlsT66XJmC4Sxn-rLB5YLnFkwxaxN3",
+            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJ1c3VhcmlvQGV4ZW1wbG8yLmNvbSIsImlhdCI6MTc3Nzc2NjA1NiwiZXhwIjoxNzc3ODUyNDU2fQ.Y31Tf_Tq5onjJqpWx-GqYDHRApIdaXUY-A2EFfXZM7-rh4NJP8DyHR-HyelVqP-6",
             "type": "string"
           }
         ]
