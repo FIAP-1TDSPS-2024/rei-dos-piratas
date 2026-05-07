@@ -14,6 +14,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaEstadoEntit
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaClienteEntityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
@@ -207,9 +208,117 @@ class ClienteRepositoryImplTest {
     }
 
     @Test
-    void delete_shouldCallRepositoryDeleteById() {
+    void delete_shouldDeactivateClienteWhenFound() {
+        JpaClienteEntity entidade = buildJpaCliente(1L, "testuser", "test@email.com", "52998224725");
+        when(jpaRepository.findById(1L)).thenReturn(Optional.of(entidade));
+        when(jpaRepository.save(any(JpaClienteEntity.class))).thenReturn(entidade);
+
         repository.delete(1L);
 
-        verify(jpaRepository).deleteById(1L);
+        verify(jpaRepository).findById(1L);
+        ArgumentCaptor<JpaClienteEntity> captor = ArgumentCaptor.forClass(JpaClienteEntity.class);
+        verify(jpaRepository).save(captor.capture());
+        assertFalse(captor.getValue().isUsuarioAtivo());
+    }
+
+    @Test
+    void delete_shouldDoNothingWhenClienteNotFound() {
+        when(jpaRepository.findById(99L)).thenReturn(Optional.empty());
+
+        repository.delete(99L);
+
+        verify(jpaRepository).findById(99L);
+        verify(jpaRepository, never()).save(any());
+    }
+
+    // ───── update ─────
+
+    private JpaClienteEntity buildJpaCliente(Long id, String userName, String email, String cpf) {
+        JpaCarrinhoEntity carrinho = new JpaCarrinhoEntity();
+        carrinho.setId(1L);
+        carrinho.setProdutosAdicionados(new ArrayList<>());
+
+        JpaPerfilEntity perfil = new JpaPerfilEntity();
+        perfil.setId(1L);
+        perfil.setNome("CLIENT");
+        perfil.setDescricao("Perfil de cliente");
+
+        return new JpaClienteEntity(
+                id, userName, "Nome Completo", email,
+                "senha", true, LocalDate.now(), perfil,
+                LocalDate.of(2000, 1, 1), SexoEnum.M, cpf, "11999999999", carrinho
+        );
+    }
+
+    private Cliente buildDomainCliente(Long id, String userName, String email, String cpf) {
+        return new Cliente(id, userName, "Nome Completo", email, "senha", true,
+                LocalDate.now(), null,
+                LocalDate.of(2000, 1, 1), SexoEnum.M, cpf, "11999999999", null);
+    }
+
+    @Test
+    void update_shouldUpdateClienteWhenNoDuplicates() {
+        JpaClienteEntity existente = buildJpaCliente(1L, "jonasdasneves", "jonas@gmail.com", "52998224725");
+        Cliente updCliente = buildDomainCliente(1L, "jonasdasneves", "jonas@gmail.com", "52998224725");
+
+        when(jpaRepository.findById(1L)).thenReturn(Optional.of(existente));
+        // Retorna o próprio cliente para os checks de unicidade (mesmo ID → sem conflito)
+        when(jpaRepository.findFirstByUserName("jonasdasneves")).thenReturn(existente);
+        when(jpaRepository.findFirstByEmail("jonas@gmail.com")).thenReturn(existente);
+        when(jpaRepository.findFirstByCpf("52998224725")).thenReturn(existente);
+
+        Cliente result = repository.update(updCliente);
+
+        assertNotNull(result);
+        assertEquals("jonasdasneves", result.getUsername());
+    }
+
+    @Test
+    void update_shouldThrowWhenUserNameBelongsToAnotherClient() {
+        JpaClienteEntity existente = buildJpaCliente(1L, "joao", "joao@gmail.com", "11111111111");
+        JpaClienteEntity outro = buildJpaCliente(2L, "jonasdasneves", "outro@gmail.com", "22222222222");
+        Cliente updCliente = buildDomainCliente(1L, "jonasdasneves", "joao@gmail.com", "11111111111");
+
+        when(jpaRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(jpaRepository.findFirstByUserName("jonasdasneves")).thenReturn(outro);
+
+        assertThrows(UniqueKeyDuplicatedException.class, () -> repository.update(updCliente));
+    }
+
+    @Test
+    void update_shouldThrowWhenEmailBelongsToAnotherClient() {
+        JpaClienteEntity existente = buildJpaCliente(1L, "joao", "joao@gmail.com", "11111111111");
+        JpaClienteEntity outro = buildJpaCliente(2L, "outro", "duplicado@gmail.com", "22222222222");
+        Cliente updCliente = buildDomainCliente(1L, "joao", "duplicado@gmail.com", "11111111111");
+
+        when(jpaRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(jpaRepository.findFirstByUserName("joao")).thenReturn(existente);
+        when(jpaRepository.findFirstByEmail("duplicado@gmail.com")).thenReturn(outro);
+
+        assertThrows(UniqueKeyDuplicatedException.class, () -> repository.update(updCliente));
+    }
+
+    @Test
+    void update_shouldThrowWhenCpfBelongsToAnotherClient() {
+        JpaClienteEntity existente = buildJpaCliente(1L, "joao", "joao@gmail.com", "11111111111");
+        JpaClienteEntity outro = buildJpaCliente(2L, "outro", "outro@gmail.com", "99999999999");
+        Cliente updCliente = buildDomainCliente(1L, "joao", "joao@gmail.com", "99999999999");
+
+        when(jpaRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(jpaRepository.findFirstByUserName("joao")).thenReturn(existente);
+        when(jpaRepository.findFirstByEmail("joao@gmail.com")).thenReturn(existente);
+        when(jpaRepository.findFirstByCpf("99999999999")).thenReturn(outro);
+
+        assertThrows(UniqueKeyDuplicatedException.class, () -> repository.update(updCliente));
+    }
+
+    @Test
+    void update_shouldReturnNullWhenClienteNotFound() {
+        Cliente updCliente = buildDomainCliente(99L, "x", "x@x.com", "00000000000");
+        when(jpaRepository.findById(99L)).thenReturn(Optional.empty());
+
+        Cliente result = repository.update(updCliente);
+
+        assertNull(result);
     }
 }

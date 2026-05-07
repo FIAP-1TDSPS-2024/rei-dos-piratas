@@ -7,6 +7,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +77,18 @@ class ClienteControllerImplTest {
         Cliente clienteNovo = criarCliente(1L, "jonasdasmontanhas");
         when(this.clienteService.update(any(Cliente.class))).thenReturn(clienteNovo);
 
-        ClienteOutDto result = this.clienteController.update(clienteNovo);
+        ClienteInDto inDto = new ClienteInDto(
+                "jonasdasmontanhas",
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                LocalDate.of(2000, 3, 16),
+                SexoEnum.M,
+                "52998224725",
+                "11999999999"
+        );
+
+        ClienteOutDto result = this.clienteController.update(inDto);
 
         verify(this.clienteService, times(1)).update(any(Cliente.class));
         assertThat(result.userName()).isEqualTo("jonasdasmontanhas");
@@ -84,10 +96,10 @@ class ClienteControllerImplTest {
 
     @Test
     void delete() {
-        doNothing().when(clienteService).delete(1L);
+        doNothing().when(clienteService).delete();
 
-        clienteController.delete(1L);
+        clienteController.delete();
 
-        verify(clienteService, times(1)).delete(1L);
+        verify(clienteService, times(1)).delete();
     }
 }

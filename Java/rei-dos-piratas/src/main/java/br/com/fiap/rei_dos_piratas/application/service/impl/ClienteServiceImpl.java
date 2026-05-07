@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
@@ -8,11 +9,14 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ValidacaoException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -76,11 +80,29 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    public Cliente update(Cliente cliente) {
+    public Cliente update(Cliente updCliente) {
+
+        CustomUserDetails userDetails =
+                (CustomUserDetails) SecurityContextHolder.getContext()
+                        .getAuthentication().getPrincipal();
+
+        Cliente cliente = this.findById(userDetails.getId());
+
+        cliente.setUserName(updCliente.getUsername());
+        cliente.setNomeCompleto(updCliente.getNomeCompleto());
+        cliente.setEmail(updCliente.getEmail());
+        cliente.setSenha(updCliente.getSenha());
+        cliente.setDataNascimento(updCliente.getDataNascimento());
+        cliente.setSexo(updCliente.getSexo());
+        cliente.setCpf(updCliente.getCpf());
+        cliente.setCelular(updCliente.getCelular());
         validar(cliente);
-        String encryptedPassword = this.passwordEncoder.encode(cliente.getPassword());
+
+        String encryptedPassword = this.passwordEncoder.encode(updCliente.getPassword());
         cliente.setSenha(encryptedPassword);
+
         Cliente clienteAtualizado = this.repository.update(cliente);
+
         if (clienteAtualizado == null) {
             throw new ResourceNotFoundException("Não foi possível encontrar um cliente com o id " + cliente.getId() + ". Crie um novo cliente.");
         }
@@ -88,8 +110,13 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public void delete(Long id) {
-        this.repository.delete(id);
+    @Transactional
+    public void delete() {
+        CustomUserDetails userDetails =
+                (CustomUserDetails) SecurityContextHolder.getContext()
+                        .getAuthentication().getPrincipal();
+
+        this.repository.delete(userDetails.getId());
     }
 
     private void validar(Cliente cliente) {

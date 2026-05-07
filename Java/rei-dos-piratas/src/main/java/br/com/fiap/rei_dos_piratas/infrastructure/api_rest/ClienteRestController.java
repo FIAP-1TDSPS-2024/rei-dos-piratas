@@ -3,6 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -58,19 +59,19 @@ public class ClienteRestController {
             @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
     @PutMapping
-    public ResponseEntity<ClienteOutDto> update(@RequestBody Cliente cliente) {
+    public ResponseEntity<ClienteOutDto> update(@RequestBody ClienteInDto cliente) {
         ClienteOutDto novoCliente = this.controller.update(cliente);
         return ResponseEntity.ok(novoCliente);
     }
 
-    @Operation(summary = "Excluir cliente", description = "Remove um cliente pelo id")
+    @Operation(summary = "Excluir cliente", description = "Remove o cliente autenticado")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Cliente removido com sucesso"),
             @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
-        this.controller.delete(id);
+    @DeleteMapping
+    public ResponseEntity<?> delete() {
+        this.controller.delete();
         return ResponseEntity.noContent().build();
     }
 }

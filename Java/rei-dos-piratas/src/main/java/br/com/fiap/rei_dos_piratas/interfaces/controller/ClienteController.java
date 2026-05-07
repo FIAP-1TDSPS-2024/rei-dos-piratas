@@ -1,7 +1,7 @@
 package br.com.fiap.rei_dos_piratas.interfaces.controller;
 
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 
 public interface ClienteController {
@@ -10,7 +10,7 @@ public interface ClienteController {
 
     ClienteOutDto findById(Long id);
 
-    ClienteOutDto update(Cliente cliente);
+    ClienteOutDto update(ClienteInDto cliente);
 
-    void delete(Long id);
+    void delete();
 }

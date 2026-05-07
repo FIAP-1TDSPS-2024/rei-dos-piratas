@@ -5,7 +5,11 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
+import jakarta.xml.bind.ValidationException;
+import org.apache.coyote.BadRequestException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 
@@ -41,13 +45,14 @@ public class ClienteControllerImpl implements ClienteController {
     }
 
     @Override
-    public ClienteOutDto update(Cliente cliente) {
-        Cliente updCliente = this.service.update(cliente);
+    public ClienteOutDto update(ClienteInDto cliente) {
+        Cliente novoCliente = ClienteDtoMapper.toEntity(cliente);
+        Cliente updCliente = this.service.update(novoCliente);
         return ClienteDtoMapper.toDto(updCliente);
     }
 
     @Override
-    public void delete(Long id) {
-        this.service.delete(id);
+    public void delete() {
+        this.service.delete();
     }
 }

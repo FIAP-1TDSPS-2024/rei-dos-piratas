@@ -320,7 +320,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"userName\": \"jonas123\",\r\n  \"nomeCompleto\": \"Jonas da Silva Souza\",\r\n  \"email\": \"jonas.souza@example.com\",\r\n  \"senha\": \"SenhaSegura1\",\r\n  \"role\": \"ADMIN\"\r\n}",
+              "raw": "",
               "options": {
                 "raw": {
                   "language": "json"
@@ -328,12 +328,13 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/clientes",
+              "raw": "{{base_url}}/clientes/6052",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "clientes"
+                "clientes",
+                "6052"
               ]
             },
             "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
@@ -363,7 +364,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"id\": 1,\n    \"userName\": \"jonasDasNeves\",\n    \"nomeCompleto\": \"Jonas da Silva Souza\",\n    \"email\": \"jonas@3example.com\",\n    \"senha\": \"SenhaSegura1\",\n    \"usuarioAtivo\": true,\n    \"dataCadastro\": \"2025-10-11\",\n    \"dataNascimento\": \"2004-03-13\",\n    \"sexo\": \"M\",\n    \"cpf\": \"18123697822\",\n    \"endereco\": {\n        \"id\": 11,\n        \"numero\": 123,\n        \"cep\": \"04567812\",\n        \"logradouro\": \"Avenida Paulista\",\n        \"bairro\": \"Bela Vista\",\n        \"cidadeId\": 1,\n        \"cidade\": \"São Paulo\",\n        \"estadoId\": 25,\n        \"estadoNome\": \"São Paulo\",\n        \"estadoSigla\": \"SP\",\n        \"paisNome\": \"Brasil\",\n        \"paisSigla\": \"BRA\"\n    }\n}",
+              "raw": "{\n  \"user_name\": \"jonassan\",\n  \"nome_completo\": \"Jonas de Jesus Campos das Neves\",\n  \"email\": \"jonas@gmail.com\",\n  \"senha\": \"extended\",\n  \"data_nascimento\": \"2006-01-21\",\n  \"sexo\": \"M\",\n  \"cpf\": \"53218119898\",\n  \"celular\": \"11992131201\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -389,13 +390,15 @@
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Successful DELETE request\", function () {",
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
                   "});",
                   ""
-                ]
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -412,23 +415,51 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/info?id=1",
+              "raw": "{{base_url}}/clientes",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "info"
-              ],
-              "query": [
-                {
-                  "key": "id",
-                  "value": "1"
-                }
+                "clientes"
               ]
             },
             "description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
           },
           "response": []
+        }
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hczJAZ21haWwuY29tIiwiaWF0IjoxNzc4MTg2MDg0LCJleHAiOjE3NzgyNzI0ODR9.wpp7fF1sBEYE1qGv1cPq06LEHopY1qk0sbo5A5UKVnmnQg15f28kB4s2MBkOEr4L",
+            "type": "string"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
         }
       ]
     },

@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -125,12 +126,23 @@ class ClienteRestControllerTest {
                 new Carrinho());
 
         ClienteOutDto clienteOutDto = ClienteDtoMapper.toDto(cliente);
-        when(clienteController.update(any(Cliente.class))).thenReturn(clienteOutDto);
+        when(clienteController.update(any(ClienteInDto.class))).thenReturn(clienteOutDto);
+
+        ClienteInDto inDto = new ClienteInDto(
+                "jonasdasneves",
+                "Jonas da Silva Campos Melo",
+                "jonas@gmail.com",
+                "SenhaSegura123",
+                LocalDate.of(2000, 03, 16),
+                SexoEnum.M,
+                "52998224725",
+                "11991231234"
+        );
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String clienteJson = mapper.writeValueAsString(cliente);
+        String clienteJson = mapper.writeValueAsString(inDto);
 
         mockMvc.perform(put("/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -144,7 +156,7 @@ class ClienteRestControllerTest {
 
     @Test
     void delete() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.delete("/clientes/{id}", 1L))
+        this.mockMvc.perform(MockMvcRequestBuilders.delete("/clientes"))
                 .andExpect(status().isNoContent());
     }
 }
