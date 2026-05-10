@@ -25,6 +25,7 @@ public class ClienteDtoMapper {
                 cliente.getId(),
                 cliente.getUsername(),
                 cliente.getNomeCompleto(),
+                cliente.getCpf(),
                 cliente.getEmail(),
                 cliente.getCelular(),
                 cliente.isUsuarioAtivo(),
