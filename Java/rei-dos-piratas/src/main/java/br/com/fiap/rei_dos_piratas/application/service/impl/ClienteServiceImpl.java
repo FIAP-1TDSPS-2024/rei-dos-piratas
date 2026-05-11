@@ -91,15 +91,22 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setUserName(updCliente.getUsername());
         cliente.setNomeCompleto(updCliente.getNomeCompleto());
         cliente.setEmail(updCliente.getEmail());
-        cliente.setSenha(updCliente.getSenha());
+        boolean atualizarSenha = updCliente.getPassword() != null && !updCliente.getPassword().isBlank();
+        if (atualizarSenha) {
+            cliente.setSenha(updCliente.getSenha());
+        }
         cliente.setDataNascimento(updCliente.getDataNascimento());
         cliente.setSexo(updCliente.getSexo());
         cliente.setCpf(updCliente.getCpf());
         cliente.setCelular(updCliente.getCelular());
-        validar(cliente);
-
-        String encryptedPassword = this.passwordEncoder.encode(updCliente.getPassword());
-        cliente.setSenha(encryptedPassword);
+        
+        if (atualizarSenha) {
+            validar(cliente);
+            String encryptedPassword = this.passwordEncoder.encode(updCliente.getPassword());
+            cliente.setSenha(encryptedPassword);
+        } else {
+            validarExcetoSenha(cliente);
+        }
 
         Cliente clienteAtualizado = this.repository.update(cliente);
 
@@ -121,6 +128,21 @@ public class ClienteServiceImpl implements ClienteService {
 
     private void validar(Cliente cliente) {
         Set<ConstraintViolation<Cliente>> violacoes = validator.validate(cliente);
+        if (!violacoes.isEmpty()) {
+            Map<String, String> erros = violacoes.stream()
+                    .collect(Collectors.toMap(
+                            v -> v.getPropertyPath().toString(),
+                            ConstraintViolation::getMessage,
+                            (m1, m2) -> m1
+                    ));
+            throw new ValidacaoException(erros);
+        }
+    }
+
+    private void validarExcetoSenha(Cliente cliente) {
+        Set<ConstraintViolation<Cliente>> violacoes = validator.validate(cliente).stream()
+                .filter(v -> !"senha".equals(v.getPropertyPath().toString()))
+                .collect(Collectors.toSet());
         if (!violacoes.isEmpty()) {
             Map<String, String> erros = violacoes.stream()
                     .collect(Collectors.toMap(

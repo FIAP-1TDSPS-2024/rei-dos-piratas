@@ -10,6 +10,7 @@ public record ClienteOutDto(
         Long id,
         String userName,
         String nomeCompleto,
+        String cpf,
         String email,
         String celular,
         boolean usuarioAtivo,
