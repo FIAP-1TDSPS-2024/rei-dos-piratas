@@ -15,10 +15,8 @@ import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.StatusPedidoEtiqueta;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
-import org.apache.coyote.BadRequestException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,7 +105,7 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setValorFrete(consultaFrete.get().price());
 
         //Definição de valor total depois de definição de valor do frete
-        pedido.setValorTotal(caucularValorTotalPedido(pedido));
+        pedido.setValorTotal(calcularValorTotalPedido(pedido));
 
         this.verificaEAtualizaEstoqueparaPedido(pedido);
         return this.repository.create(pedido);
@@ -472,7 +470,7 @@ public class PedidoServiceImpl implements PedidoService {
         return new VolumeFreteDto(28, 32, 52, pesoTotal);
     }
 
-    private BigDecimal caucularValorTotalPedido(Pedido pedido){
+    private BigDecimal calcularValorTotalPedido(Pedido pedido){
 
         if (pedido.getValorFrete() == null){
             throw new IllegalArgumentException("Consulte o valor do frete do pedido antes do cálculo de valor total");
