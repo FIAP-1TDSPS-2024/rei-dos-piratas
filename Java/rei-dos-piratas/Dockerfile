@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- Build stage ---
-FROM eclipse-temurin:17-jdk AS build
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
 # Copy Maven wrapper and project metadata first for dependency caching
@@ -18,7 +18,7 @@ COPY --link src ./src/
 RUN ./mvnw package -DskipTests -Dmaven.test.skip=true
 
 # --- Runtime stage ---
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Create a non-root user for security
