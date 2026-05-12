@@ -7,6 +7,7 @@ import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
 import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
@@ -473,7 +474,7 @@ public class PedidoServiceImpl implements PedidoService {
     private BigDecimal calcularValorTotalPedido(Pedido pedido){
 
         if (pedido.getValorFrete() == null){
-            throw new IllegalArgumentException("Consulte o valor do frete do pedido antes do cálculo de valor total");
+            throw new RegraDeNegocioException("Consulte o valor do frete do pedido antes do cálculo de valor total");
         }
 
         //O valor total do pedido é calculado somando os valores dos produtos, multplicando por sua quantidade e por fim adicionando o valor do frete

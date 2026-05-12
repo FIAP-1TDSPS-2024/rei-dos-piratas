@@ -59,7 +59,8 @@ public class Produto {
     private BigDecimal profundidade;
 
     @Digits(fraction = 2, integer = 6, message = "O peso deve ter até 8 dígitos com 2 após a vírgula")
-    @DecimalMin(value = "0.0", inclusive = false, message = "O peso não pode ser zero ou negativo")
+    @DecimalMin(value = "0.05", inclusive = false, message = "O peso não pode ser zero ou negativo")
+    @DecimalMax(value = "20.0", inclusive = false, message = "O peso não pode ser maior que 20 quilos")
     private BigDecimal peso;
 
     @NotNull(message = "A condição do produto é obrigatória (NOVO ou USADO)")
