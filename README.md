@@ -18,7 +18,7 @@ O projeto **Rei dos Piratas** consiste em desenvolver um **e-commerce de mangás
 
 ## Diagrama geral da arquitetura da aplicação
 
-![alt text](diagrama-arquietetura.png)
+![alt text](./diagrama-arquitetura.png)
 
 ---
 
