@@ -2,6 +2,8 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -128,26 +129,14 @@ public class PedidoRestController {
         return ResponseEntity.ok(linkImpressao);
     }
 
-    @Operation(summary = "Registrar envio", description = "Marca pedido como enviado")
+    @Operation(summary = "Webhook de rastreio da melhor envio", description = "Recebe requisições de rastreio e atualização de status da melhor envio")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pedido enviado"),
-            @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
+            @ApiResponse(responseCode = "200", description = "Webhook de atualização de status recebido"),
     })
-    @PutMapping("/envio/{id}")
-    public ResponseEntity<PedidoOutDto> enviarPedido(@PathVariable Long id){
-        PedidoOutDto pedido = this.controller.enviarPedido(id);
-        return ResponseEntity.ok(pedido);
-    }
-
-    @Operation(summary = "Registrar entrega", description = "Marca pedido como entregue")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pedido entregue"),
-            @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
-    })
-    @PutMapping("/entrega/{id}")
-    public ResponseEntity<PedidoOutDto> entregarPedido(@PathVariable Long id){
-        PedidoOutDto pedido = this.controller.entregarPedido(id);
-        return ResponseEntity.ok(pedido);
+    @PostMapping("/webhook/rastreio")
+    public ResponseEntity<Void> rastreioPedidoWebhook(@RequestHeader("x-me-signature") String signature, @RequestBody String rawBody){
+        this.controller.rastreioPedidoWebhook(signature, rawBody);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Cancelar pedido", description = "Cancela o pedido informado")

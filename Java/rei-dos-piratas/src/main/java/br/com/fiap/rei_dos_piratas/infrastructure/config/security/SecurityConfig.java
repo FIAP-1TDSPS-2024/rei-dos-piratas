@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Público geral
                         .requestMatchers("/auth/**", "/error", "/health", "/",
-                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "pedidos/webhook/*").permitAll()
                         // Logout precisa de autenticação mas deve ser acessível sem session
                         .requestMatchers("/auth/logout").authenticated()
                         // Consulta de frete

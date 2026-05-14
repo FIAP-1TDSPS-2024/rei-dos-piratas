@@ -216,36 +216,6 @@ public class PedidoMvcController {
         return "redirect:/web/pedidos/imprimir";
     }
 
-    // ─── AÇÕES INDIVIDUAIS ────────────────────────────────────────────────────
-
-    @PostMapping("/{id}/enviar")
-    public String enviarPedido(@PathVariable Long id, RedirectAttributes redirectAttrs) {
-        try {
-            controller.enviarPedido(id);
-            redirectAttrs.addFlashAttribute("successMessage", "Pedido #" + id + " marcado como enviado.");
-        } catch (WrongStatusException e) {
-            redirectAttrs.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("Erro ao enviar pedido id={}", id, e);
-            redirectAttrs.addFlashAttribute("errorMessage", "Erro ao enviar o pedido. Tente novamente.");
-        }
-        return "redirect:/web/pedidos/status/EM_TRANSITO";
-    }
-
-    @PostMapping("/{id}/entregar")
-    public String entregarPedido(@PathVariable Long id, RedirectAttributes redirectAttrs) {
-        try {
-            controller.entregarPedido(id);
-            redirectAttrs.addFlashAttribute("successMessage", "Pedido #" + id + " marcado como entregue.");
-        } catch (WrongStatusException e) {
-            redirectAttrs.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("Erro ao entregar pedido id={}", id, e);
-            redirectAttrs.addFlashAttribute("errorMessage", "Erro ao registrar entrega. Tente novamente.");
-        }
-        return "redirect:/web/pedidos/status/ENTREGUE";
-    }
-
     @PostMapping("/{id}/cancelar")
     public String cancelarPedido(@PathVariable Long id, RedirectAttributes redirectAttrs) {
         try {

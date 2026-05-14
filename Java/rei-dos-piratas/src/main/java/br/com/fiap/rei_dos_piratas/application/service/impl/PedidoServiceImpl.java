@@ -14,10 +14,17 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,13 +47,21 @@ public class PedidoServiceImpl implements PedidoService {
 
     private final FreteService freteService;
 
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, ClienteService clienteService, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService) {
+    private final HmacUtil hmacUtil;
+
+    private final ObjectMapper objectMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(PedidoServiceImpl.class);
+
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, ClienteService clienteService, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, HmacUtil hmacUtil, ObjectMapper objectMapper) {
         this.repository = repository;
         this.produtoRepository = produtoRepository;
         this.clienteService = clienteService;
         this.enderecoService = enderecoService;
         this.dadosEmpresaRepository = dadosEmpresaRepository;
         this.freteService = freteService;
+        this.hmacUtil = hmacUtil;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -262,6 +277,23 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Transactional
     @Override
+    public void rastreioPedidoWebhook(String signature, String rawBody) {
+
+        //Valida header de autorização
+        //A partir de um hash criado com o payload da mensagem e o secret da aplicação no melhor envio
+        if (signature.equals(hmacUtil.generateHmac(rawBody))){
+
+            try {
+                RastreioWebhookDto rastreio = this.objectMapper.readValue(rawBody, RastreioWebhookDto.class);
+                System.out.println(rastreio);
+            } catch (Exception e) {
+                logger.error("Erro ao processar mensagem de entrega.queue: {}", e.getMessage(), e);
+            }
+
+        }
+    }
+
+    @Transactional
     public Pedido enviarPedido(Long id) {
         //Busca pedido por ID
         Pedido pedido = this.findById(id);
@@ -279,7 +311,6 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     @Transactional
-    @Override
     public Pedido entregarPedido(Long id) {
         //Busca pedido por ID
         Pedido pedido = this.findById(id);

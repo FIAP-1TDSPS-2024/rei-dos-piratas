@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.application.service;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,6 @@ public interface PedidoService {
     String organizarPedidosParaEnvio(List<Long> pedidos);
     Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos);
     String imprimirEtiquetasEnvio(List<Long> pedidos);
-    Pedido enviarPedido(Long id);
-    Pedido entregarPedido(Long id);
+    void rastreioPedidoWebhook(String signature, String rawBody);
     Pedido cancelarPedido(Long id);
 }
