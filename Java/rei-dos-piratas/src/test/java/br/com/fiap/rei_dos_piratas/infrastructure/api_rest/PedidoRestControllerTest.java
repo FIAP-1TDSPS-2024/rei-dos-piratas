@@ -15,6 +15,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
@@ -113,11 +114,11 @@ class PedidoRestControllerTest {
                         .param("pageSize", "10")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pageItems", hasSize(1)))
-                .andExpect(jsonPath("$.pageItems[0].id", is(1)))
-                .andExpect(jsonPath("$.pageItems[0].valorTotal", is(200)))
-                .andExpect(jsonPath("$.pageItems[0].valorFrete", is(20)))
-                .andExpect(jsonPath("$.pageItems[0].status", is("AGUARDANDO_PAGAMENTO")));
+                .andExpect(jsonPath("$.page_items", hasSize(1)))
+                .andExpect(jsonPath("$.page_items[0].id", is(1)))
+                .andExpect(jsonPath("$.page_items[0].valor_total", is(200)))
+                .andExpect(jsonPath("$.page_items[0].valor_frete", is(20)))
+                .andExpect(jsonPath("$.page_items[0].status", is("AGUARDANDO_PAGAMENTO")));
     }
 
     @Test
@@ -158,10 +159,10 @@ class PedidoRestControllerTest {
         this.mockMvc.perform(get("/pedidos/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(200)))
-                .andExpect(jsonPath("$.valorFrete", is(20)))
+                .andExpect(jsonPath("$.valor_total", is(200)))
+                .andExpect(jsonPath("$.valor_frete", is(20)))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")))
-                .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
+                .andExpect(jsonPath("$.produtos_adicionados", hasSize(1)));
     }
 
     @Test
@@ -208,6 +209,7 @@ class PedidoRestControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         String pedidoJson = mapper.writeValueAsString(pedidoIn);
 
         this.mockMvc.perform(post("/pedidos")
@@ -215,8 +217,8 @@ class PedidoRestControllerTest {
                         .content(pedidoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(200)))
-                .andExpect(jsonPath("$.valorFrete", is(21.19)))
+                .andExpect(jsonPath("$.valor_total", is(200)))
+                .andExpect(jsonPath("$.valor_frete", is(21.19)))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")));
     }
 

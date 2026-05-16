@@ -77,11 +77,11 @@ class ProdutoRestControllerTest {
                         .param("pageNumber", "0")
                         .param("pageSize", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pageItems", hasSize(1)))
-                .andExpect(jsonPath("$.pageItems[0].id", is(1)))
-                .andExpect(jsonPath("$.pageItems[0].nome", is("Produto Teste Número 01")))
-                .andExpect(jsonPath("$.pageItems[0].preco", is(100)))
-                .andExpect(jsonPath("$.pageItems[0].estoque", is(50)));
+                .andExpect(jsonPath("$.page_items", hasSize(1)))
+                .andExpect(jsonPath("$.page_items[0].id", is(1)))
+                .andExpect(jsonPath("$.page_items[0].nome", is("Produto Teste Número 01")))
+                .andExpect(jsonPath("$.page_items[0].preco", is(100)))
+                .andExpect(jsonPath("$.page_items[0].estoque", is(50)));
     }
 
     @Test

@@ -77,7 +77,7 @@ class AuthRestControllerTest {
                         .content(mapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("token-abc"))
-                .andExpect(jsonPath("$.cliente.userName").value("joao"))
+                .andExpect(jsonPath("$.cliente.user_name").value("joao"))
                 .andExpect(jsonPath("$.cliente.email").value("joao@example.com"))
                 .andExpect(jsonPath("$.roles[0]").value("CLIENT"));
     }
@@ -124,7 +124,7 @@ class AuthRestControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").value("token-abc"))
                 .andExpect(jsonPath("$.cliente.id").value(1))
-                .andExpect(jsonPath("$.cliente.userName").value("jonas"))
+                .andExpect(jsonPath("$.cliente.user_name").value("jonas"))
                 .andExpect(jsonPath("$.cliente.email").value("joao@example.com"))
                 .andExpect(jsonPath("$.roles[0]").value("CLIENT"));
     }

@@ -38,8 +38,8 @@ public class FuncionarioIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "userName": "jonasDasNeves",
-                                    "nomeCompleto": "Jonas da Silva Souza",
+                                    "user_name": "jonasDasNeves",
+                                    "nome_completo": "Jonas da Silva Souza",
                                     "email": "jonas@example.com",
                                     "senha": "SenhaSegura1",
                                     "perfil": "ADMIN",
@@ -48,7 +48,7 @@ public class FuncionarioIntegrationTest {
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.userName", is("jonasDasNeves")))
+                .andExpect(jsonPath("$.user_name", is("jonasDasNeves")))
                 .andExpect(jsonPath("$.email", is("jonas@example.com")));
 
         Funcionario funcionarioCriado = funcionarioRepository.findByUsername("jonasDasNeves");

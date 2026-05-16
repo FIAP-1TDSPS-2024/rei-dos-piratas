@@ -71,11 +71,11 @@ class ClienteRestControllerTest {
                         .param("pageNumber", "0")
                         .param("sizeSize", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pageItems", hasSize(1)))
-                .andExpect(jsonPath("$.pageItems[0].id", is(1)))
-                .andExpect(jsonPath("$.pageItems[0].userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.pageItems[0].nomeCompleto", is("Jonas da Silva Campos Melo")))
-                .andExpect(jsonPath("$.pageItems[0].email", is("jonas@gmail.com")));
+                .andExpect(jsonPath("$.page_items", hasSize(1)))
+                .andExpect(jsonPath("$.page_items[0].id", is(1)))
+                .andExpect(jsonPath("$.page_items[0].user_name", is("jonasdasneves")))
+                .andExpect(jsonPath("$.page_items[0].nome_completo", is("Jonas da Silva Campos Melo")))
+                .andExpect(jsonPath("$.page_items[0].email", is("jonas@gmail.com")));
     }
 
     @Test
@@ -103,8 +103,8 @@ class ClienteRestControllerTest {
         this.mockMvc.perform(get("/clientes/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
+                .andExpect(jsonPath("$.user_name", is("jonasdasneves")))
+                .andExpect(jsonPath("$.nome_completo", is("Jonas da Silva Campos Melo")))
                 .andExpect(jsonPath("$.email", is("jonas@gmail.com")));
     }
 
@@ -148,8 +148,8 @@ class ClienteRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(clienteJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userName", is("jonasdasneves")))
-                .andExpect(jsonPath("$.nomeCompleto", is("Jonas da Silva Campos Melo")))
+                .andExpect(jsonPath("$.user_name", is("jonasdasneves")))
+                .andExpect(jsonPath("$.nome_completo", is("Jonas da Silva Campos Melo")))
                 .andExpect(jsonPath("$.email", is("jonas@gmail.com")));
     }
 

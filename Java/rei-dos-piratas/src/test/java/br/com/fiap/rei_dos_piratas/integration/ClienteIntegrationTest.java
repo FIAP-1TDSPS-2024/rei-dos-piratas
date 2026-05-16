@@ -34,11 +34,11 @@ public class ClienteIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                   "userName": "jonasDasNeves",
-                                   "nomeCompleto": "Jonas da Silva Souza",
+                                   "user_name": "jonasDasNeves",
+                                   "nome_completo": "Jonas da Silva Souza",
                                    "email": "jonas@example.com",
                                    "senha": "SenhaSegura",
-                                   "dataNascimento": "2004-03-13",
+                                   "data_nascimento": "2004-03-13",
                                    "sexo": "M",
                                    "cpf": "52998224725",
                                    "celular": "11991231234"
@@ -46,7 +46,7 @@ public class ClienteIntegrationTest {
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.cliente.id").exists())
-                .andExpect(jsonPath("$.cliente.userName", is("jonasDasNeves")))
+                .andExpect(jsonPath("$.cliente.user_name", is("jonasDasNeves")))
                 .andExpect(jsonPath("$.cliente.email", is("jonas@example.com")));
 
         Page<Cliente> clientes = clienteRepository.listAll(0,10);

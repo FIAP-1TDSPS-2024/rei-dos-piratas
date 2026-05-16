@@ -92,7 +92,7 @@ class FuncionarioRestControllerTest {
         // Act & Assert
         this.mockMvc.perform(MockMvcRequestBuilders.get("/funcionarios?page=0&size=10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pageItems[0].id", is(1)));
+                .andExpect(jsonPath("$.page_items[0].id", is(1)));
     }
 
     @Test

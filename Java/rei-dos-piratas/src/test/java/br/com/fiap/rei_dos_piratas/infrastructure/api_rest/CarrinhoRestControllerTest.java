@@ -12,6 +12,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
@@ -82,6 +83,7 @@ class CarrinhoRestControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         String itemProdutoJson = mapper.writeValueAsString(itemProduto);
 
         this.mockMvc.perform(put("/carrinho/adicionar")
@@ -91,9 +93,9 @@ class CarrinhoRestControllerTest {
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)))
-                .andExpect(jsonPath("$.produtosAdicionados[0].produto.id", is(1)))
-                .andExpect(jsonPath("$.produtosAdicionados[0].quantidade", is(2)));
+                .andExpect(jsonPath("$.produtos_adicionados", hasSize(1)))
+                .andExpect(jsonPath("$.produtos_adicionados[0].produto.id", is(1)))
+                .andExpect(jsonPath("$.produtos_adicionados[0].quantidade", is(2)));
     }
 
     @Test
@@ -128,6 +130,7 @@ class CarrinhoRestControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         String itemProdutoJson = mapper.writeValueAsString(itemProduto);
 
         this.mockMvc.perform(put("/carrinho/remover")
@@ -136,7 +139,7 @@ class CarrinhoRestControllerTest {
                         .content(itemProdutoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
+                .andExpect(jsonPath("$.produtos_adicionados", hasSize(1)));
 
         this.mockMvc.perform(put("/carrinho/remover")
                         .with(csrf())
@@ -156,7 +159,7 @@ class CarrinhoRestControllerTest {
         this.mockMvc.perform(put("/carrinho/limpar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.produtosAdicionados", hasSize(0)));
+                .andExpect(jsonPath("$.produtos_adicionados", hasSize(0)));
     }
 
     @Test
@@ -206,9 +209,9 @@ class CarrinhoRestControllerTest {
         this.mockMvc.perform(get("/carrinho").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.produtosAdicionados", hasSize(2)))
-                .andExpect(jsonPath("$.produtosAdicionados[0].produto.id", is(1)))
-                .andExpect(jsonPath("$.produtosAdicionados[1].produto.id", is(2)));
+                .andExpect(jsonPath("$.produtos_adicionados", hasSize(2)))
+                .andExpect(jsonPath("$.produtos_adicionados[0].produto.id", is(1)))
+                .andExpect(jsonPath("$.produtos_adicionados[1].produto.id", is(2)));
     }
 
     @Test
@@ -252,6 +255,7 @@ class CarrinhoRestControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         String pedidoJson = mapper.writeValueAsString(pedidoIn);
 
         this.mockMvc.perform(put("/carrinho/finalizar")
@@ -261,9 +265,9 @@ class CarrinhoRestControllerTest {
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("joao").roles("CLIENT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.valorTotal", is(200)))
-                .andExpect(jsonPath("$.valorFrete", is(21.19)))
+                .andExpect(jsonPath("$.valor_total", is(200)))
+                .andExpect(jsonPath("$.valor_frete", is(21.19)))
                 .andExpect(jsonPath("$.status", is("AGUARDANDO_PAGAMENTO")))
-                .andExpect(jsonPath("$.produtosAdicionados", hasSize(1)));
+                .andExpect(jsonPath("$.produtos_adicionados", hasSize(1)));
     }
 }
