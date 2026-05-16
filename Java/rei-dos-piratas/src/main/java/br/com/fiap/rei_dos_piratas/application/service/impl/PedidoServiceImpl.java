@@ -282,14 +282,16 @@ public class PedidoServiceImpl implements PedidoService {
         //Valida header de autorização
         //A partir de um hash criado com o payload da mensagem e o secret da aplicação no melhor envio
         if (signature.equals(hmacUtil.generateHmac(rawBody))){
-
             try {
                 RastreioWebhookDto rastreio = this.objectMapper.readValue(rawBody, RastreioWebhookDto.class);
-                System.out.println(rastreio);
+
+                switch (rastreio.event()){
+
+                }
+
             } catch (Exception e) {
                 logger.error("Erro ao processar mensagem de entrega.queue: {}", e.getMessage(), e);
             }
-
         }
     }
 

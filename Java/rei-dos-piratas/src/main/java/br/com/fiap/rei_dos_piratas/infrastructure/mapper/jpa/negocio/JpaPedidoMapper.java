@@ -27,7 +27,11 @@ public class JpaPedidoMapper {
                 JpaEnderecoMapper.toEntity(jpaPedidoEntity.getEnderecoEntrega()),
                 jpaPedidoEntity.getServicoEntrega(),
                 jpaPedidoEntity.getNotaFiscal(),
-                jpaPedidoEntity.getPedidoFrete());
+                jpaPedidoEntity.getPedidoFrete(),
+                jpaPedidoEntity.getProtocoloEnvio(),
+                jpaPedidoEntity.getStatusEnvio(),
+                jpaPedidoEntity.getTracking(),
+                jpaPedidoEntity.getTrackingUrl());
     }
 
     public static JpaPedidoEntity toJpaEntity(Pedido pedido) {
@@ -53,7 +57,11 @@ public class JpaPedidoMapper {
                 JpaEnderecoMapper.toJpaEntity(pedido.getEnderecoEntrega()),
                 pedido.getServicoEntrega(),
                 pedido.getNotaFiscal(),
-                pedido.getPedidoFrete());
+                pedido.getPedidoFrete(),
+                pedido.getProtocoloEnvio(),
+                pedido.getStatusEnvio(),
+                pedido.getTracking(),
+                pedido.getTrackingUrl());
 
         jpaPedido
                 .getProdutosAdicionados()

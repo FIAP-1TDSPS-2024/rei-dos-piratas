@@ -59,5 +59,12 @@ public class JpaPedidoEntity {
 
     private UUID pedidoFrete;
 
+    private String protocoloEnvio;
+
+    private String statusEnvio;
+
+    private String tracking;
+
+    private String trackingUrl;
 
 }

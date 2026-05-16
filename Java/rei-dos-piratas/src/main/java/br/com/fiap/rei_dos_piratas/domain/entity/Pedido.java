@@ -57,6 +57,14 @@ public class Pedido {
 
     private UUID pedidoFrete;
 
+    private String protocoloEnvio;
+
+    private String statusEnvio;
+
+    private String tracking;
+
+    private String trackingUrl;
+
     public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega) {
         this.dataPedido = LocalDate.now();
         this.status = StatusEnum.AGUARDANDO_PAGAMENTO;
