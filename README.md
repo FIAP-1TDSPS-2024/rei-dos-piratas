@@ -18,7 +18,7 @@ O projeto **Rei dos Piratas** consiste em desenvolver um **e-commerce de mangás
 
 ## Diagrama geral da arquitetura da aplicação
 
-![alt text](diagrama-arquietetura.png)
+![alt text](./diagrama-arquitetura.png)
 
 ---
 
@@ -106,6 +106,7 @@ Leitores e colecionadores de mangás, principalmente **jovens e adultos de class
 
 - **Java 21** + **Spring Framework** (API REST) para pedidos e clientes
 - [Readme da aplicação Java (Back-End)](Java/rei-dos-piratas/README.md)
+- [JSON do postman](./Java/rei-dos-piratas/API%20Rei%20dos%20Piratas.postman_collection.json)
 
 - **C# + .NET** para gerenciamento de funcionarios e produtos
 

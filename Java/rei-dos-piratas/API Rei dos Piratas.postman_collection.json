@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "1dac1cae-8253-4134-bcec-de70d25a3f50",
+    "_postman_id": "c9b50661-be5c-4c37-86d3-59541e07b2ab",
     "name": "API Rei dos Piratas",
     "description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" width=\"2162\" height=\"1530\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "40914738"
+    "_exporter_id": "12684952"
   },
   "item": [
     {
@@ -266,15 +266,6 @@
           "request": {
             "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"userName\": \"jonas123\",\r\n  \"nomeCompleto\": \"Jonas da Silva Souza\",\r\n  \"email\": \"jonas.souza@example.com\",\r\n  \"senha\": \"SenhaSegura1\",\r\n  \"role\": \"ADMIN\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
               "raw": "{{base_url}}/clientes?pageNumber=0&pageSize=10",
               "host": [
@@ -316,25 +307,25 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hc0BnbWFpbC5jb20iLCJpYXQiOjE3Nzc4MjQ5MTIsImV4cCI6MTc3NzkxMTMxMn0.lk31_67g2ddRT4_vHIoBaVKssXpuodjTBpRJFaPr0tuUSjZwSB524-k3hJHGXgl5",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "{{base_url}}/clientes/6052",
+              "raw": "{{base_url}}/clientes",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "clientes",
-                "6052"
+                "clientes"
               ]
             },
             "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
@@ -360,11 +351,21 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hczJAZ21haWwuY29tIiwiaWF0IjoxNzc4NDIzNzE5LCJleHAiOjE3Nzg1MTAxMTl9.6YBwFis8AF0i0HtmTiRJKdDvwg2TS-Md5Wsmjhdfiz3rD66hFsMyAIZigm_rtpnl",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"user_name\": \"jonassan\",\n  \"nome_completo\": \"Jonas de Jesus Campos das Neves\",\n  \"email\": \"jonas@gmail.com\",\n  \"senha\": \"extended\",\n  \"data_nascimento\": \"2006-01-21\",\n  \"sexo\": \"M\",\n  \"cpf\": \"53218119898\",\n  \"celular\": \"11992131201\"\n}",
+              "raw": "{\n    \"id\": 6052, \n    \"cpf\": \"53218172861\",\n    \"user_name\": \"jonassan\",\n    \"nome_completo\": \"Jonas de Jesus Campos de Oliveira\",\n    \"email\": \"jonas2@gmail.com\",\n    \"celular\": \"11992131202\",\n    \"data_nascimento\": \"2004-03-13\",\n    \"sexo\": \"M\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -403,6 +404,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hczJAZ21haWwuY29tIiwiaWF0IjoxNzc4NDIzNzE5LCJleHAiOjE3Nzg1MTAxMTl9.6YBwFis8AF0i0HtmTiRJKdDvwg2TS-Md5Wsmjhdfiz3rD66hFsMyAIZigm_rtpnl",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "body": {
@@ -427,40 +438,6 @@
           },
           "response": []
         }
-      ],
-      "auth": {
-        "type": "bearer",
-        "bearer": [
-          {
-            "key": "token",
-            "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hczJAZ21haWwuY29tIiwiaWF0IjoxNzc4MTg2MDg0LCJleHAiOjE3NzgyNzI0ODR9.wpp7fF1sBEYE1qGv1cPq06LEHopY1qk0sbo5A5UKVnmnQg15f28kB4s2MBkOEr4L",
-            "type": "string"
-          }
-        ]
-      },
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {},
-            "exec": [
-              ""
-            ]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {},
-            "exec": [
-              ""
-            ]
-          }
-        }
       ]
     },
     {
@@ -484,6 +461,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hc0BnbWFpbC5jb20iLCJpYXQiOjE3Nzc4MjQ5MTIsImV4cCI6MTc3NzkxMTMxMn0.lk31_67g2ddRT4_vHIoBaVKssXpuodjTBpRJFaPr0tuUSjZwSB524-k3hJHGXgl5",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1026,6 +1013,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hczJAZ21haWwuY29tIiwiaWF0IjoxNzc4NTA5MTQzLCJleHAiOjE3Nzg1OTU1NDN9.deL7buyCo6u_QBkgqEwlyK2oXzywotGuT6gjVNBjGRoO43IE26GGFWYQ_pySdG36",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1094,11 +1091,21 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJ3ZW5kZWxsQGdtYWlsLmNvbSIsImlhdCI6MTc3ODYwMjczMywiZXhwIjoxNzc4Njg5MTMzfQ.t1M5xgZoTeQH5-8dbT3KSz5TrAqAzxRR-g5Vfqu0yx5jmIvLpofvH1o4ASDWypHu",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n   \"frete_service_id\": 3,\n    \"endereco_entrega_id\": 42,\n    \"produtos_adicionados\": [\n    {\n        \"produto_id\": 24,\n        \"quantidade\": 3\n    }\n  ]\n}\n\n\n",
+              "raw": "{\n  \"endereco_entrega_id\": 122,\n  \"frete_service_id\": 3,\n  \"produtos_adicionados\": [\n      { \n        \"produto_id\": 84, \n        \"quantidade\": 1 \n      }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1430,7 +1437,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"jonas@gmail.com\",\r\n    \"password\": \"extended\"\r\n}",
+              "raw": "{\r\n    \"email\": \"wendell@gmail.com\",\r\n    \"password\": \"extended\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1485,11 +1492,21 @@
         {
           "name": "Consultar Frete",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hczJAZ21haWwuY29tIiwiaWF0IjoxNzc4NTA5MTQzLCJleHAiOjE3Nzg1OTU1NDN9.deL7buyCo6u_QBkgqEwlyK2oXzywotGuT6gjVNBjGRoO43IE26GGFWYQ_pySdG36",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"cep_destino\": \"90570020\",\r\n    \"itens\": [\r\n        {\r\n            \"produto_id\": 1,\r\n            \"quantidade\": 1\r\n        }\r\n    ]\r\n}",
+              "raw": "{\r\n    \"cep_destino\": \"05878010\",\r\n    \"itens\": [\r\n        {\r\n            \"produto_id\": 84,\r\n            \"quantidade\": 1\r\n        }\r\n    ]\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1516,6 +1533,16 @@
         {
           "name": "Listar meus endereços",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJ3ZW5kZWxsQGdtYWlsLmNvbSIsImlhdCI6MTc3ODYwMjQzNSwiZXhwIjoxNzc4Njg4ODM1fQ.ifa5mSGMX8Wp8lAqx4FRTHQjzbEoVGqacIhKAPD4MqyBbVr6pNyiA-611mVBMvOf",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1533,11 +1560,21 @@
         {
           "name": "Registrar endereço",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1BFRElET19DUkVBVEUiLCJST0xFX0NBUlJJTkhPX01BTkFHRSIsIlJPTEVfRU5ERVJFQ09fTUFOQUdFIiwiUk9MRV9QRURJRE9fUkVBRCIsIlJPTEVfUEVESURPX0NBTkNFTCIsIlJPTEVfUEVESURPX1BBR0FNRU5UTyJdLCJzdWIiOiJqb25hczJAZ21haWwuY29tIiwiaWF0IjoxNzc4NDIzNzE5LCJleHAiOjE3Nzg1MTAxMTl9.6YBwFis8AF0i0HtmTiRJKdDvwg2TS-Md5Wsmjhdfiz3rD66hFsMyAIZigm_rtpnl",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"numero\": 1523,\r\n  \"cep\": \"30140010\",\r\n  \"logradouro\": \"Rua dos Timbiras\",\r\n  \"bairro\": \"Funcionários\",\r\n  \"cidade\": \"Belo Horizonte\",\r\n  \"estado_nome\": \"Minas Gerais\",\r\n  \"estado_sigla\": \"MG\"\r\n}\r\n",
+              "raw": "{\r\n  \"numero\": 1524,\r\n  \"cep\": \"30140010\",\r\n  \"logradouro\": \"Rua dos Timbiras\",\r\n  \"bairro\": \"Funcionários\",\r\n  \"cidade\": \"Belo Horizonte\",\r\n  \"estado_nome\": \"Minas Gerais\",\r\n  \"estado_sigla\": \"MG\"\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
