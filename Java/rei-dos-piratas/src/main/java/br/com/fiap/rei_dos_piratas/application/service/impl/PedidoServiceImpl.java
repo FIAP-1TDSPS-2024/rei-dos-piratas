@@ -297,8 +297,7 @@ public class PedidoServiceImpl implements PedidoService {
                 switch (rastreio.event()) {
 
                     case "order.created":
-                        // Primeiro evento: preenche dados de rastreamento, protocolo e data de criação da etiqueta
-                        pedido.setProtocoloEnvio(data.protocol());
+                        // Primeiro evento: preenche dados de rastreamento e data de criação da etiqueta
                         pedido.setTracking(data.tracking());
                         pedido.setTrackingUrl(data.trackingUrl());
                         logger.info("Etiqueta criada para pedido ID={} — protocolo={}, tracking={}",
@@ -451,6 +450,7 @@ public class PedidoServiceImpl implements PedidoService {
     private Pedido enriquecerPedidoPorFrete(Pedido pedido, PedidoFreteResponseDto pedidoFreteResponseDto) {
         pedido.setPedidoFrete(pedidoFreteResponseDto.id());
         pedido.setDataPrevisaoEntrega(LocalDate.now().plusDays(pedidoFreteResponseDto.deliveryMax()));
+        pedido.setProtocoloEnvio(pedidoFreteResponseDto.protocol());
         logger.debug("Pedido ID={} enriquecido: pedidoFrete UUID={}, previsão de entrega={}",
                 pedido.getId(), pedidoFreteResponseDto.id(), pedido.getDataPrevisaoEntrega());
         return this.repository.update(pedido);
