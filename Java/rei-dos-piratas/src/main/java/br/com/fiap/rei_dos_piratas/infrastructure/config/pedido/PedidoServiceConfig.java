@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Configuration;
 public class PedidoServiceConfig {
 
     @Bean
-    public PedidoService pedidoService(PedidoRepository repository, ProdutoRepository produtoRepository, ClienteService clienteService, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, HmacUtil hmacUtil, ObjectMapper objectMapper) {
-        return new PedidoServiceImpl(repository, produtoRepository, clienteService, enderecoService, dadosEmpresaRepository, freteService, hmacUtil, objectMapper);
+    public PedidoService pedidoService(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, HmacUtil hmacUtil, ObjectMapper objectMapper) {
+        return new PedidoServiceImpl(repository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, hmacUtil, objectMapper);
     }
 
 

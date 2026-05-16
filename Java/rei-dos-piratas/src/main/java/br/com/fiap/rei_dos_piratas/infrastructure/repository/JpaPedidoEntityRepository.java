@@ -10,12 +10,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface JpaPedidoEntityRepository extends JpaRepository<JpaPedidoEntity, Long> {
 
     Page<JpaPedidoEntity> findAllByCliente_Id(Long clienteId, Pageable pageable);
 
     Page<JpaPedidoEntity> findAllByStatus(StatusEnum status, Pageable pageable);
+
+    Optional<JpaPedidoEntity> findByPedidoFrete(UUID pedidoFrete);
 
     // Batch operations for performance optimization
     @Query("SELECT p FROM JpaPedidoEntity p WHERE p.id IN :ids AND p.status = :status")

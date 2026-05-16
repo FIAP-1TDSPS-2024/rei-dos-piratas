@@ -190,28 +190,6 @@ class PedidoControllerImplTest {
     }
 
     @Test
-    void enviarPedido() {
-        when(pedidoService.enviarPedido(1L)).thenReturn(criarPedido(StatusEnum.EM_TRANSITO));
-
-        PedidoOutDto result = pedidoController.enviarPedido(1L);
-
-        verify(pedidoService, times(1)).enviarPedido(1L);
-        assertThat(result.status()).isEqualTo(StatusEnum.EM_TRANSITO);
-    }
-
-    @Test
-    void entregarPedido() {
-        Pedido entregue = criarPedido(StatusEnum.ENTREGUE);
-        entregue.setDataEntrega(LocalDate.now());
-        when(pedidoService.entregarPedido(1L)).thenReturn(entregue);
-
-        PedidoOutDto result = pedidoController.entregarPedido(1L);
-
-        verify(pedidoService, times(1)).entregarPedido(1L);
-        assertThat(result.status()).isEqualTo(StatusEnum.ENTREGUE);
-    }
-
-    @Test
     void cancelarPedido() {
         Pedido cancelado = criarPedido(StatusEnum.CANCELADO);
         cancelado.setDataCancelamento(LocalDate.now());

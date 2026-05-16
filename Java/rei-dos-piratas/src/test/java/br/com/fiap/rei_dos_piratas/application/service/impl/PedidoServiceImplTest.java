@@ -15,6 +15,8 @@ import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +44,6 @@ class PedidoServiceImplTest {
     private EnderecoService enderecoService;
     private FreteService freteService;
     private DadosEmpresaRepository dadosEmpresaRepository;
-    private br.com.fiap.rei_dos_piratas.application.service.ClienteService clienteService;
 
     @BeforeEach
     void setUp() {
@@ -63,8 +64,9 @@ class PedidoServiceImplTest {
         this.freteService = mock(FreteService.class);
         this.dadosEmpresaRepository = mock(DadosEmpresaRepository.class);
         this.enderecoService = mock(EnderecoService.class);
-        this.clienteService = mock(br.com.fiap.rei_dos_piratas.application.service.ClienteService.class);
-        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, clienteService, enderecoService, dadosEmpresaRepository, freteService);
+        HmacUtil hmacUtil = mock(HmacUtil.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, hmacUtil, objectMapper);
     }
 
     @AfterEach
@@ -167,9 +169,9 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
         Pedido pedido1 = new Pedido(1L, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
         Pedido pedido2 = new Pedido(2L, LocalDate.now(), null, null, null, BigDecimal.valueOf(300), BigDecimal.valueOf(21.19),
-                StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         List<Pedido> pedidos = List.of(pedido1, pedido2);
         Page<Pedido> page = new Page<>(1, 0, pedidos);
@@ -214,7 +216,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
         Pedido pedido = new Pedido(1L, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -251,10 +253,10 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(produto, 2));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         Pedido pedidoCriado = new Pedido(1L, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
         when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(criarListaFretes(1L));
@@ -281,7 +283,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(produto, 5)); // Quantidade maior que estoque
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(500), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(criarListaFretes(1L));
 
@@ -307,10 +309,10 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(produto2, 1));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(350), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         Pedido pedidoCriado = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(350), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.create(any(Pedido.class))).thenReturn(pedidoCriado);
         when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(criarListaFretes(1L));
@@ -335,7 +337,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         // Mock DadosEmpresa
         DadosEmpresa dadosEmpresa = new DadosEmpresa(
@@ -406,7 +408,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(18.00),
-                    StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                    StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -419,99 +421,6 @@ class PedidoServiceImplTest {
         verify(pedidoRepository, never()).update(any(Pedido.class));
     }
 
-    @Test
-    void enviarPedido_DeveAtualizarStatusParaEmTransito() {
-        // Arrange
-        Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
-
-        List<ItemProdutoPedido> itens = new ArrayList<>();
-        itens.add(new ItemProdutoPedido(1L, produto, 2));
-
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(20),
-                StatusEnum.AGUARDANDO_POSTAGEM, cliente, itens, criarEndereco(cliente), 1L, null, null);
-
-        when(pedidoRepository.findById(1L)).thenReturn(pedido);
-        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        // Act
-        Pedido resultado = pedidoService.enviarPedido(1L);
-
-        // Assert
-        verify(pedidoRepository, times(1)).findById(1L);
-        verify(pedidoRepository, times(1)).update(pedido);
-        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.EM_TRANSITO);
-    }
-
-    @Test
-    void enviarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
-        // Arrange
-        Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
-
-        List<ItemProdutoPedido> itens = new ArrayList<>();
-        itens.add(new ItemProdutoPedido(1L, produto, 2));
-
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
-
-        when(pedidoRepository.findById(1L)).thenReturn(pedido);
-
-        // Act & Assert
-        assertThatThrownBy(() -> pedidoService.enviarPedido(1L))
-                .isInstanceOf(WrongStatusException.class)
-                .hasMessageContaining("O pedido deve estar no estado AGUARDANDO_POSTAGEM para ser enviado para entrega, mas ele está no estado AGUARDANDO_PAGAMENTO");
-
-        verify(pedidoRepository, times(1)).findById(1L);
-        verify(pedidoRepository, never()).update(any(Pedido.class));
-    }
-
-    @Test
-    void entregarPedido_DeveAtualizarStatusParaEntregue() {
-        // Arrange
-        Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
-
-        List<ItemProdutoPedido> itens = new ArrayList<>();
-        itens.add(new ItemProdutoPedido(1L, produto, 2));
-
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(20),
-                StatusEnum.EM_TRANSITO, cliente, itens, criarEndereco(cliente), 1L, null, null);
-
-        when(pedidoRepository.findById(1L)).thenReturn(pedido);
-        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        // Act
-        Pedido resultado = pedidoService.entregarPedido(1L);
-
-        // Assert
-        verify(pedidoRepository, times(1)).findById(1L);
-        verify(pedidoRepository, times(1)).update(pedido);
-        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.ENTREGUE);
-    }
-
-    @Test
-    void entregarPedido_DeveLancarExcecaoQuandoStatusIncorreto() {
-        // Arrange
-        Cliente cliente = criarCliente();
-        Produto produto = criarProduto(1L, "Produto Teste", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
-
-        List<ItemProdutoPedido> itens = new ArrayList<>();
-        itens.add(new ItemProdutoPedido(1L, produto, 2));
-
-        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
-
-        when(pedidoRepository.findById(1L)).thenReturn(pedido);
-
-        // Act & Assert
-        assertThatThrownBy(() -> pedidoService.entregarPedido(1L))
-                .isInstanceOf(WrongStatusException.class)
-                .hasMessageContaining("O pedido deve estar no estado EM_TRANSITO");
-
-        verify(pedidoRepository, times(1)).findById(1L);
-        verify(pedidoRepository, never()).update(any(Pedido.class));
-    }
 
     @Test
     void cancelarPedido_DeveCancelarPedidoEDevolverEstoque() {
@@ -523,7 +432,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(produto, 2));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -551,7 +460,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(produto2, 1));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -578,7 +487,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
-                StatusEnum.CANCELADO, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.CANCELADO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
@@ -602,7 +511,7 @@ class PedidoServiceImplTest {
         itens.add(new ItemProdutoPedido(1L, produto, 2));
 
         Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(20),
-                StatusEnum.ENTREGUE, cliente, itens, criarEndereco(cliente), 1L, null, null);
+                StatusEnum.ENTREGUE, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
 
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 

@@ -640,6 +640,10 @@ class CarrinhoServiceImplTest {
                 endereco,
                 3L,
                 null,
+                null,
+                null,
+                null,
+                null,
                 null);
 
         Long freteServiceId = 3L;

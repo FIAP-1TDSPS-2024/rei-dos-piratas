@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class PedidoRepositoryImpl implements PedidoRepository {
 
@@ -81,6 +82,14 @@ public class PedidoRepositoryImpl implements PedidoRepository {
         else{
             return null;
         }
+    }
+
+    @Override
+    public Pedido findByPedidoFrete(UUID uuid) {
+        return JpaPedidoMapper.toEntity(
+                this.repository
+                        .findByPedidoFrete(uuid)
+                        .orElseThrow());
     }
 
     @Override
