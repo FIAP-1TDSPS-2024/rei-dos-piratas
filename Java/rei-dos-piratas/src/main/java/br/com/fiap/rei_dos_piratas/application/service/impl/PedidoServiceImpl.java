@@ -279,6 +279,7 @@ public class PedidoServiceImpl implements PedidoService {
     public void rastreioPedidoWebhook(String signature, String rawBody) {
         logger.debug("Webhook de rastreio recebido — validando assinatura HMAC");
 
+
         if (signature.equals(hmacUtil.generateHmac(rawBody))) {
             logger.debug("Assinatura HMAC válida — processando payload");
             try {
@@ -294,12 +295,15 @@ public class PedidoServiceImpl implements PedidoService {
                 // Sempre atualiza o status de entrega com o status vindo do payload
                 pedido.setStatusEnvio(data.status());
 
+                //Define variáveis de tracking quando elas chegam
+                //Pode levar até um dia
+                pedido.setTracking(data.tracking());
+                pedido.setTrackingUrl(data.trackingUrl());
+
                 switch (rastreio.event()) {
 
                     case "order.created":
-                        // Primeiro evento: preenche dados de rastreamento e data de criação da etiqueta
-                        pedido.setTracking(data.tracking());
-                        pedido.setTrackingUrl(data.trackingUrl());
+
                         logger.info("Etiqueta criada para pedido ID={} — protocolo={}, tracking={}",
                                 pedido.getId(), data.protocol(), data.tracking());
                         break;
@@ -312,6 +316,11 @@ public class PedidoServiceImpl implements PedidoService {
                     case "order.generated":
                         // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
                         logger.debug("Etiqueta gerada (order.generated) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
+                        break;
+
+                    case "order.ready-to-print":
+                        // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
+                        logger.debug("Etiqueta pronta para impressão (order.ready-to-print) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
                         break;
 
                     case "order.received":
@@ -355,8 +364,6 @@ public class PedidoServiceImpl implements PedidoService {
                         // Retrocede para PREPARANDO_ENVIO para permitir geração de nova etiqueta
                         pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
                         pedido.setStatusEnvio(null);
-                        pedido.setPedidoFrete(null);
-                        pedido.setProtocoloEnvio(null);
                         pedido.setTracking(null);
                         pedido.setTrackingUrl(null);
                         logger.warn("Etiqueta cancelada (order.canceled) para pedido ID={} — campos de envio resetados, status revertido para PREPARANDO_ENVIO para nova emissão",
@@ -368,8 +375,6 @@ public class PedidoServiceImpl implements PedidoService {
                         // Mesmo tratamento do canceled: reabre o pedido para nova emissão de etiqueta
                         pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
                         pedido.setStatusEnvio(null);
-                        pedido.setPedidoFrete(null);
-                        pedido.setProtocoloEnvio(null);
                         pedido.setTracking(null);
                         pedido.setTrackingUrl(null);
                         logger.warn("Etiqueta expirada (order.expired) para pedido ID={} — campos de envio resetados, status revertido para PREPARANDO_ENVIO para nova emissão",
