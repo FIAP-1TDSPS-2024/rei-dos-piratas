@@ -8,6 +8,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.HexFormat;
 
 @Component
@@ -32,7 +33,7 @@ public class HmacUtil {
         byte[] signedBytes =
                 sha256Hmac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
 
-        return HexFormat.of().formatHex(signedBytes);
+        return Base64.getEncoder().encodeToString(signedBytes);
 
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new RuntimeException(e);
