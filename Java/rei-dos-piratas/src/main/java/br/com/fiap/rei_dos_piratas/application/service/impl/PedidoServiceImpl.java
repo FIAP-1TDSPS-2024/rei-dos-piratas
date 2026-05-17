@@ -279,6 +279,11 @@ public class PedidoServiceImpl implements PedidoService {
     public void rastreioPedidoWebhook(String signature, String rawBody) {
         logger.debug("Webhook de rastreio recebido — validando assinatura HMAC");
 
+        logger.warn("SIGNATURE RECEBIDA: {}", signature);
+        logger.warn("HMAC GERADO: {}", hmacUtil.generateHmac(rawBody));
+        logger.warn("RAW BODY SIZE: {}", rawBody.length());
+        logger.warn("RAW BODY: {}", rawBody);
+
         if (signature.equals(hmacUtil.generateHmac(rawBody))) {
             logger.debug("Assinatura HMAC válida — processando payload");
             try {
