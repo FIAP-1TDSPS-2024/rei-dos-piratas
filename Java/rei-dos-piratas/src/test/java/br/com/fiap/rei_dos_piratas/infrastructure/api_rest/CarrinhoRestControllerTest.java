@@ -246,7 +246,8 @@ class CarrinhoRestControllerTest {
                 BigDecimal.valueOf(200),
                 BigDecimal.valueOf(21.19),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
-                produtos
+                produtos,
+                null, null, null, null, null, null, null, null
         );
 
         PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(3L, 1L);

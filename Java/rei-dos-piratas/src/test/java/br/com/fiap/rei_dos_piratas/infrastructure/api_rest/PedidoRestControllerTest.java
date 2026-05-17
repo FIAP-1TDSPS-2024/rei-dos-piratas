@@ -102,7 +102,8 @@ class PedidoRestControllerTest {
                 BigDecimal.valueOf(200),
                 BigDecimal.valueOf(20),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
-                produtos
+                produtos,
+                null, null, null, null, null, null, null, null
         );
 
         Page<PedidoOutDto> pedidosPage = new Page<>(1, 0, List.of(pedido));
@@ -151,7 +152,8 @@ class PedidoRestControllerTest {
                 BigDecimal.valueOf(200),
                 BigDecimal.valueOf(20),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
-                produtos
+                produtos,
+                null, null, null, null, null, null, null, null
         );
 
         when(this.pedidoController.findById(1L)).thenReturn(pedido);
@@ -201,7 +203,8 @@ class PedidoRestControllerTest {
                 BigDecimal.valueOf(200),
                 BigDecimal.valueOf(21.19),
                 StatusEnum.AGUARDANDO_PAGAMENTO,
-                produtosOut
+                produtosOut,
+                null, null, null, null, null, null, null, null
         );
 
         when(this.pedidoController.fazerPedido(any(PedidoInDto.class))).thenReturn(pedidoOut);
@@ -253,7 +256,8 @@ class PedidoRestControllerTest {
                 BigDecimal.valueOf(200),
                 BigDecimal.valueOf(20),
                 StatusEnum.PREPARANDO_ENVIO,
-                produtos
+                produtos,
+                null, null, null, null, null, null, null, null
         );
 
         when(this.pedidoController.pagarPedido(1L)).thenReturn(pedido);
@@ -297,7 +301,8 @@ class PedidoRestControllerTest {
                 BigDecimal.valueOf(200),
                 BigDecimal.valueOf(20),
                 StatusEnum.CANCELADO,
-                produtos
+                produtos,
+                null, null, null, null, null, null, null, null
         );
 
         when(this.pedidoController.cancelarPedido(1L)).thenReturn(pedido);

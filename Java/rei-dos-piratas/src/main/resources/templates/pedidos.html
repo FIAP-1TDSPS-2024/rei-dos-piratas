@@ -12,13 +12,7 @@
 
     <div th:replace="~{fragments.html :: navbar}"></div>
 
-    <!-- Mensagens flash -->
-    <div th:if="${successMessage}" class="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm"
-         th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm"
-         th:text="${errorMessage}"></div>
-    <div th:if="${warningMessage}" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-md text-sm"
-         th:text="${warningMessage}"></div>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
 
     <div class="bg-white p-4 mt-4 shadow-md rounded-md">
 
@@ -73,13 +67,7 @@
                     <td class="px-4 py-3 font-mono text-gray-500" th:text="${'#' + pedido.id}"></td>
                     <td class="px-4 py-3" th:text="${pedido.dataPedido}"></td>
                     <td class="px-4 py-3">
-                        <span th:text="${pedido.status.name()}"
-                              th:classappend="${pedido.status.name() == 'PREPARANDO_ENVIO'} ? 'bg-blue-100 text-blue-700' :
-                                              (${pedido.status.name() == 'AGUARDANDO_PAGAMENTO'} ? 'bg-yellow-100 text-yellow-700' :
-                                              (${pedido.status.name() == 'EM_TRANSITO'} ? 'bg-indigo-100 text-indigo-700' :
-                                              (${pedido.status.name() == 'ENTREGUE'} ? 'bg-green-100 text-green-700' :
-                                              (${pedido.status.name() == 'CANCELADO'} ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'))))"
-                              class="px-2 py-1 text-xs font-semibold rounded-full"></span>
+                        <span th:replace="~{fragments.html :: status-badge(${pedido.status.name()})}"></span>
                     </td>
                     <td class="px-4 py-3 text-center" th:text="${pedido.produtosAdicionados.size()}"></td>
                     <td class="px-4 py-3 font-semibold"
@@ -92,24 +80,8 @@
                                class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100 transition"
                                th:text="#{common.ver}">Ver</a>
 
-                            <!-- Enviar: apenas para AGUARDANDO_POSTAGEM -->
-                            <form th:if="${pedido.status.name() == 'AGUARDANDO_POSTAGEM'}"
-                                  th:action="@{/web/pedidos/{id}/enviar(id=${pedido.id})}" method="post" style="margin:0">
-                                <button type="submit"
-                                        class="px-2 py-1 text-xs bg-indigo-500 text-white rounded hover:bg-indigo-600 transition"
-                                        th:text="#{pedidos.acao.enviar}">Enviar</button>
-                            </form>
-
-                            <!-- Entregar: apenas para EM_TRANSITO -->
-                            <form th:if="${pedido.status.name() == 'EM_TRANSITO'}"
-                                  th:action="@{/web/pedidos/{id}/entregar(id=${pedido.id})}" method="post" style="margin:0">
-                                <button type="submit"
-                                        class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition"
-                                        th:text="#{pedidos.acao.entregar}">Entregar</button>
-                            </form>
-
-                            <!-- Cancelar: para pedidos ainda não enviados -->
-                            <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO'}"
+                            <!-- Cancelar: apenas para pedidos antes do envio físico -->
+                            <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO' and pedido.status.name() != 'AGUARDANDO_POSTAGEM'}"
                                   th:action="@{/web/pedidos/{id}/cancelar(id=${pedido.id})}" method="post" style="margin:0">
                                 <button type="submit"
                                         onclick="return confirm('Cancelar pedido #[[${pedido.id}]]?')"

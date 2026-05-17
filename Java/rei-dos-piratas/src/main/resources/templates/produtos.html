@@ -12,11 +12,7 @@
 
     <div th:replace="~{fragments.html :: navbar}"></div>
 
-    <!-- Mensagens flash -->
-    <div th:if="${successMessage}" class="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm"
-         th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm"
-         th:text="${errorMessage}"></div>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
 
     <div class="bg-white p-4 mt-4 shadow-md rounded-md">
         <!-- T&iacute;tulo da p&aacute;gina -->

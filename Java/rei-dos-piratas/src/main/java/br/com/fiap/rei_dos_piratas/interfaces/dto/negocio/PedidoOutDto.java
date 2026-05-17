@@ -9,6 +9,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 public record PedidoOutDto(
         Long id,
@@ -37,6 +38,22 @@ public record PedidoOutDto(
         StatusEnum status,
 
         @NotNull(message = "Os produtos adicionados do pedido não pode ser nulo")
-        List<ItemProdutoOutDto> produtosAdicionados
+        List<ItemProdutoOutDto> produtosAdicionados,
+
+        // Dados do cliente e entrega
+        String nomeCliente,
+        // Endereço de entrega formatado (ex: "Rua X, 10, Centro, 01310-100 - Brasil")
+        String enderecoEntrega,
+
+        // Dados de rastreio e envio (Melhor Envio)
+        String notaFiscal,
+        UUID pedidoFrete,
+        String protocoloEnvio,
+        // Status de entrega conforme retornado pelo webhook do Melhor Envio
+        String statusEnvio,
+        // Código de rastreio
+        String tracking,
+        // URL de rastreio
+        String trackingUrl
 ) {
 }

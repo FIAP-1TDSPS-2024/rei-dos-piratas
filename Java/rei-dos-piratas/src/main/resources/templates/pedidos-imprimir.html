@@ -12,11 +12,7 @@
 
     <div th:replace="~{fragments.html :: navbar}"></div>
 
-    <!-- Mensagens flash -->
-    <div th:if="${successMessage}" class="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm"
-         th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm"
-         th:text="${errorMessage}"></div>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
 
     <!-- Link de impressão gerado -->
     <div th:if="${urlImpressao != null}"
@@ -31,13 +27,8 @@
     </div>
 
     <div class="bg-white p-6 mt-4 shadow-md rounded-md">
-        <div class="mb-6">
-            <a th:href="@{/web/pedidos}" class="text-gray-400 text-sm hover:text-gray-600">← Voltar para Pedidos</a>
-            <h1 class="text-2xl font-bold text-gray-800 mt-1" th:text="#{pedidos.imprimir.titulo}">Imprimir Etiquetas</h1>
-            <p class="text-gray-500 text-sm mt-1" th:text="#{pedidos.imprimir.subtitulo}">
-                Selecione os pedidos com etiquetas geradas para obter o link de impressão.
-            </p>
-        </div>
+
+        <div th:replace="~{fragments.html :: pedidos-page-header(#{pedidos.imprimir.titulo}, #{pedidos.imprimir.subtitulo})}"></div>
 
         <!-- Sem pedidos -->
         <div th:if="${pedidos == null or pedidos.isEmpty()}" class="text-center py-12 text-gray-400">
@@ -55,44 +46,7 @@
         <form th:if="${pedidos != null and !pedidos.isEmpty()}"
               th:action="@{/web/pedidos/imprimir}" method="post">
 
-            <div class="mb-3 flex items-center justify-between">
-                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                    <input type="checkbox" id="selectAll" class="rounded"
-                           onclick="document.querySelectorAll('.pedido-check').forEach(c => c.checked = this.checked)">
-                    Selecionar todos
-                </label>
-                <span class="text-xs text-gray-400"
-                      th:text="${pedidos.size() + ' pedido(s) disponível(is)'}"></span>
-            </div>
-
-            <table class="w-full text-sm text-left border-collapse">
-                <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
-                <tr>
-                    <th class="px-4 py-3 border-b w-10"></th>
-                    <th class="px-4 py-3 border-b">#ID</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.data}">Data</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.itens}">Itens</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.total}">Total</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.previsao}">Previsão</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="pedido : ${pedidos}" class="hover:bg-gray-50 border-b">
-                    <td class="px-4 py-3">
-                        <input type="checkbox" name="pedidosSelecionados"
-                               th:value="${pedido.id}"
-                               class="pedido-check rounded">
-                    </td>
-                    <td class="px-4 py-3 font-mono text-gray-500" th:text="${'#' + pedido.id}"></td>
-                    <td class="px-4 py-3" th:text="${pedido.dataPedido}"></td>
-                    <td class="px-4 py-3 text-center" th:text="${pedido.produtosAdicionados.size()}"></td>
-                    <td class="px-4 py-3 font-semibold"
-                        th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
-                    <td class="px-4 py-3 text-gray-500"
-                        th:text="${pedido.previsaoEntrega != null ? pedido.previsaoEntrega : '-'}"></td>
-                </tr>
-                </tbody>
-            </table>
+            <th:block th:replace="~{fragments.html :: pedidos-selecao-tabela}"></th:block>
 
             <div class="mt-6 flex gap-3 justify-end">
                 <a th:href="@{/web/pedidos}"
