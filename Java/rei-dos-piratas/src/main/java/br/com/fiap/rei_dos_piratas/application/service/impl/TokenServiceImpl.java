@@ -7,7 +7,11 @@ import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.FreteTokenClient;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenRequestDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenResponseDto;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository repository;
@@ -20,23 +24,24 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public Token findLastToken() {
-        try{
+        try {
             Token token = repository.findLastToken();
-
             if (token.isTokenValid()) {
                 return token;
-            }
-            else{
+            } else {
                 return this.gerarNovoToken(token.getRefreshToken());
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
+            log.error("[TOKEN] Não foi possível obter token de frete. Causa: {}", e.getMessage());
             throw new ResourceNotFoundException("Não é possível conectar nos serviços de frete. " + e.getMessage());
         }
     }
 
     @Override
+    @CircuitBreaker(name = "melhorEnvioToken")
+    @Retry(name = "melhorEnvioToken")
     public Token gerarNovoToken(String refreshToken) {
+        log.info("[TOKEN] Renovando token OAuth do Melhor Envio.");
         //Definição de informações de cliente melhor envio para renovação de token
         String clientId = System.getenv("ME_CLIENT_ID");
         String clientSecret = System.getenv("ME_SECRET");
@@ -50,6 +55,8 @@ public class TokenServiceImpl implements TokenService {
 
         //Retorno e salvamento do novo Token
         Token token = new Token(tokenResponse.access_token(), tokenResponse.refresh_token(), tokenResponse.expires_in());
-        return this.repository.save(token);
+        Token salvo = this.repository.save(token);
+        log.info("[TOKEN] Token renovado com sucesso.");
+        return salvo;
     }
 }

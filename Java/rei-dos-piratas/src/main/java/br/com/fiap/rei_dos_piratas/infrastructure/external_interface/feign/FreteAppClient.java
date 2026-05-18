@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign;
 
 import br.com.fiap.rei_dos_piratas.infrastructure.config.feign.FreteFeignConfig;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.fallback.FreteAppClientFallbackFactory;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.ConsultaFreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(contextId = "frete-app", name = "frete-api", configuration = FreteFeignConfig.class)
+@FeignClient(contextId = "frete-app", name = "frete-api", configuration = FreteFeignConfig.class,
+        fallbackFactory = FreteAppClientFallbackFactory.class)
 public interface FreteAppClient {
 
     @PostMapping("/api/v2/me/shipment/calculate")

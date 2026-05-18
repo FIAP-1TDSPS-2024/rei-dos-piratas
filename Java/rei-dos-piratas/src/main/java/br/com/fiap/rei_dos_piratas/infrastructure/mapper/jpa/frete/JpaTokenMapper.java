@@ -6,6 +6,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.frete.JpaTokenEntity;
 public class JpaTokenMapper {
 
     public static Token toEntity(JpaTokenEntity tokenEntity) {
+        if (tokenEntity == null) return null;
         return new Token(
                 tokenEntity.getId(),
                 tokenEntity.getToken(),

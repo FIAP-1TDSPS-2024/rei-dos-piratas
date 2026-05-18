@@ -40,9 +40,9 @@ public class Token {
     }
 
     public boolean isTokenValid(){
-        if(dataExpiracao.isBefore(LocalDate.now())){
+        if(dataExpiracao == null){
             return false;
         }
-        return true;
+        return !dataExpiracao.isBefore(LocalDate.now());
     }
 }
