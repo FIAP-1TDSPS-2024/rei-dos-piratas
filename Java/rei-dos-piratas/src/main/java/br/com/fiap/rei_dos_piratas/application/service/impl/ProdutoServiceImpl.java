@@ -39,6 +39,7 @@ public class ProdutoServiceImpl implements ProdutoService {
         return this.repository.listAll(pageNumber, pageSize);
     }
 
+
     @Transactional
     @Override
     public Produto create(Produto produto) {

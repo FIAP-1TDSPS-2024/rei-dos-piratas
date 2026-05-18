@@ -7,120 +7,188 @@
     <title th:text="#{pedidos.page.title}">Pedidos</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-900">
-<div class="max-w-6xl mx-auto p-4">
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
 
-    <div th:replace="~{fragments.html :: navbar}"></div>
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<!-- Page header -->
+<div class="bg-gray-900 text-white">
+    <div class="max-w-screen-2xl mx-auto px-4 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black" th:text="#{pedidos.lista}">Painel de Pedidos</h1>
+            <p class="text-gray-400 text-sm mt-1">
+                Filtrando por:
+                <span class="font-semibold text-yellow-400"
+                      th:text="${statusAtual != null ? statusAtual.name() : 'TODOS'}"></span>
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a th:href="@{/web/pedidos/organizar}"
+               class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition"
+               th:text="#{pedidos.acao.organizar}">
+                📦 Organizar
+            </a>
+            <a th:href="@{/web/pedidos/etiquetas}"
+               class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 transition"
+               th:text="#{pedidos.acao.etiquetas}">
+                🏷️ Etiquetas
+            </a>
+            <a th:href="@{/web/pedidos/imprimir}"
+               class="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition"
+               th:text="#{pedidos.acao.imprimir}">
+                🖨️ Imprimir
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-screen-2xl mx-auto px-4 py-6 flex-1 w-full">
 
     <div th:replace="~{fragments.html :: flash-messages}"></div>
 
-    <div class="bg-white p-4 mt-4 shadow-md rounded-md">
+    <div class="flex gap-6">
 
-        <!-- Título e ações rápidas -->
-        <div class="mb-6 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800" th:text="#{pedidos.lista}">Painel de Pedidos</h1>
-                <p class="text-gray-500 text-sm mt-1">
-                    Filtrando por:
-                    <span class="font-semibold text-yellow-600"
-                          th:text="${statusAtual != null ? statusAtual.name() : 'TODOS'}"></span>
-                </p>
+        <!-- Sidebar: status filters -->
+        <aside class="hidden lg:block w-52 shrink-0">
+            <div class="bg-white rounded-xl shadow-sm p-4 sticky top-4">
+                <h2 class="font-bold text-xs uppercase text-gray-400 tracking-wide mb-3">Filtrar por Status</h2>
+                <ul class="space-y-1">
+                    <li>
+                        <a th:href="@{/web/pedidos}"
+                           th:classappend="${statusAtual == null} ? 'bg-yellow-50 text-yellow-800 font-bold' : 'text-gray-600 hover:bg-gray-50'"
+                           class="block px-3 py-2 rounded-lg text-sm transition">
+                            Todos
+                        </a>
+                    </li>
+                    <li th:each="s : ${todosStatus}">
+                        <a th:href="@{/web/pedidos/status/{s}(s=${s.name()})}"
+                           th:text="${s.name()}"
+                           th:classappend="${statusAtual != null and statusAtual == s} ? 'bg-yellow-50 text-yellow-800 font-bold' : 'text-gray-600 hover:bg-gray-50'"
+                           class="block px-3 py-2 rounded-lg text-sm transition truncate">
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="flex gap-2">
-                <a th:href="@{/web/pedidos/organizar}"
-                   class="px-3 py-2 bg-blue-600 text-white text-sm font-semibold rounded hover:bg-blue-700 transition"
-                   th:text="#{pedidos.acao.organizar}">Organizar</a>
-                <a th:href="@{/web/pedidos/etiquetas}"
-                   class="px-3 py-2 bg-purple-600 text-white text-sm font-semibold rounded hover:bg-purple-700 transition"
-                   th:text="#{pedidos.acao.etiquetas}">Etiquetas</a>
-                <a th:href="@{/web/pedidos/imprimir}"
-                   class="px-3 py-2 bg-gray-700 text-white text-sm font-semibold rounded hover:bg-gray-800 transition"
-                   th:text="#{pedidos.acao.imprimir}">Imprimir</a>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex-1 min-w-0">
+
+            <!-- Mobile status pills -->
+            <div class="lg:hidden mb-4 flex flex-wrap gap-2">
+                <a th:href="@{/web/pedidos}"
+                   th:classappend="${statusAtual == null} ? 'bg-yellow-400 text-gray-900' : 'bg-white text-gray-600 border border-gray-200'"
+                   class="px-3 py-1.5 text-xs font-semibold rounded-full shadow-sm transition">
+                    Todos
+                </a>
+                <a th:each="s : ${todosStatus}"
+                   th:href="@{/web/pedidos/status/{s}(s=${s.name()})}"
+                   th:text="${s.name()}"
+                   th:classappend="${statusAtual != null and statusAtual == s} ? 'bg-yellow-400 text-gray-900' : 'bg-white text-gray-600 border border-gray-200'"
+                   class="px-3 py-1.5 text-xs font-semibold rounded-full shadow-sm transition cursor-pointer">
+                </a>
             </div>
-        </div>
 
-        <!-- Filtros por status -->
-        <div class="mb-4 flex flex-wrap gap-2">
-            <a th:each="s : ${todosStatus}"
-               th:href="@{/web/pedidos/status/{s}(s=${s.name()})}"
-               th:text="${s.name()}"
-               th:classappend="${statusAtual != null and statusAtual == s} ? 'bg-yellow-400 text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-               class="px-3 py-1 text-xs font-semibold rounded-full transition cursor-pointer"></a>
-        </div>
+            <!-- Orders table card -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div th:if="${pedidos != null and !pedidos.isEmpty()}">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <p class="text-sm text-gray-500">
+                            <span class="font-semibold text-gray-800" th:text="${pedidos.size()}">0</span> pedidos encontrados
+                        </p>
+                        <p class="text-xs text-gray-400">
+                            Pág. <span th:text="${pageNumber + 1}">1</span> /
+                            <span th:text="${totalPages}">1</span>
+                        </p>
+                    </div>
 
-        <!-- Tabela de pedidos -->
-        <div th:if="${pedidos != null and !pedidos.isEmpty()}">
-            <table class="w-full text-sm text-left border-collapse">
-                <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
-                <tr>
-                    <th class="px-4 py-3 border-b">#ID</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.data}">Data</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.status}">Status</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.itens}">Itens</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.total}">Total</th>
-                    <th class="px-4 py-3 border-b" th:text="#{pedidos.col.previsao}">Previsão</th>
-                    <th class="px-4 py-3 border-b" th:text="#{common.acoes}">Ações</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="pedido : ${pedidos}" class="hover:bg-gray-50 border-b">
-                    <td class="px-4 py-3 font-mono text-gray-500" th:text="${'#' + pedido.id}"></td>
-                    <td class="px-4 py-3" th:text="${pedido.dataPedido}"></td>
-                    <td class="px-4 py-3">
-                        <span th:replace="~{fragments.html :: status-badge(${pedido.status.name()})}"></span>
-                    </td>
-                    <td class="px-4 py-3 text-center" th:text="${pedido.produtosAdicionados.size()}"></td>
-                    <td class="px-4 py-3 font-semibold"
-                        th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
-                    <td class="px-4 py-3 text-gray-500"
-                        th:text="${pedido.previsaoEntrega != null ? pedido.previsaoEntrega : '-'}"></td>
-                    <td class="px-4 py-3">
-                        <div class="flex gap-1">
-                            <a th:href="@{/web/pedidos/{id}(id=${pedido.id})}"
-                               class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100 transition"
-                               th:text="#{common.ver}">Ver</a>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                            <tr>
+                                <th class="px-6 py-3 text-left font-semibold border-b border-gray-100">#Pedido</th>
+                                <th class="px-6 py-3 text-left font-semibold border-b border-gray-100" th:text="#{pedidos.col.data}">Data</th>
+                                <th class="px-6 py-3 text-left font-semibold border-b border-gray-100" th:text="#{pedidos.col.status}">Status</th>
+                                <th class="px-6 py-3 text-center font-semibold border-b border-gray-100" th:text="#{pedidos.col.itens}">Itens</th>
+                                <th class="px-6 py-3 text-right font-semibold border-b border-gray-100" th:text="#{pedidos.col.total}">Total</th>
+                                <th class="px-6 py-3 text-left font-semibold border-b border-gray-100" th:text="#{pedidos.col.previsao}">Previsão</th>
+                                <th class="px-6 py-3 text-left font-semibold border-b border-gray-100" th:text="#{common.acoes}">Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                            <tr th:each="pedido : ${pedidos}" class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span class="font-mono font-bold text-gray-700"
+                                          th:text="${'#' + pedido.id}"></span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600" th:text="${pedido.dataPedido}"></td>
+                                <td class="px-6 py-4">
+                                    <span th:replace="~{fragments.html :: status-badge(${pedido.status.name()})}"></span>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-600" th:text="${pedido.produtosAdicionados.size()}"></td>
+                                <td class="px-6 py-4 text-right font-bold text-gray-900"
+                                    th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+                                <td class="px-6 py-4 text-gray-500 text-sm"
+                                    th:text="${pedido.previsaoEntrega != null ? pedido.previsaoEntrega : '-'}"></td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <a th:href="@{/web/pedidos/{id}(id=${pedido.id})}"
+                                           class="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                                           th:text="#{common.ver}">Ver</a>
 
-                            <!-- Cancelar: apenas para pedidos antes do envio físico -->
-                            <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO' and pedido.status.name() != 'AGUARDANDO_POSTAGEM'}"
-                                  th:action="@{/web/pedidos/{id}/cancelar(id=${pedido.id})}" method="post" style="margin:0">
-                                <button type="submit"
-                                        onclick="return confirm('Cancelar pedido #[[${pedido.id}]]?')"
-                                        class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition"
-                                        th:text="#{pedidos.acao.cancelar}">Cancelar</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+                                        <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO' and pedido.status.name() != 'AGUARDANDO_POSTAGEM'}"
+                                              th:action="@{/web/pedidos/{id}/cancelar(id=${pedido.id})}" method="post" class="m-0">
+                                            <button type="submit"
+                                                    onclick="return confirm('Cancelar pedido #[[${pedido.id}]]?')"
+                                                    class="px-3 py-1.5 text-xs font-semibold bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+                                                    th:text="#{pedidos.acao.cancelar}">Cancelar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        <!-- Sem pedidos -->
-        <div th:if="${pedidos == null or pedidos.isEmpty()}" class="text-center py-12 text-gray-400">
-            <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-            <p class="font-medium" th:text="#{pedidos.lista.vazia}">Nenhum pedido encontrado para este status.</p>
-        </div>
+                <!-- Empty state -->
+                <div th:if="${pedidos == null or pedidos.isEmpty()}"
+                     class="text-center py-16 px-6">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <p class="font-semibold text-gray-500 text-lg" th:text="#{pedidos.lista.vazia}">Nenhum pedido encontrado.</p>
+                    <p class="text-gray-400 text-sm mt-1">Tente selecionar outro status no painel lateral.</p>
+                </div>
+            </div>
 
-        <!-- Paginação -->
-        <div th:if="${totalPages > 1}" class="mt-6 flex justify-center gap-2">
-            <a th:if="${pageNumber > 0}"
-               th:href="@{/web/pedidos/status/{s}(s=${statusAtual.name()}, pageNumber=${pageNumber - 1})}"
-               class="px-3 py-1 border rounded hover:bg-gray-100 transition text-sm"
-               th:text="#{produtos.paginacao.anterior}">Anterior</a>
-            <span class="px-3 py-1 text-sm text-gray-500"
-                  th:text="${(pageNumber + 1) + ' / ' + totalPages}"></span>
-            <a th:if="${pageNumber + 1 < totalPages}"
-               th:href="@{/web/pedidos/status/{s}(s=${statusAtual.name()}, pageNumber=${pageNumber + 1})}"
-               class="px-3 py-1 border rounded hover:bg-gray-100 transition text-sm"
-               th:text="#{produtos.paginacao.proximo}">Próximo</a>
+            <!-- Pagination -->
+            <div th:if="${totalPages > 1}" class="mt-6 flex justify-center items-center gap-1">
+                <a th:if="${pageNumber > 0}"
+                   th:href="@{/web/pedidos/status/{s}(s=${statusAtual.name()}, pageNumber=${pageNumber - 1})}"
+                   class="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-white transition text-sm shadow-sm"
+                   th:text="#{produtos.paginacao.anterior}">Anterior</a>
+                <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                    <a th:if="${i >= pageNumber - 2 and i <= pageNumber + 2}"
+                       th:href="@{/web/pedidos/status/{s}(s=${statusAtual.name()}, pageNumber=${i})}"
+                       th:text="${i + 1}"
+                       th:classappend="${i == pageNumber} ? 'bg-yellow-400 text-gray-900 font-bold border-yellow-400' : 'border-gray-300 text-gray-600 hover:bg-white'"
+                       class="px-4 py-2 rounded-xl border transition text-sm shadow-sm">1</a>
+                </th:block>
+                <a th:if="${pageNumber + 1 < totalPages}"
+                   th:href="@{/web/pedidos/status/{s}(s=${statusAtual.name()}, pageNumber=${pageNumber + 1})}"
+                   class="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-white transition text-sm shadow-sm"
+                   th:text="#{produtos.paginacao.proximo}">Próximo</a>
+            </div>
+
         </div>
     </div>
-
-    <div th:replace="~{fragments.html :: footer}"></div>
 </div>
+
+<div th:replace="~{fragments.html :: footer}"></div>
 </body>
 </html>
 

@@ -7,144 +7,202 @@
     <title th:text="#{pedido.detalhes.page.title}">Detalhes do Pedido</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-900">
-<div class="max-w-4xl mx-auto p-4">
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
 
-    <div th:replace="~{fragments.html :: navbar}"></div>
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<div class="max-w-screen-2xl mx-auto px-4 py-6 flex-1 w-full">
+
+    <!-- Breadcrumb + back -->
+    <nav class="mb-4 text-sm text-gray-500 flex items-center gap-2">
+        <a th:href="@{/web/pedidos}" class="hover:text-yellow-600 transition flex items-center gap-1" th:text="#{pedido.detalhes.breadcrumb}">
+            ← Pedidos
+        </a>
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+        <span class="font-semibold text-gray-800" th:text="${'Pedido #' + pedido.id}"></span>
+    </nav>
 
     <div th:replace="~{fragments.html :: flash-messages}"></div>
 
-    <div class="bg-white p-6 mt-4 shadow-md rounded-md">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-4">
 
-        <!-- Cabeçalho -->
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <p class="text-gray-400 text-sm" th:text="#{pedido.detalhes.breadcrumb}">Pedidos</p>
-                <h1 class="text-2xl font-bold text-gray-800"
-                    th:text="${'Pedido #' + pedido.id}">Pedido</h1>
-                <p class="text-sm text-gray-500 mt-1"
-                   th:text="${'Realizado em: ' + pedido.dataPedido}"></p>
+        <!-- Left: main info (2/3) -->
+        <div class="xl:col-span-2 space-y-6">
+
+            <!-- Order header card -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-black text-gray-900"
+                            th:text="${'Pedido #' + pedido.id}">Pedido</h1>
+                        <p class="text-sm text-gray-500 mt-1"
+                           th:text="${'Realizado em: ' + pedido.dataPedido}"></p>
+                        <p th:if="${pedido.nomeCliente != null}" class="text-sm text-gray-500">
+                            Cliente: <span class="font-semibold text-gray-800" th:text="${pedido.nomeCliente}"></span>
+                        </p>
+                    </div>
+                    <span th:replace="~{fragments.html :: status-badge(${pedido.status.name()})}"></span>
+                </div>
             </div>
-            <div class="text-right">
-                <span th:replace="~{fragments.html :: status-badge(${pedido.status.name()})}"></span>
+
+            <!-- Products table -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h2 class="font-bold text-gray-800" th:text="#{pedido.detalhes.produtos}">Produtos do Pedido</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                        <tr>
+                            <th class="px-6 py-3 text-left font-semibold" th:text="#{pedido.detalhes.col.produto}">Produto</th>
+                            <th class="px-6 py-3 text-center font-semibold" th:text="#{pedido.detalhes.col.quantidade}">Qtd</th>
+                            <th class="px-6 py-3 text-right font-semibold" th:text="#{pedido.detalhes.col.precoUnitario}">Preço Unit.</th>
+                            <th class="px-6 py-3 text-right font-semibold" th:text="#{pedido.detalhes.col.subtotal}">Subtotal</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                        <tr th:each="item : ${pedido.produtosAdicionados}" class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-gray-800" th:text="${item.produto.nome}"></td>
+                            <td class="px-6 py-4 text-center text-gray-600" th:text="${item.quantidade}"></td>
+                            <td class="px-6 py-4 text-right text-gray-600"
+                                th:text="${'R$ ' + #numbers.formatDecimal(item.produto.preco, 1, 'POINT', 2, 'COMMA')}"></td>
+                            <td class="px-6 py-4 text-right font-bold text-gray-900"
+                                th:text="${'R$ ' + #numbers.formatDecimal(item.subtotal(), 1, 'POINT', 2, 'COMMA')}"></td>
+                        </tr>
+                        </tbody>
+                        <tfoot class="bg-gray-50 border-t border-gray-200">
+                        <tr>
+                            <td colspan="3" class="px-6 py-3 text-right text-sm font-semibold text-gray-600">Frete</td>
+                            <td class="px-6 py-3 text-right font-semibold text-gray-800"
+                                th:text="${pedido.valorFrete != null ? 'R$ ' + #numbers.formatDecimal(pedido.valorFrete, 1, 'POINT', 2, 'COMMA') : '-'}"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="px-6 py-3 text-right text-sm font-black text-gray-800">Total</td>
+                            <td class="px-6 py-3 text-right font-black text-lg text-gray-900"
+                                th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
+
+            <!-- Shipping info (Melhor Envio webhook data) -->
+            <div th:if="${pedido.tracking != null or pedido.notaFiscal != null}"
+                 class="bg-white rounded-2xl shadow-sm p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                        </svg>
+                    </div>
+                    <h2 class="font-bold text-gray-800">Informações de Envio</h2>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div th:if="${pedido.tracking != null}" class="bg-indigo-50 rounded-xl p-4">
+                        <p class="text-xs text-indigo-500 font-semibold uppercase mb-1">Código de Rastreio</p>
+                        <a th:if="${pedido.trackingUrl != null}" th:href="${pedido.trackingUrl}" target="_blank"
+                           class="font-bold text-indigo-700 hover:underline break-all" th:text="${pedido.tracking}"></a>
+                        <p th:if="${pedido.trackingUrl == null}" class="font-bold text-gray-800 font-mono" th:text="${pedido.tracking}"></p>
+                    </div>
+                    <div th:if="${pedido.statusEnvio != null}" class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Status de Entrega</p>
+                        <p class="font-bold text-gray-800" th:text="${pedido.statusEnvio}"></p>
+                    </div>
+                    <div th:if="${pedido.notaFiscal != null}" class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Nota Fiscal</p>
+                        <p class="font-mono text-gray-800" th:text="${pedido.notaFiscal}"></p>
+                    </div>
+                    <div th:if="${pedido.protocoloEnvio != null}" class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Protocolo de Envio</p>
+                        <p class="font-mono text-gray-800" th:text="${pedido.protocoloEnvio}"></p>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Informações gerais -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-xs text-gray-400 uppercase font-semibold mb-1" th:text="#{pedido.detalhes.valorTotal}">Valor Total</p>
-                <p class="text-xl font-bold text-gray-800"
-                   th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-xs text-gray-400 uppercase font-semibold mb-1" th:text="#{pedido.detalhes.valorFrete}">Frete</p>
-                <p class="text-xl font-bold text-gray-800"
-                   th:text="${pedido.valorFrete != null ? 'R$ ' + #numbers.formatDecimal(pedido.valorFrete, 1, 'POINT', 2, 'COMMA') : '-'}">R$ 0,00</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-xs text-gray-400 uppercase font-semibold mb-1" th:text="#{pedido.detalhes.previsao}">Previsão de Entrega</p>
-                <p class="text-lg font-bold text-gray-800"
-                   th:text="${pedido.previsaoEntrega != null ? pedido.previsaoEntrega : '-'}"></p>
-            </div>
-        </div>
+        <!-- Right: summary sidebar (1/3) -->
+        <div class="space-y-6">
 
-        <!-- Dados do cliente e endereço -->
-        <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <h2 class="text-sm uppercase text-gray-500 font-semibold mb-2">Cliente &amp; Entrega</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div th:if="${pedido.nomeCliente != null}">
-                    <span class="text-gray-500">Cliente: </span>
-                    <span class="font-semibold text-gray-800" th:text="${pedido.nomeCliente}"></span>
+            <!-- Order summary -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+                <h2 class="font-bold text-gray-800 mb-4">Resumo do Pedido</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500" th:text="#{pedido.detalhes.valorTotal}">Subtotal</span>
+                        <span class="font-semibold text-gray-900"
+                              th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500" th:text="#{pedido.detalhes.valorFrete}">Frete</span>
+                        <span class="font-semibold text-gray-900"
+                              th:text="${pedido.valorFrete != null ? 'R$ ' + #numbers.formatDecimal(pedido.valorFrete, 1, 'POINT', 2, 'COMMA') : '-'}"></span>
+                    </div>
+                    <div class="pt-3 border-t border-gray-100 flex justify-between">
+                        <span class="font-bold text-gray-800">Total</span>
+                        <span class="font-black text-xl text-gray-900"
+                              th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></span>
+                    </div>
                 </div>
-                <div th:if="${pedido.enderecoEntrega != null}">
-                    <span class="text-gray-500">Endereço: </span>
-                    <span class="font-semibold text-gray-800" th:text="${pedido.enderecoEntrega}"></span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Informações de envio (preenchidas pelo webhook do Melhor Envio) -->
-        <div th:if="${pedido.tracking != null or pedido.notaFiscal != null}"
-             class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-            <h2 class="text-sm uppercase text-indigo-600 font-semibold mb-2">Informações de Envio</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div th:if="${pedido.tracking != null}">
-                    <span class="text-gray-500">Rastreio: </span>
-                    <a th:if="${pedido.trackingUrl != null}" th:href="${pedido.trackingUrl}" target="_blank"
-                       class="font-semibold text-indigo-700 hover:underline" th:text="${pedido.tracking}"></a>
-                    <span th:if="${pedido.trackingUrl == null}" class="font-semibold text-gray-800"
-                          th:text="${pedido.tracking}"></span>
-                </div>
-                <div th:if="${pedido.statusEnvio != null}">
-                    <span class="text-gray-500">Status de Entrega: </span>
-                    <span class="font-semibold text-gray-800" th:text="${pedido.statusEnvio}"></span>
-                </div>
-                <div th:if="${pedido.notaFiscal != null}">
-                    <span class="text-gray-500">Nota Fiscal: </span>
-                    <span class="font-mono text-gray-800" th:text="${pedido.notaFiscal}"></span>
-                </div>
-                <div th:if="${pedido.protocoloEnvio != null}">
-                    <span class="text-gray-500">Protocolo de Envio: </span>
-                    <span class="font-mono text-gray-800" th:text="${pedido.protocoloEnvio}"></span>
+                <div class="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
+                    <div th:if="${pedido.previsaoEntrega != null}" class="flex justify-between">
+                        <span class="text-gray-500" th:text="#{pedido.detalhes.previsao}">Previsão</span>
+                        <span class="font-semibold text-gray-800" th:text="${pedido.previsaoEntrega}"></span>
+                    </div>
+                    <div th:if="${pedido.dataEntrega != null}" class="flex justify-between">
+                        <span class="text-gray-500">Entregue em</span>
+                        <span class="font-semibold text-green-700" th:text="${pedido.dataEntrega}"></span>
+                    </div>
+                    <div th:if="${pedido.dataCancelamento != null}" class="flex justify-between">
+                        <span class="text-gray-500">Cancelado em</span>
+                        <span class="font-semibold text-red-600" th:text="${pedido.dataCancelamento}"></span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Produtos do pedido -->
-        <div class="mb-6">
-            <h2 class="text-sm uppercase text-gray-500 font-semibold mb-3" th:text="#{pedido.detalhes.produtos}">Produtos</h2>
-            <div class="border rounded-lg overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
-                    <tr>
-                        <th class="px-4 py-3 text-left" th:text="#{pedido.detalhes.col.produto}">Produto</th>
-                        <th class="px-4 py-3 text-center" th:text="#{pedido.detalhes.col.quantidade}">Qtd</th>
-                        <th class="px-4 py-3 text-right" th:text="#{pedido.detalhes.col.precoUnitario}">Preço Unit.</th>
-                        <th class="px-4 py-3 text-right" th:text="#{pedido.detalhes.col.subtotal}">Subtotal</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="item : ${pedido.produtosAdicionados}" class="border-t">
-                        <td class="px-4 py-3 font-medium" th:text="${item.produto.nome}"></td>
-                        <td class="px-4 py-3 text-center" th:text="${item.quantidade}"></td>
-                        <td class="px-4 py-3 text-right"
-                            th:text="${'R$ ' + #numbers.formatDecimal(item.produto.preco, 1, 'POINT', 2, 'COMMA')}"></td>
-                        <td class="px-4 py-3 text-right font-semibold"
-                            th:text="${'R$ ' + #numbers.formatDecimal(item.subtotal(), 1, 'POINT', 2, 'COMMA')}"></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <!-- Delivery address -->
+            <div th:if="${pedido.enderecoEntrega != null}" class="bg-white rounded-2xl shadow-sm p-6">
+                <h2 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Endereço de Entrega
+                </h2>
+                <p class="text-sm text-gray-700 leading-relaxed" th:text="${pedido.enderecoEntrega}"></p>
             </div>
-        </div>
 
-        <!-- Ações do funcionário -->
-        <div sec:authorize="hasRole('PEDIDO_WRITE')" class="border-t pt-4 flex flex-wrap gap-2">
-            <h3 class="w-full text-sm uppercase text-gray-500 font-semibold mb-2" th:text="#{pedido.detalhes.acoes}">Ações</h3>
+            <!-- Actions (funcionário only) -->
+            <div sec:authorize="hasRole('PEDIDO_WRITE')" class="bg-white rounded-2xl shadow-sm p-6">
+                <h2 class="font-bold text-gray-800 mb-3" th:text="#{pedido.detalhes.acoes}">Ações</h2>
+                <div class="space-y-2">
+                    <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO' and pedido.status.name() != 'AGUARDANDO_POSTAGEM'}"
+                          th:action="@{/web/pedidos/{id}/cancelar(id=${pedido.id})}" method="post" class="m-0">
+                        <button type="submit"
+                                onclick="return confirm('Confirma o cancelamento do pedido?')"
+                                class="w-full px-4 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 transition"
+                                th:text="#{pedidos.acao.cancelar}">Cancelar Pedido</button>
+                    </form>
 
-            <!-- Cancelar: apenas para pedidos que ainda não foram para o transporte físico -->
-            <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO' and pedido.status.name() != 'AGUARDANDO_POSTAGEM'}"
-                  th:action="@{/web/pedidos/{id}/cancelar(id=${pedido.id})}" method="post" style="margin:0">
-                <button type="submit"
-                        onclick="return confirm('Confirma o cancelamento do pedido?')"
-                        class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition"
-                        th:text="#{pedidos.acao.cancelar}">Cancelar Pedido</button>
-            </form>
+                    <p th:if="${pedido.status.name() == 'EM_TRANSITO' or pedido.status.name() == 'AGUARDANDO_POSTAGEM'}"
+                       class="text-xs text-gray-500 italic bg-blue-50 rounded-xl p-3">
+                        O status de entrega é atualizado automaticamente pelo serviço de rastreio.
+                    </p>
 
-            <!-- Nota informativa quando em trânsito / aguardando postagem -->
-            <p th:if="${pedido.status.name() == 'EM_TRANSITO' or pedido.status.name() == 'AGUARDANDO_POSTAGEM'}"
-               class="text-sm text-gray-500 italic">
-                O status de entrega é atualizado automaticamente pelo serviço de rastreio.
-            </p>
+                    <a th:href="@{/web/pedidos}"
+                       class="block w-full text-center px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition"
+                       th:text="#{common.voltar}">← Voltar</a>
+                </div>
+            </div>
 
-            <a th:href="@{/web/pedidos}"
-               class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded hover:bg-gray-100 transition"
-               th:text="#{common.voltar}">Voltar</a>
         </div>
     </div>
-
-    <div th:replace="~{fragments.html :: footer}"></div>
 </div>
+
+<div th:replace="~{fragments.html :: footer}"></div>
 </body>
 </html>
 

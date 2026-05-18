@@ -45,6 +45,7 @@ public class ProdutoMvcController {
         return "produtos";
     }
 
+
     @GetMapping("/{id}")
     public String findById(Model model, @PathVariable Long id) {
         ProdutoOutDto produto = controller.findById(id);

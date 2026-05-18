@@ -29,6 +29,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
                 ).map(JpaProdutoMapper::toEntity));
     }
 
+
     @Override
     public Produto findById(Long id) {
         return JpaProdutoMapper.toEntity(
