@@ -22,6 +22,14 @@
 
 ---
 
+## Repositório e vídeo do projeto mobile integrado à API
+
+https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas-mobile
+
+https://youtu.be/12ezMQBmk4s
+
+---
+
 ## Cronograma de Desenvolvimento - Sprint 3 (atualizado)
 
 | Sem | Dias          | Foco | Entrega |

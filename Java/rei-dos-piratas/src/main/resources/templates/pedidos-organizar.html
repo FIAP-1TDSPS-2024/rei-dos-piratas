@@ -20,8 +20,9 @@
         <div th:replace="~{fragments.html :: pedidos-page-header(#{pedidos.organizar.titulo}, #{pedidos.organizar.subtitulo})}"></div>
 
         <!-- Sem pedidos -->
-        <div th:if="${pedidos == null or pedidos.isEmpty()}"
-             th:replace="~{fragments.html :: pedidos-vazio-clipboard(#{pedidos.organizar.vazio}, @{/web/pedidos}, #{common.voltar})}"></div>
+        <th:block th:if="${pedidos == null or pedidos.isEmpty()}">
+            <div th:replace="~{fragments.html :: pedidos-vazio-clipboard(#{pedidos.organizar.vazio}, @{/web/pedidos}, #{common.voltar})}"></div>
+        </th:block>
 
         <!-- Formulário de seleção -->
         <form th:if="${pedidos != null and !pedidos.isEmpty()}"

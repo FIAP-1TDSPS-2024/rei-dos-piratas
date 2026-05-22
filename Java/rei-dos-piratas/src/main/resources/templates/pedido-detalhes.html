@@ -179,15 +179,7 @@
             <div sec:authorize="hasRole('PEDIDO_WRITE')" class="bg-white rounded-2xl shadow-sm p-6">
                 <h2 class="font-bold text-gray-800 mb-3" th:text="#{pedido.detalhes.acoes}">Ações</h2>
                 <div class="space-y-2">
-                    <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO' and pedido.status.name() != 'AGUARDANDO_POSTAGEM'}"
-                          th:action="@{/web/pedidos/{id}/cancelar(id=${pedido.id})}" method="post" class="m-0">
-                        <button type="submit"
-                                onclick="return confirm('Confirma o cancelamento do pedido?')"
-                                class="w-full px-4 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 transition"
-                                th:text="#{pedidos.acao.cancelar}">Cancelar Pedido</button>
-                    </form>
-
-                    <p th:if="${pedido.status.name() == 'EM_TRANSITO' or pedido.status.name() == 'AGUARDANDO_POSTAGEM'}"
+<p th:if="${pedido.status.name() == 'EM_TRANSITO' or pedido.status.name() == 'AGUARDANDO_POSTAGEM'}"
                        class="text-xs text-gray-500 italic bg-blue-50 rounded-xl p-3">
                         O status de entrega é atualizado automaticamente pelo serviço de rastreio.
                     </p>

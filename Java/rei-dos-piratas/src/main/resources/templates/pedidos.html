@@ -124,13 +124,7 @@
                                            class="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
                                            th:text="#{common.ver}">Ver</a>
 
-                                        <form th:if="${pedido.status.name() != 'CANCELADO' and pedido.status.name() != 'ENTREGUE' and pedido.status.name() != 'EM_TRANSITO' and pedido.status.name() != 'AGUARDANDO_POSTAGEM'}"
-                                              th:action="@{/web/pedidos/{id}/cancelar(id=${pedido.id})}" method="post" class="m-0">
-                                            <button type="submit"
-                                                    onclick="return confirm('Cancelar pedido #[[${pedido.id}]]?')"
-                                                    class="px-3 py-1.5 text-xs font-semibold bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
-                                                    th:text="#{pedidos.acao.cancelar}">Cancelar</button>
-                                        </form>
+
                                     </div>
                                 </td>
                             </tr>
