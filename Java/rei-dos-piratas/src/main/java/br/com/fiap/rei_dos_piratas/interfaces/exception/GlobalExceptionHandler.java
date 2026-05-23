@@ -1,8 +1,6 @@
 package br.com.fiap.rei_dos_piratas.interfaces.exception;
 
 import br.com.fiap.rei_dos_piratas.domain.exceptions.*;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.fallback.ServiceUnavailableException;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,31 +74,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleApiExternaException(ApiExternaException e) {
         final ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(errorResponse);
-    }
-
-    /**
-     * Circuit Breaker OPEN — serviço externo bloqueado enquanto o auto-scaling sobe (~120s).
-     * Retorna 503 Service Unavailable com header Retry-After de 130s.
-     */
-    @ExceptionHandler(CallNotPermittedException.class)
-    public ResponseEntity<ErrorResponse> handleCallNotPermittedException(CallNotPermittedException e) {
-        final ErrorResponse errorResponse = new ErrorResponse(
-                "Serviço externo temporariamente indisponível. O sistema está se recuperando. Tente novamente em instantes.");
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .header("Retry-After", "130")
-                .body(errorResponse);
-    }
-
-    /**
-     * Fallback de circuito aberto para operações que não podem ser degradadas.
-     * Retorna 503 com Retry-After de 130s.
-     */
-    @ExceptionHandler(ServiceUnavailableException.class)
-    public ResponseEntity<ErrorResponse> handleServiceUnavailableException(ServiceUnavailableException e) {
-        final ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .header("Retry-After", "130")
-                .body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

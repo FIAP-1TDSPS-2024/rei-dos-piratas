@@ -8,6 +8,7 @@ public record CompraFreteResponseDto(
         String digitable,
         String redirect,
         String message,
+        String error,
         String token,
         String payment_id,
         DetalhesPagamentoFreteDto purchase) {

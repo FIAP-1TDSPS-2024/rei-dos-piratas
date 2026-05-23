@@ -7,8 +7,6 @@ import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.FreteTokenClient;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenRequestDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token.TokenResponseDto;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -38,8 +36,6 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    @CircuitBreaker(name = "melhorEnvioToken")
-    @Retry(name = "melhorEnvioToken")
     public Token gerarNovoToken(String refreshToken) {
         log.info("[TOKEN] Renovando token OAuth do Melhor Envio.");
         //Definição de informações de cliente melhor envio para renovação de token
