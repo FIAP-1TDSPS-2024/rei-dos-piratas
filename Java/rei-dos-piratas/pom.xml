@@ -181,6 +181,13 @@
 			<artifactId>spring-cloud-starter-loadbalancer</artifactId>
 		</dependency>
 
+		<!-- Logstash JSON Encoder para correlação de logs com Datadog APM -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>8.0</version>
+		</dependency>
+
 		<!-- Thymeleaf para Front-End -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Appender JSON para Datadog APM log correlation -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- dd-java-agent injeta dd.trace_id, dd.span_id, dd.service, dd.env, dd.version no MDC automaticamente.
+                 LogstashEncoder inclui todos os campos MDC como campos JSON de primeiro nível por padrão. -->
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <message>message</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <level>level</level>
+                <levelValue>[ignore]</levelValue>
+            </fieldNames>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampPattern>
+        </encoder>
+    </appender>
+
+    <!-- Appender texto legível para desenvolvimento local -->
+    <appender name="TEXT_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - [trace=%X{dd.trace_id} span=%X{dd.span_id}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Produção: JSON para Datadog -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+        <logger name="br.com.fiap.rei_dos_piratas" level="DEBUG" additivity="false">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </logger>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+    </springProfile>
+
+    <!-- Dev/Teste: texto legível -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="TEXT_CONSOLE"/>
+        </root>
+        <logger name="br.com.fiap.rei_dos_piratas" level="DEBUG" additivity="false">
+            <appender-ref ref="TEXT_CONSOLE"/>
+        </logger>
+        <logger name="org.springframework.security" level="TRACE"/>
+    </springProfile>
+
+</configuration>
+

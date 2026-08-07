@@ -2,11 +2,35 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <title>Fragments</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
+
+<!-- ===================== HEAD-SCRIPTS ===================== -->
+<th:block th:fragment="head-scripts">
+    <script
+            src="https://www.datadoghq-browser-agent.com/us5/v7/datadog-rum.js"
+            type="text/javascript"
+            crossorigin>
+    </script>
+    <script th:inline="javascript">
+        window.DD_RUM && window.DD_RUM.init({
+            clientToken: /*[[${@environment.getProperty('datadog.rum.client-token')}]]*/ '',
+            applicationId: /*[[${@environment.getProperty('datadog.rum.application-id')}]]*/ '',
+            site: 'us5.datadoghq.com',
+            service: 'rei-dos-piratas',
+            env: 'prod',
+            version: '1.0.0',
+            sessionSampleRate: 100,
+            sessionReplaySampleRate: 100,
+            trackResources: true,
+            trackUserInteractions: true,
+            trackLongTasks: true,
+            allowedTracingUrls: ['http://localhost:8080'],
+            defaultPrivacyLevel: 'mask-user-input',
+        });
+    </script>
+</th:block>
 
 <!-- ===================== NAVBAR ===================== -->
 <header th:fragment="navbar">
