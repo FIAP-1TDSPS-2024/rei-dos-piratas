@@ -84,6 +84,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/pedidos/**").hasAnyRole("PEDIDO_READ")
                         // Painel web de pedidos para funcionários
                         .requestMatchers("/web/pedidos/**").hasRole("PEDIDO_WRITE")
+                        // Operações de devoluções
+                        .requestMatchers(HttpMethod.POST, "/devolucoes/**").hasRole("PEDIDO_READ")
+                        .requestMatchers(HttpMethod.GET, "/devolucoes/**").hasAnyRole("PEDIDO_READ", "PEDIDO_WRITE")
+                        .requestMatchers(HttpMethod.PUT, "/devolucoes/**").hasRole("PEDIDO_WRITE")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())
