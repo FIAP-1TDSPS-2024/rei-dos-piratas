@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.DevolucaoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.DevolucaoInDto;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Devoluções", description = "Operações para solicitação e gestão de devoluções")
 @RestController
@@ -47,6 +49,15 @@ public class DevolucaoRestController {
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
             @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber) {
         return ResponseEntity.ok(controller.findAllByPedido(pageNumber, pageSize, pedidoId));
+    }
+
+    @Operation(summary = "Listar devoluções por status (paginado)", description = "Retorna devoluções filtradas por status")
+    @GetMapping("/status/{status}")
+    public ResponseEntity<Page<DevolucaoOutDto>> findAllByStatus(
+            @PathVariable StatusEnum status,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber) {
+        return ResponseEntity.ok(controller.findAllByStatus(pageNumber, pageSize, status));
     }
 
     @Operation(summary = "Listar todas as devoluções de um pedido", description = "Retorna todas as devoluções de um pedido sem paginação")

@@ -45,5 +45,11 @@ public class JpaItemProdutoMapper {
         );
     }
 
+    public static JpaProdutosPedidoEntity toJpaPedidoProdutoReference(Long itemPedidoId) {
+        JpaProdutosPedidoEntity entity = new JpaProdutosPedidoEntity();
+        entity.setId(itemPedidoId);
+        return entity;
+    }
+
     private JpaItemProdutoMapper() {}
 }

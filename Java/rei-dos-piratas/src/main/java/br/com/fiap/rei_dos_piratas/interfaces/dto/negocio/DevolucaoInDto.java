@@ -1,10 +1,12 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.negocio;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.MotivoDevolucaoEnum;
+import java.util.List;
 
 public record DevolucaoInDto(
         Long pedidoId,
-        MotivoDevolucaoEnum motivo,
-        String descricao
+        Long motivoId,
+        String descricao,
+        Long servicoEntrega,
+        List<ItemDevolucaoInDto> itens
 ) {}
 

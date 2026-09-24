@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.pedido;
 
 import br.com.fiap.rei_dos_piratas.application.service.DevolucaoService;
+import br.com.fiap.rei_dos_piratas.application.service.MotivoDevolucaoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.DevolucaoController;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.impl.DevolucaoControllerImpl;
@@ -11,8 +12,10 @@ import org.springframework.context.annotation.Configuration;
 public class DevolucaoControllerConfig {
 
     @Bean
-    public DevolucaoController devolucaoController(DevolucaoService devolucaoService, PedidoService pedidoService) {
-        return new DevolucaoControllerImpl(devolucaoService, pedidoService);
+    public DevolucaoController devolucaoController(DevolucaoService devolucaoService,
+                                                   MotivoDevolucaoService motivoDevolucaoService,
+                                                   PedidoService pedidoService) {
+        return new DevolucaoControllerImpl(devolucaoService, motivoDevolucaoService, pedidoService);
     }
 }
 

@@ -3,10 +3,13 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
+import br.com.fiap.rei_dos_piratas.domain.entity.ItemDevolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.FreteAppClient;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete.ProdutoFreteDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.ImpressaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
@@ -32,13 +35,13 @@ public class FreteServiceImpl implements FreteService {
     }
 
     @Override
-    public List<FreteServiceDto> calcularFreteProdutos(String cepDestino, List<ItemProdutoPedido> itens) {
-        log.info("[FRETE] Calculando frete para CEP destino: {}", cepDestino);
+    public List<FreteServiceDto> calcularFreteProdutos(String cepCliente, List<ItemProdutoPedido> itens) {
+        log.info("[FRETE] Calculando frete para CEP destino: {}", cepCliente);
         Endereco enderecoEmpresa = this.enderecoService.getEnderecoEmpresa();
 
         ConsultaFreteServiceDto dto = new ConsultaFreteServiceDto(
                 Map.of("postal_code", enderecoEmpresa.getCep()),
-                Map.of("postal_code", cepDestino),
+                Map.of("postal_code", cepCliente),
                 itens.stream()
                         .map(produto -> ProdutoFreteDtoMapper.toDto(produto.getProduto(), produto.getQuantidade()))
                         .toList());
@@ -48,11 +51,28 @@ public class FreteServiceImpl implements FreteService {
             log.info("[FRETE] Cálculo concluído — {} opções retornadas.", resultado.size());
             return resultado;
         } catch (ApiExternaException e) {
-            log.error("[FRETE] Falha ao calcular frete para CEP {}: {}", cepDestino, e.getMessage());
+            log.error("[FRETE] Falha ao calcular frete para CEP {}: {}", cepCliente, e.getMessage());
             throw e;
         } catch (FeignException e) {
-            log.error("[FRETE] Erro de comunicação ao calcular frete para CEP {}: {}", cepDestino, e.getMessage());
+            log.error("[FRETE] Erro de comunicação ao calcular frete para CEP {}: {}", cepCliente, e.getMessage());
             throw new ApiExternaException("Falha de comunicação com a API de frete ao calcular opções de entrega. Tente novamente.");
+        }
+    }
+
+    @Override
+    public DevolucaoFreteResponseDto criarPedidoDevolucaoFrete(DevolucaoFreteRequestDto devolucaoRequest) {
+        log.info("[DEVOLUCAO FRETE] Criando pedido de frete reverso no Melhor Envio para o pedido ID: {}.", devolucaoRequest.order_id());
+
+        try {
+            DevolucaoFreteResponseDto response = this.apiFrete.criarDevolucaoFrete(devolucaoRequest);
+            log.info("[DEVOLUCAO FRETE] Pedido de frete reverso criado com sucesso. ID: {}", response);
+            return response;
+        } catch (ApiExternaException e) {
+            log.error("[DEVOLUCAO FRETE] Falha ao criar pedido de frete reverso: {}", e.getMessage());
+            throw e;
+        } catch (FeignException e) {
+            log.error("[DEVOLUCAO FRETE] Erro de comunicação ao criar pedido de frete reverso: {}", e.getMessage());
+            throw new ApiExternaException("Falha de comunicação com a API de frete ao criar o pedido de frete. Tente novamente.");
         }
     }
 

@@ -3,6 +3,8 @@ package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign;
 import br.com.fiap.rei_dos_piratas.infrastructure.config.feign.FreteFeignConfig;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.ConsultaFreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.ImpressaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
@@ -32,4 +34,7 @@ public interface FreteAppClient {
 
     @PostMapping("api/v2/me/shipment/print")
     ImpressaoEtiquetasResponseDto gerarLinkImpressaoEtiquetas(@RequestBody Map<String, List<String>> request);
+
+    @PostMapping("/api/v2/me/cart/reverse")
+    DevolucaoFreteResponseDto criarDevolucaoFrete(@RequestBody DevolucaoFreteRequestDto request);
 }

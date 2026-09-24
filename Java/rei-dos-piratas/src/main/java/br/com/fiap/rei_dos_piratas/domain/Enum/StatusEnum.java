@@ -12,10 +12,5 @@ public enum StatusEnum {
     ENTREGUE,
 
     //CANCELAMENTO
-    CANCELADO,
-
-    //RETORNO
-    AGUARDANDO_POSTAGEM_RETORNO,
-    EM_RETORNO,
-    RETORNADO
+    CANCELADO
 }

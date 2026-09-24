@@ -1,18 +1,32 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.negocio;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.MotivoDevolucaoEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 public record DevolucaoOutDto(
         Long id,
         Long pedidoId,
-        MotivoDevolucaoEnum motivo,
+        Long motivoId,
+        String motivoCodigo,
         String motivoDescricao,
         String descricao,
+        List<ItemDevolucaoOutDto> itens,
+        BigDecimal valorTotal,
+        BigDecimal valorFrete,
+        StatusEnum status,
         LocalDate dataSolicitacao,
         LocalDate dataAprovacao,
         LocalDate dataConclusao,
-        Boolean aprovada
+        Boolean aprovada,
+        Long servicoEntrega,
+        UUID pedidoFrete,
+        String protocoloEnvio,
+        String statusEnvio,
+        String tracking,
+        String trackingUrl
 ) {}
 
