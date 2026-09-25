@@ -82,7 +82,6 @@ public class DevolucaoControllerImpl implements DevolucaoController {
                 pedido,
                 motivo,
                 devolucaoInDto.descricao(),
-                devolucaoInDto.servicoEntrega(),
                 mapearItensDevolucao(devolucaoInDto.itens(), pedido));
         return DevolucaoDtoMapper.toDto(service.solicitarDevolucao(devolucao));
     }

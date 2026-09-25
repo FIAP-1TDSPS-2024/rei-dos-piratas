@@ -6,7 +6,6 @@ public record DevolucaoInDto(
         Long pedidoId,
         Long motivoId,
         String descricao,
-        Long servicoEntrega,
         List<ItemDevolucaoInDto> itens
 ) {}
 

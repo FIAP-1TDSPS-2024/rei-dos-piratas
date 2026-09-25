@@ -6,6 +6,7 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -58,6 +59,7 @@ public class Devolucao {
 
     private Boolean aprovada;
 
+    @Value("${ME_SERVICE_DEVOLUCAO}")
     @NotNull(message = "O pedido deve definir um serviço para entrega")
     private Long servicoEntrega;
 
@@ -93,17 +95,10 @@ public class Devolucao {
     }
 
     public Devolucao(Pedido pedido, MotivoDevolucao motivo, String descricao, List<ItemDevolucao> itens) {
-        this(pedido, motivo, descricao, null, itens);
-    }
-
-    public Devolucao(Pedido pedido, MotivoDevolucao motivo, String descricao, Long servicoEntrega, List<ItemDevolucao> itens) {
         this.pedido = pedido;
         this.motivo = motivo;
         this.descricao = descricao;
         this.itens = itens;
-        this.servicoEntrega = servicoEntrega != null
-                ? servicoEntrega
-                : (pedido != null ? pedido.getServicoEntrega() : null);
         this.status = StatusDevolucaoEnum.EM_ANALISE;
         this.dataSolicitacao = LocalDate.now();
         this.aprovada = null;
