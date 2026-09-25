@@ -104,7 +104,7 @@ public class DevolucaoServiceImpl implements DevolucaoService {
         DevolucaoFreteRequestDto request = this.montarDevolucaoFreteDto(devolucao);
         DevolucaoFreteResponseDto response = this.freteService.criarPedidoDevolucaoFrete(request);
 
-        this.mapearDevolucaoFrete(response, devolucao);
+        this.enriquecerDevolucaoPorFrete(response, devolucao);
         log.debug("Valor do frete definido: R${}, valor total do pedido: R${}", devolucao.getValorFrete(), devolucao.getValorTotal());
 
         log.info("Pedido de devolucao frete aprovado com sucesso e criado no serviço de frete: ID={}, status={}, valor total=R${}",
@@ -194,7 +194,7 @@ public class DevolucaoServiceImpl implements DevolucaoService {
                 .add(devolucao.getValorFrete());
     }
 
-    private void mapearDevolucaoFrete(DevolucaoFreteResponseDto response, Devolucao devolucao){
+    private void enriquecerDevolucaoPorFrete(DevolucaoFreteResponseDto response, Devolucao devolucao){
         devolucao.setValorFrete(response.price());
         devolucao.setValorTotal(this.calcularValorTotalDevolucao(devolucao));
         devolucao.setPedidoFrete(response.id());

@@ -18,7 +18,7 @@ public interface FreteService {
     List<FreteServiceDto> calcularFreteProdutos(String cepDestino, List<ItemProdutoPedido> itens);
     DevolucaoFreteResponseDto criarPedidoDevolucaoFrete(DevolucaoFreteRequestDto devolucaoRequest);
     PedidoFreteResponseDto criarPedidoFrete(PedidoFreteRequestDto pedidoRequest);
-    CompraFreteResponseDto organizarPedidoFrete(List<String> pedidos);
+    CompraFreteResponseDto organizarFretes(List<String> pedidos);
     GeracaoEtiquetasResponseDto gerarEtiquetasPedidoFrete(List<String> pedidos);
     ImpressaoEtiquetasResponseDto imprimirEtiquetasPedidoFrete(List<String> pedidos);
 }

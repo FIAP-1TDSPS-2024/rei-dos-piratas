@@ -180,7 +180,7 @@ public class PedidoServiceImpl implements PedidoService {
                 .toList();
 
         logger.debug("Enviando {} UUID(s) de pedido de frete para API de organização: {}", pedidosFrete.size(), pedidosFrete);
-        CompraFreteResponseDto response = this.freteService.organizarPedidoFrete(pedidosFrete);
+        CompraFreteResponseDto response = this.freteService.organizarFretes(pedidosFrete);
         if (response.error() != null) {
             logger.warn("API de frete retornou mensagem de erro na organização: {}", response.error());
             return response.message();

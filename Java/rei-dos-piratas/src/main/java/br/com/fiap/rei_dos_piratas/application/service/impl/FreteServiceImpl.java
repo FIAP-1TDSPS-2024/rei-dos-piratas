@@ -93,7 +93,7 @@ public class FreteServiceImpl implements FreteService {
     }
 
     @Override
-    public CompraFreteResponseDto organizarPedidoFrete(List<String> pedidos) {
+    public CompraFreteResponseDto organizarFretes(List<String> pedidos) {
         log.info("[FRETE] Organizando/pagando {} pedido(s) de frete.", pedidos.size());
         try {
             CompraFreteResponseDto response = this.apiFrete.pagarPedidoFrete(pedidos);
