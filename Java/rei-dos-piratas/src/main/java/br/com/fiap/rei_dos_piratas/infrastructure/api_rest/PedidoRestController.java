@@ -2,8 +2,6 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -129,15 +127,6 @@ public class PedidoRestController {
         return ResponseEntity.ok(linkImpressao);
     }
 
-    @Operation(summary = "Webhook de rastreio da melhor envio", description = "Recebe requisições de rastreio e atualização de status da melhor envio")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Webhook de atualização de status recebido"),
-    })
-    @PostMapping("/webhook/rastreio")
-    public ResponseEntity<Void> rastreioPedidoWebhook(@RequestHeader("x-me-signature") String signature, @RequestBody String rawBody){
-        this.controller.rastreioPedidoWebhook(signature, rawBody);
-        return ResponseEntity.ok().build();
-    }
 
     @Operation(summary = "Cancelar pedido", description = "Cancela o pedido informado")
     @ApiResponses({

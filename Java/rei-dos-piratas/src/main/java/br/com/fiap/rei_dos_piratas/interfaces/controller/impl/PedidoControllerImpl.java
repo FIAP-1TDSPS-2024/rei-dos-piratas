@@ -8,13 +8,9 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
@@ -118,10 +114,6 @@ public class PedidoControllerImpl implements PedidoController {
         return this.service.imprimirEtiquetasEnvio(pedidos);
     }
 
-    @Override
-    public void rastreioPedidoWebhook(String signature, String rawBody) {
-        this.service.rastreioPedidoWebhook(signature, rawBody);
-    }
 
     @Override
     public PedidoOutDto cancelarPedido(Long id) {

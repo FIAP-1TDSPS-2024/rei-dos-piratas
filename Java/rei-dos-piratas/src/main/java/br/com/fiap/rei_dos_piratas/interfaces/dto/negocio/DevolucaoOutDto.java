@@ -1,6 +1,6 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.negocio;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,7 +17,7 @@ public record DevolucaoOutDto(
         List<ItemDevolucaoOutDto> itens,
         BigDecimal valorTotal,
         BigDecimal valorFrete,
-        StatusEnum status,
+        StatusDevolucaoEnum status,
         LocalDate dataSolicitacao,
         LocalDate dataAprovacao,
         LocalDate dataConclusao,

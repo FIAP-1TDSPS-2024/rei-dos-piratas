@@ -66,7 +66,7 @@ class PedidoServiceImplTest {
         this.enderecoService = mock(EnderecoService.class);
         HmacUtil hmacUtil = mock(HmacUtil.class);
         ObjectMapper objectMapper = new ObjectMapper();
-        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, hmacUtil, objectMapper);
+        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService);
     }
 
     @AfterEach

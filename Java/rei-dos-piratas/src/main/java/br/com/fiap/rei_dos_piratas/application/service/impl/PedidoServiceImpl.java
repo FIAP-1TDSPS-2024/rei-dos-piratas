@@ -1,6 +1,5 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
-import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
@@ -14,17 +13,13 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
+@Slf4j
 public class PedidoServiceImpl implements PedidoService {
 
     private final PedidoRepository repository;
@@ -45,20 +41,12 @@ public class PedidoServiceImpl implements PedidoService {
 
     private final FreteService freteService;
 
-    private final HmacUtil hmacUtil;
-
-    private final ObjectMapper objectMapper;
-
-    private static final Logger logger = LoggerFactory.getLogger(PedidoServiceImpl.class);
-
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, HmacUtil hmacUtil, ObjectMapper objectMapper) {
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService) {
         this.repository = repository;
         this.produtoRepository = produtoRepository;
         this.enderecoService = enderecoService;
         this.dadosEmpresaRepository = dadosEmpresaRepository;
         this.freteService = freteService;
-        this.hmacUtil = hmacUtil;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -68,27 +56,27 @@ public class PedidoServiceImpl implements PedidoService {
 
         //Verifica se usuário é um funcionário procurando uma ROLE comum a todos
         if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("PEDIDO_WRITE"))) {
-            logger.debug("Listando todos os pedidos (funcionário ID={}) — página={}, tamanho={}", userDetails.getId(), pageNumber, pageSize);
+            log.debug("Listando todos os pedidos (funcionário ID={}) — página={}, tamanho={}", userDetails.getId(), pageNumber, pageSize);
             return this.repository.listAll(pageNumber, pageSize);
         } else {
-            logger.debug("Listando pedidos do cliente ID={} — página={}, tamanho={}", userDetails.getId(), pageNumber, pageSize);
+            log.debug("Listando pedidos do cliente ID={} — página={}, tamanho={}", userDetails.getId(), pageNumber, pageSize);
             return this.repository.listAllByClient(pageNumber, pageSize, userDetails.getId());
         }
     }
 
     @Override
     public Page<Pedido> findAllByStatus(int pageNumber, int pageSize, StatusEnum status) {
-        logger.debug("Listando pedidos por status={} — página={}, tamanho={}", status, pageNumber, pageSize);
+        log.debug("Listando pedidos por status={} — página={}, tamanho={}", status, pageNumber, pageSize);
         return this.repository.listAllByStatus(pageNumber, pageSize, status);
     }
 
     @Override
     public Pedido findById(Long id) {
-        logger.debug("Buscando pedido por ID={}", id);
+        log.debug("Buscando pedido por ID={}", id);
         try {
             return this.repository.findById(id);
         } catch (NoSuchElementException e) {
-            logger.warn("Pedido não encontrado: ID={}", id);
+            log.warn("Pedido não encontrado: ID={}", id);
             throw new ResourceNotFoundException("Não foi possível encontrar um pedido com o id " + id);
         }
     }
@@ -96,17 +84,17 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     @Override
     public Pedido fazerPedido(Pedido pedido) {
-        logger.info("Iniciando criação de pedido para cliente ID={}, endereço de entrega CEP={}, serviço de frete ID={}",
+        log.info("Iniciando criação de pedido para cliente ID={}, endereço de entrega CEP={}, serviço de frete ID={}",
                 pedido.getCliente().getId(), pedido.getEnderecoEntrega().getCep(), pedido.getServicoEntrega());
 
-        logger.debug("Consultando fretes disponíveis para CEP={} com {} produto(s)",
+        log.debug("Consultando fretes disponíveis para CEP={} com {} produto(s)",
                 pedido.getEnderecoEntrega().getCep(), pedido.getProdutosAdicionados().size());
 
         List<FreteServiceDto> fretes = this.freteService.calcularFreteProdutos(
                 pedido.getEnderecoEntrega().getCep(),
                 pedido.getProdutosAdicionados());
 
-        logger.debug("API de frete retornou {} opção(ões) de entrega", fretes.size());
+        log.debug("API de frete retornou {} opção(ões) de entrega", fretes.size());
 
         Optional<FreteServiceDto> consultaFrete = fretes
                 .stream()
@@ -114,18 +102,18 @@ public class PedidoServiceImpl implements PedidoService {
                 .filter(frete -> frete.id().equals(pedido.getServicoEntrega()));
 
         if (consultaFrete.isEmpty()) {
-            logger.warn("Serviço de frete ID={} não encontrado entre as opções retornadas pela API", pedido.getServicoEntrega());
+            log.warn("Serviço de frete ID={} não encontrado entre as opções retornadas pela API", pedido.getServicoEntrega());
             throw new ResourceNotFoundException("Esse serviço de entrega não existe para esse serviço");
         }
 
         pedido.setValorFrete(consultaFrete.get().price());
         pedido.setValorTotal(calcularValorTotalPedido(pedido));
 
-        logger.debug("Valor do frete definido: R${}, valor total do pedido: R${}", pedido.getValorFrete(), pedido.getValorTotal());
+        log.debug("Valor do frete definido: R${}, valor total do pedido: R${}", pedido.getValorFrete(), pedido.getValorTotal());
 
         this.verificaEAtualizaEstoqueparaPedido(pedido);
         Pedido pedidoCriado = this.repository.create(pedido);
-        logger.info("Pedido criado com sucesso: ID={}, status={}, valor total=R${}",
+        log.info("Pedido criado com sucesso: ID={}, status={}, valor total=R${}",
                 pedidoCriado.getId(), pedidoCriado.getStatus(), pedidoCriado.getValorTotal());
         return pedidoCriado;
     }
@@ -133,26 +121,26 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     @Override
     public Pedido pagarPedido(Long id) {
-        logger.info("Iniciando pagamento do pedido ID={}", id);
+        log.info("Iniciando pagamento do pedido ID={}", id);
         Pedido pedido = this.findById(id);
 
         if (pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO) {
             pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
-            logger.debug("Status do pedido ID={} atualizado para PREPARANDO_ENVIO, criando pedido de frete na API", id);
+            log.debug("Status do pedido ID={} atualizado para PREPARANDO_ENVIO, criando pedido de frete na API", id);
 
             PedidoFreteRequestDto pedidoFrete = this.montarPedidoFreteDto(pedido);
-            logger.debug("Enviando pedido de frete para API — serviço ID={}, destino CEP={}", pedido.getServicoEntrega(), pedido.getEnderecoEntrega().getCep());
+            log.debug("Enviando pedido de frete para API — serviço ID={}, destino CEP={}", pedido.getServicoEntrega(), pedido.getEnderecoEntrega().getCep());
 
             PedidoFreteResponseDto responsePedidoFrete = this.freteService.criarPedidoFrete(pedidoFrete);
-            logger.info("Pedido de frete criado com sucesso — pedidoFrete UUID={}, previsão de entrega em {} dias",
+            log.info("Pedido de frete criado com sucesso — pedidoFrete UUID={}, previsão de entrega em {} dias",
                     responsePedidoFrete.id(), responsePedidoFrete.deliveryMax());
 
             pedido = this.enriquecerPedidoPorFrete(pedido, responsePedidoFrete);
             Pedido pedidoAtualizado = this.repository.update(pedido);
-            logger.info("Pedido ID={} pago e enriquecido com dados de frete com sucesso", id);
+            log.info("Pedido ID={} pago e enriquecido com dados de frete com sucesso", id);
             return pedidoAtualizado;
         } else {
-            logger.warn("Tentativa de pagamento rejeitada: pedido ID={} está no status={}, esperado={}",
+            log.warn("Tentativa de pagamento rejeitada: pedido ID={} está no status={}, esperado={}",
                     id, pedido.getStatus(), StatusEnum.AGUARDANDO_PAGAMENTO);
             throw new WrongStatusException(
                     "O pedido deve estar no estado " + StatusEnum.AGUARDANDO_PAGAMENTO +
@@ -163,51 +151,51 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     @Override
     public String organizarPedidosParaEnvio(List<Long> pedidos) {
-        logger.info("Iniciando organização de {} pedido(s) para envio: IDs={}", pedidos.size(), pedidos);
+        log.info("Iniciando organização de {} pedido(s) para envio: IDs={}", pedidos.size(), pedidos);
 
         List<Pedido> pedidosParaOrganizacao = this.repository.findByIdsAndStatus(pedidos, StatusEnum.PREPARANDO_ENVIO);
 
         if (pedidosParaOrganizacao.isEmpty()) {
-            logger.warn("Nenhum pedido com status PREPARANDO_ENVIO encontrado na lista IDs={}", pedidos);
+            log.warn("Nenhum pedido com status PREPARANDO_ENVIO encontrado na lista IDs={}", pedidos);
             throw new ResourceNotFoundException("Nenhum pedido encontrado com status PREPARANDO_ENVIO na lista passada");
         }
 
-        logger.debug("{} pedido(s) elegível(is) para organização encontrado(s)", pedidosParaOrganizacao.size());
+        log.debug("{} pedido(s) elegível(is) para organização encontrado(s)", pedidosParaOrganizacao.size());
 
         List<String> pedidosFrete = pedidosParaOrganizacao
                 .stream()
                 .map(pedido -> pedido.getPedidoFrete().toString())
                 .toList();
 
-        logger.debug("Enviando {} UUID(s) de pedido de frete para API de organização: {}", pedidosFrete.size(), pedidosFrete);
+        log.debug("Enviando {} UUID(s) de pedido de frete para API de organização: {}", pedidosFrete.size(), pedidosFrete);
         CompraFreteResponseDto response = this.freteService.organizarFretes(pedidosFrete);
         if (response.error() != null) {
-            logger.warn("API de frete retornou mensagem de erro na organização: {}", response.error());
+            log.warn("API de frete retornou mensagem de erro na organização: {}", response.error());
             return response.message();
         }
         if (response.message() != null) {
-            logger.warn("API de frete retornou mensagem de erro na organização: {}", response.message());
+            log.warn("API de frete retornou mensagem de erro na organização: {}", response.message());
             return response.message();
         } else {
             List<Long> idsParaAtualizar = pedidosParaOrganizacao.stream().map(Pedido::getId).toList();
             this.repository.updateStatusBatch(idsParaAtualizar, StatusEnum.AGUARDANDO_GERACAO_ETIQUETA);
-            logger.info("Pedidos IDs={} organizados com sucesso — status atualizado para AGUARDANDO_GERACAO_ETIQUETA", idsParaAtualizar);
+            log.info("Pedidos IDs={} organizados com sucesso — status atualizado para AGUARDANDO_GERACAO_ETIQUETA", idsParaAtualizar);
             return null;
         }
     }
 
     @Override
     public Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos) {
-        logger.info("Iniciando geração de etiquetas para {} pedido(s): IDs={}", pedidos.size(), pedidos);
+        log.info("Iniciando geração de etiquetas para {} pedido(s): IDs={}", pedidos.size(), pedidos);
 
         List<Pedido> pedidosParaOrganizacao = this.repository.findByIdsAndStatus(pedidos, StatusEnum.AGUARDANDO_GERACAO_ETIQUETA);
 
         if (pedidosParaOrganizacao.isEmpty()) {
-            logger.warn("Nenhum pedido com status AGUARDANDO_GERACAO_ETIQUETA encontrado na lista IDs={}", pedidos);
+            log.warn("Nenhum pedido com status AGUARDANDO_GERACAO_ETIQUETA encontrado na lista IDs={}", pedidos);
             throw new ResourceNotFoundException("Nenhum pedido encontrado com status AGUARDANDO_ETIQUETA na lista passada");
         }
 
-        logger.debug("{} pedido(s) elegível(is) para geração de etiqueta encontrado(s)", pedidosParaOrganizacao.size());
+        log.debug("{} pedido(s) elegível(is) para geração de etiqueta encontrado(s)", pedidosParaOrganizacao.size());
 
         Map<String, Long> freteParaPedidoMap = pedidosParaOrganizacao
                 .stream()
@@ -220,7 +208,7 @@ public class PedidoServiceImpl implements PedidoService {
                 .map(pedido -> pedido.getPedidoFrete().toString())
                 .toList();
 
-        logger.debug("Solicitando geração de etiquetas à API de frete para UUIDs: {}", pedidosFrete);
+        log.debug("Solicitando geração de etiquetas à API de frete para UUIDs: {}", pedidosFrete);
         GeracaoEtiquetasResponseDto response = this.freteService.gerarEtiquetasPedidoFrete(pedidosFrete);
 
         Map<Long, String> resultado = new HashMap<>();
@@ -231,17 +219,17 @@ public class PedidoServiceImpl implements PedidoService {
                 Long pedidoId = freteParaPedidoMap.get(freteId);
                 if (pedidoId != null) {
                     if (statusEtiqueta.status()) {
-                        logger.debug("Etiqueta gerada com sucesso para pedido ID={} (freteId={})", pedidoId, freteId);
+                        log.debug("Etiqueta gerada com sucesso para pedido ID={} (freteId={})", pedidoId, freteId);
                         resultado.put(pedidoId, "Etiqueta gerada com sucesso");
                         pedidosComSucesso.add(pedidoId);
                     } else {
-                        logger.warn("Falha ao gerar etiqueta para pedido ID={} (freteId={}): {}", pedidoId, freteId, statusEtiqueta.message());
+                        log.warn("Falha ao gerar etiqueta para pedido ID={} (freteId={}): {}", pedidoId, freteId, statusEtiqueta.message());
                         resultado.put(pedidoId, "Erro ao gerar etiqueta: " + statusEtiqueta.message());
                     }
                 }
             });
         } else {
-            logger.warn("API de frete não retornou dados individuais de etiqueta — aplicando erro genérico a todos os pedidos");
+            log.warn("API de frete não retornou dados individuais de etiqueta — aplicando erro genérico a todos os pedidos");
             pedidosParaOrganizacao.forEach(pedido ->
                 resultado.put(pedido.getId(), "Erro ao processar geração de etiquetas")
             );
@@ -249,7 +237,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         if (!pedidosComSucesso.isEmpty()) {
             this.repository.updateStatusBatch(pedidosComSucesso, StatusEnum.AGUARDANDO_POSTAGEM);
-            logger.info("{} pedido(s) com etiqueta gerada — status atualizado para AGUARDANDO_POSTAGEM: IDs={}", pedidosComSucesso.size(), pedidosComSucesso);
+            log.info("{} pedido(s) com etiqueta gerada — status atualizado para AGUARDANDO_POSTAGEM: IDs={}", pedidosComSucesso.size(), pedidosComSucesso);
         }
 
         return resultado;
@@ -257,12 +245,12 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public String imprimirEtiquetasEnvio(List<Long> pedidos) {
-        logger.info("Iniciando impressão de etiquetas para {} pedido(s): IDs={}", pedidos.size(), pedidos);
+        log.info("Iniciando impressão de etiquetas para {} pedido(s): IDs={}", pedidos.size(), pedidos);
 
         List<Pedido> pedidosParaImpressao = this.repository.findByIdsAndStatus(pedidos, StatusEnum.AGUARDANDO_POSTAGEM);
 
         if (pedidosParaImpressao.isEmpty()) {
-            logger.warn("Nenhum pedido com status AGUARDANDO_POSTAGEM encontrado na lista IDs={}", pedidos);
+            log.warn("Nenhum pedido com status AGUARDANDO_POSTAGEM encontrado na lista IDs={}", pedidos);
             throw new ResourceNotFoundException("Nenhum pedido válido encontrado para impressão na lista passada");
         }
 
@@ -271,172 +259,159 @@ public class PedidoServiceImpl implements PedidoService {
                 .map(pedido -> pedido.getPedidoFrete().toString())
                 .toList();
 
-        logger.debug("Solicitando URL de impressão de etiquetas à API de frete para UUIDs: {}", pedidosFrete);
+        log.debug("Solicitando URL de impressão de etiquetas à API de frete para UUIDs: {}", pedidosFrete);
         String url = this.freteService.imprimirEtiquetasPedidoFrete(pedidosFrete).url();
-        logger.info("URL de impressão de etiquetas obtida com sucesso para {} pedido(s)", pedidosParaImpressao.size());
+        log.info("URL de impressão de etiquetas obtida com sucesso para {} pedido(s)", pedidosParaImpressao.size());
         return url;
     }
 
     @Transactional
     @Override
-    public void rastreioPedidoWebhook(String signature, String rawBody) {
-        logger.debug("Webhook de rastreio recebido — validando assinatura HMAC");
+    public void rastreioPedidoWebhook(Pedido pedido, RastreioWebhookDto rastreio) {
+        log.debug("Webhook de rastreio recebido — validando assinatura HMAC");
+        RastreioDataDto data = rastreio.data();
 
+        // Sempre atualiza o status de entrega com o status vindo do payload
+        pedido.setStatusEnvio(data.status());
 
-        if (signature.equals(hmacUtil.generateHmac(rawBody))) {
-            logger.debug("Assinatura HMAC válida — processando payload");
-            try {
-                RastreioWebhookDto rastreio = this.objectMapper.readValue(rawBody, RastreioWebhookDto.class);
-                RastreioDataDto data = rastreio.data();
+        //Define variáveis de tracking quando elas chegam
+        //Pode levar até um dia
+        pedido.setTracking(data.tracking());
+        pedido.setTrackingUrl(data.trackingUrl());
 
-                logger.info("Processando evento webhook: event={}, pedidoFrete UUID={}, status={}",
-                        rastreio.event(), data.id(), data.status());
+        switch (rastreio.event()) {
 
-                Pedido pedido = this.repository.findByPedidoFrete(UUID.fromString(data.id()));
-                logger.debug("Pedido interno encontrado: ID={}, status atual={}", pedido.getId(), pedido.getStatus());
+            case "order.created":
 
-                // Sempre atualiza o status de entrega com o status vindo do payload
-                pedido.setStatusEnvio(data.status());
+                log.info("Etiqueta criada para pedido ID={} — protocolo={}, tracking={}",
+                        pedido.getId(), data.protocol(), data.tracking());
+                break;
 
-                //Define variáveis de tracking quando elas chegam
-                //Pode levar até um dia
-                pedido.setTracking(data.tracking());
-                pedido.setTrackingUrl(data.trackingUrl());
+            case "order.released":
+                // Etiqueta paga — status interno já gerenciado pelo fluxo de organizarPedidosParaEnvio
+                log.debug("Etiqueta paga (order.released) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
+                break;
 
-                switch (rastreio.event()) {
+            case "order.generated":
+                // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
+                log.debug("Etiqueta gerada (order.generated) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
+                break;
 
-                    case "order.created":
+            case "order.ready-to-print":
+                // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
+                log.debug("Etiqueta pronta para impressão (order.ready-to-print) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
+                break;
 
-                        logger.info("Etiqueta criada para pedido ID={} — protocolo={}, tracking={}",
-                                pedido.getId(), data.protocol(), data.tracking());
-                        break;
+            case "order.received":
+                // Encomenda recebida em ponto de distribuição Pegaki — sem mudança de status interno
+                log.info("Encomenda recebida em ponto de distribuição para pedido ID={}", pedido.getId());
+                break;
 
-                    case "order.released":
-                        // Etiqueta paga — status interno já gerenciado pelo fluxo de organizarPedidosParaEnvio
-                        logger.debug("Etiqueta paga (order.released) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
-                        break;
+            case "order.posted":
+                // Encomenda postada → transita internamente para EM_TRANSITO
+                pedido.setStatus(StatusEnum.EM_TRANSITO);
+                log.info("Encomenda postada — pedido ID={} atualizado para EM_TRANSITO", pedido.getId());
+                break;
 
-                    case "order.generated":
-                        // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
-                        logger.debug("Etiqueta gerada (order.generated) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
-                        break;
-
-                    case "order.ready-to-print":
-                        // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
-                        logger.debug("Etiqueta pronta para impressão (order.ready-to-print) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
-                        break;
-
-                    case "order.received":
-                        // Encomenda recebida em ponto de distribuição Pegaki — sem mudança de status interno
-                        logger.info("Encomenda recebida em ponto de distribuição para pedido ID={}", pedido.getId());
-                        break;
-
-                    case "order.posted":
-                        // Encomenda postada → transita internamente para EM_TRANSITO
-                        pedido.setStatus(StatusEnum.EM_TRANSITO);
-                        logger.info("Encomenda postada — pedido ID={} atualizado para EM_TRANSITO", pedido.getId());
-                        break;
-
-                    case "order.delivered":
-                        // Encomenda entregue → status ENTREGUE + data de entrega vinda da API
-                        pedido.setStatus(StatusEnum.ENTREGUE);
-                        if (data.deliveredAt() != null) {
-                            pedido.setDataEntrega(data.deliveredAt().toLocalDate());
-                        }
-                        logger.info("Encomenda entregue — pedido ID={} atualizado para ENTREGUE em {}", pedido.getId(), pedido.getDataEntrega());
-                        break;
-
-                    case "order.undelivered":
-                        // Tentativa de entrega falhou — apenas statusEnvio atualizado (já feito acima)
-                        logger.warn("Tentativa de entrega falhou (order.undelivered) para pedido ID={} — statusEnvio atualizado para '{}'",
-                                pedido.getId(), data.status());
-                        break;
-
-                    case "order.paused":
-                        // Entrega interrompida, aguardando ação do destinatário — apenas statusEnvio
-                        logger.warn("Entrega pausada (order.paused) para pedido ID={} — ação do destinatário necessária", pedido.getId());
-                        break;
-
-                    case "order.suspended":
-                        // Encomenda suspensa — apenas statusEnvio
-                        logger.warn("Encomenda suspensa (order.suspended) para pedido ID={}", pedido.getId());
-                        break;
-
-                    case "order.canceled":
-                        // Etiqueta cancelada (falha interna de nota, não cancelamento do pedido)
-                        // Retrocede para PREPARANDO_ENVIO para permitir geração de nova etiqueta
-                        pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
-                        pedido.setStatusEnvio(null);
-                        pedido.setTracking(null);
-                        pedido.setTrackingUrl(null);
-                        logger.warn("Etiqueta cancelada (order.canceled) para pedido ID={} — campos de envio resetados, status revertido para PREPARANDO_ENVIO para nova emissão",
-                                pedido.getId());
-                        break;
-
-                    case "order.expired":
-                        // Etiqueta expirada sem postagem (falha interna de nota, não cancelamento do pedido)
-                        // Mesmo tratamento do canceled: reabre o pedido para nova emissão de etiqueta
-                        pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
-                        pedido.setStatusEnvio(null);
-                        pedido.setTracking(null);
-                        pedido.setTrackingUrl(null);
-                        logger.warn("Etiqueta expirada (order.expired) para pedido ID={} — campos de envio resetados, status revertido para PREPARANDO_ENVIO para nova emissão",
-                                pedido.getId());
-                        break;
-
-                    default:
-                        logger.warn("Evento de rastreio desconhecido recebido: event={}, pedidoFrete UUID={}", rastreio.event(), data.id());
-                        break;
+            case "order.delivered":
+                // Encomenda entregue → status ENTREGUE + data de entrega vinda da API
+                pedido.setStatus(StatusEnum.ENTREGUE);
+                if (data.deliveredAt() != null) {
+                    pedido.setDataEntrega(data.deliveredAt().toLocalDate());
                 }
+                log.info("Encomenda entregue — pedido ID={} atualizado para ENTREGUE em {}", pedido.getId(), pedido.getDataEntrega());
+                break;
 
-                this.repository.update(pedido);
-                logger.debug("Pedido ID={} persistido após processamento do evento '{}'", pedido.getId(), rastreio.event());
+            case "order.undelivered":
+                // Tentativa de entrega falhou — apenas statusEnvio atualizado (já feito acima)
+                log.warn("Tentativa de entrega falhou (order.undelivered) para pedido ID={} — statusEnvio atualizado para '{}'",
+                        pedido.getId(), data.status());
+                break;
 
-            } catch (Exception e) {
-                logger.error("Erro ao processar webhook de rastreio: {}", e.getMessage(), e);
-            }
-        } else {
-            logger.warn("Webhook de rastreio rejeitado — assinatura HMAC inválida");
+            case "order.paused":
+                // Entrega interrompida, aguardando ação do destinatário — apenas statusEnvio
+                log.warn("Entrega pausada (order.paused) para pedido ID={} — ação do destinatário necessária", pedido.getId());
+                break;
+
+            case "order.suspended":
+                // Encomenda suspensa — apenas statusEnvio
+                log.warn("Encomenda suspensa (order.suspended) para pedido ID={}", pedido.getId());
+                break;
+
+            case "order.canceled":
+                // Etiqueta cancelada (falha interna de nota, não cancelamento do pedido)
+                // Retrocede para PREPARANDO_ENVIO para permitir geração de nova etiqueta
+                pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
+                pedido.setStatusEnvio(null);
+                pedido.setTracking(null);
+                pedido.setTrackingUrl(null);
+                log.warn("Etiqueta cancelada (order.canceled) para pedido ID={} — campos de envio resetados, status revertido para PREPARANDO_ENVIO para nova emissão",
+                        pedido.getId());
+                break;
+
+            case "order.expired":
+                // Etiqueta expirada sem postagem (falha interna de nota, não cancelamento do pedido)
+                // Mesmo tratamento do canceled: reabre o pedido para nova emissão de etiqueta
+                pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
+                pedido.setStatusEnvio(null);
+                pedido.setTracking(null);
+                pedido.setTrackingUrl(null);
+                log.warn("Etiqueta expirada (order.expired) para pedido ID={} — campos de envio resetados, status revertido para PREPARANDO_ENVIO para nova emissão",
+                        pedido.getId());
+                break;
+
+            default:
+                log.warn("Evento de rastreio desconhecido recebido: event={}, pedidoFrete UUID={}", rastreio.event(), data.id());
+                break;
         }
+
+        this.repository.update(pedido);
+        log.debug("Pedido ID={} persistido após processamento do evento '{}'", pedido.getId(), rastreio.event());
+    }
+
+    @Override
+    public Optional<Pedido> findByPedidoFrete(UUID pedidoFrete) {
+        log.debug("Buscando pedido por pedidoFrete UUID={}", pedidoFrete);
+        return this.repository.findByPedidoFrete(pedidoFrete);
     }
 
 
     @Transactional
     @Override
     public Pedido cancelarPedido(Long id) {
-        logger.info("Iniciando cancelamento do pedido ID={}", id);
+        log.info("Iniciando cancelamento do pedido ID={}", id);
         Pedido pedido = this.findById(id);
 
         if (pedido.getStatus() == StatusEnum.CANCELADO) {
-            logger.warn("Pedido ID={} já está cancelado", id);
+            log.warn("Pedido ID={} já está cancelado", id);
             throw new WrongStatusException("O pedido já está cancelado.");
         } else if (pedido.getStatus() == StatusEnum.ENTREGUE) {
-            logger.warn("Pedido ID={} já foi entregue, cancelamento não permitido", id);
+            log.warn("Pedido ID={} já foi entregue, cancelamento não permitido", id);
             throw new WrongStatusException("O pedido já foi entregue");
         } else if ((pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO) || pedido.getStatus() == StatusEnum.PREPARANDO_ENVIO) {
-            logger.debug("Revertendo estoque de {} produto(s) para cancelamento do pedido ID={}", pedido.getProdutosAdicionados().size(), id);
+            log.debug("Revertendo estoque de {} produto(s) para cancelamento do pedido ID={}", pedido.getProdutosAdicionados().size(), id);
             pedido.getProdutosAdicionados()
                     .forEach(produto -> {
                         produto.getProduto().setEstoque(produto.getProduto().getEstoque() + produto.getQuantidade());
-                        logger.debug("Estoque do produto ID={} restaurado em {} unidade(s)", produto.getProduto().getId(), produto.getQuantidade());
+                        log.debug("Estoque do produto ID={} restaurado em {} unidade(s)", produto.getProduto().getId(), produto.getQuantidade());
                         this.produtoRepository.update(produto.getProduto());
                     });
             pedido.setStatus(StatusEnum.CANCELADO);
             Pedido pedidoCancelado = this.repository.update(pedido);
-            logger.info("Pedido ID={} cancelado com sucesso", id);
+            log.info("Pedido ID={} cancelado com sucesso", id);
             return pedidoCancelado;
         } else {
-            logger.warn("Pedido ID={} não pode ser cancelado diretamente no status={} — devolução necessária", id, pedido.getStatus());
+            log.warn("Pedido ID={} não pode ser cancelado diretamente no status={} — devolução necessária", id, pedido.getStatus());
             throw new WrongStatusException("O pedido já foi tramitado. Para fazer o cancelamento, deve ser solicitada uma devolução.");
         }
     }
 
     private void verificaEAtualizaEstoqueparaPedido(Pedido pedido) {
-        logger.debug("Verificando estoque para {} produto(s) do pedido", pedido.getProdutosAdicionados().size());
+        log.debug("Verificando estoque para {} produto(s) do pedido", pedido.getProdutosAdicionados().size());
         pedido.getProdutosAdicionados()
                 .forEach(produto -> {
                     if (produto.getProduto().getEstoque() < produto.getQuantidade()) {
-                        logger.warn("Estoque insuficiente: produto ID={} '{}' — disponível={}, solicitado={}",
+                        log.warn("Estoque insuficiente: produto ID={} '{}' — disponível={}, solicitado={}",
                                 produto.getProduto().getId(), produto.getProduto().getNome(),
                                 produto.getProduto().getEstoque(), produto.getQuantidade());
                         throw new EstoqueInsuficienteException("Estoque insuficiente! O produto " +
@@ -449,7 +424,7 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.getProdutosAdicionados()
                 .forEach(produto -> {
                     produto.getProduto().setEstoque(produto.getProduto().getEstoque() - produto.getQuantidade());
-                    logger.debug("Estoque do produto ID={} decrementado em {} unidade(s) — novo estoque={}",
+                    log.debug("Estoque do produto ID={} decrementado em {} unidade(s) — novo estoque={}",
                             produto.getProduto().getId(), produto.getQuantidade(), produto.getProduto().getEstoque());
                     this.produtoRepository.update(produto.getProduto());
                 });
@@ -459,13 +434,13 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setPedidoFrete(pedidoFreteResponseDto.id());
         pedido.setDataPrevisaoEntrega(LocalDate.now().plusDays(pedidoFreteResponseDto.deliveryMax()));
         pedido.setProtocoloEnvio(pedidoFreteResponseDto.protocol());
-        logger.debug("Pedido ID={} enriquecido: pedidoFrete UUID={}, previsão de entrega={}",
+        log.debug("Pedido ID={} enriquecido: pedidoFrete UUID={}, previsão de entrega={}",
                 pedido.getId(), pedidoFreteResponseDto.id(), pedido.getDataPrevisaoEntrega());
         return this.repository.update(pedido);
     }
 
     private PedidoFreteRequestDto montarPedidoFreteDto(Pedido pedido) {
-        logger.debug("Montando DTO de pedido de frete para pedido ID={}", pedido.getId());
+        log.debug("Montando DTO de pedido de frete para pedido ID={}", pedido.getId());
         //Definir empresa como remetente
         Endereco enderecoEmpresa = this.enderecoService.getEnderecoEmpresa();
         DadosEmpresa dadosEmpresa = this.dadosEmpresaRepository.get();
@@ -494,7 +469,7 @@ public class PedidoServiceImpl implements PedidoService {
                 false,
                 null);
 
-        logger.debug("DTO de pedido de frete montado com sucesso para pedido ID={}", pedido.getId());
+        log.debug("DTO de pedido de frete montado com sucesso para pedido ID={}", pedido.getId());
         return new PedidoFreteRequestDto(
                 pedido.getServicoEntrega(),
                 remetente,

@@ -81,9 +81,10 @@ public class PedidoRepositoryImpl implements PedidoRepository {
     }
 
     @Override
-    public Pedido findByPedidoFrete(UUID uuid) {
+    public Optional<Pedido> findByPedidoFrete(UUID uuid) {
         log.debug("[REPO-PEDIDO] findByPedidoFrete - UUID={}", uuid);
-        return JpaPedidoMapper.toEntity(this.repository.findByPedidoFrete(uuid).orElseThrow());
+        return this.repository.findByPedidoFrete(uuid)
+                .map(JpaPedidoMapper::toEntity);
     }
 
     @Override

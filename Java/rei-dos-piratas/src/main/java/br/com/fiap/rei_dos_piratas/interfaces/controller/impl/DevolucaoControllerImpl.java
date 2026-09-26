@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 import br.com.fiap.rei_dos_piratas.application.service.DevolucaoService;
 import br.com.fiap.rei_dos_piratas.application.service.MotivoDevolucaoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
-import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Devolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemDevolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
@@ -54,7 +54,7 @@ public class DevolucaoControllerImpl implements DevolucaoController {
     }
 
     @Override
-    public Page<DevolucaoOutDto> findAllByStatus(int pageNumber, int pageSize, StatusEnum status) {
+    public Page<DevolucaoOutDto> findAllByStatus(int pageNumber, int pageSize, StatusDevolucaoEnum status) {
         Page<Devolucao> page = service.findAllByStatus(pageNumber, pageSize, status);
         List<DevolucaoOutDto> items = page.pageItems().stream()
                 .map(DevolucaoDtoMapper::toDto)

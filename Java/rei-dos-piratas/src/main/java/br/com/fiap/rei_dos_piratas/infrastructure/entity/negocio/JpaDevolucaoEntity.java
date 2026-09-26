@@ -1,6 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
-import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,7 +41,7 @@ public class JpaDevolucaoEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private StatusEnum status;
+    private StatusDevolucaoEnum status;
 
     @Column(nullable = false)
     private LocalDate dataSolicitacao;
