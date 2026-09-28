@@ -6,6 +6,8 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.domain.repository.DevolucaoRepository;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
@@ -102,7 +104,7 @@ public class DevolucaoServiceImpl implements DevolucaoService {
 
         devolucao.setAprovada(true);
         devolucao.setDataAprovacao(LocalDate.now());
-        devolucao.setStatus(StatusDevolucaoEnum.AGUARDANDO_POSTAGEM_RETORNO);
+        devolucao.setStatus(StatusDevolucaoEnum.PREPARANDO_RETORNO);
 
         DevolucaoFreteRequestDto request = this.montarDevolucaoFreteDto(devolucao);
         DevolucaoFreteResponseDto response = this.freteService.criarPedidoDevolucaoFrete(request);
@@ -114,6 +116,44 @@ public class DevolucaoServiceImpl implements DevolucaoService {
                 devolucao.getId(), devolucao.getStatus(), devolucao.getValorTotal());
 
         return repository.update(devolucao);
+    }
+
+    @Transactional
+    @Override
+    public String organizarDevolucoesParaEnvio(List<Long> devolucoes) {
+        if (devolucoes == null || devolucoes.isEmpty()
+                || devolucoes.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new RegraDeNegocioException("Informe ao menos um ID válido de devolução.");
+        }
+
+        List<Devolucao> devolucoesParaOrganizacao = repository.findByIdsAndStatus(
+                devolucoes, StatusDevolucaoEnum.PREPARANDO_RETORNO);
+
+        if (devolucoesParaOrganizacao.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "Nenhuma devolução com status PREPARANDO_RETORNO encontrada na lista passada");
+        }
+
+        if (devolucoesParaOrganizacao.stream().anyMatch(devolucao -> devolucao.getPedidoFrete() == null)) {
+            throw new RegraDeNegocioException(
+                    "Todas as devoluções selecionadas para organização devem possuir um pedido de frete.");
+        }
+
+        List<String> pedidosFrete = devolucoesParaOrganizacao.stream()
+                .map(devolucao -> devolucao.getPedidoFrete().toString())
+                .toList();
+
+        log.info("[SERVICE-DEVOLUCAO] Organizando fretes de {} devolução(ões)", devolucoesParaOrganizacao.size());
+        CompraFreteResponseDto response = freteService.organizarFretes(pedidosFrete);
+        if (response.error() != null || response.message() != null) {
+            return response.message() != null ? response.message() : response.error();
+        }
+
+        // A devolução reutiliza a nota existente e segue diretamente para postagem.
+        List<Long> idsParaAtualizar = devolucoesParaOrganizacao.stream().map(Devolucao::getId).toList();
+        repository.updateStatusBatch(idsParaAtualizar, StatusDevolucaoEnum.AGUARDANDO_POSTAGEM_RETORNO);
+        log.info("[SERVICE-DEVOLUCAO] Fretes organizados para devoluções IDs={}", idsParaAtualizar);
+        return null;
     }
 
     @Override

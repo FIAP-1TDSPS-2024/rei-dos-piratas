@@ -101,6 +101,22 @@ public class DevolucaoRestController {
         return ResponseEntity.ok(controller.aprovarDevolucao(id));
     }
 
+    @Operation(summary = "Organizar devoluções para envio",
+            description = "Paga os fretes das devoluções em PREPARANDO_RETORNO e avança para AGUARDANDO_POSTAGEM_RETORNO, reutilizando a nota existente — exclusivo para funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Fretes organizados"),
+            @ApiResponse(responseCode = "400", description = "Lista inválida, nenhuma devolução elegível ou erro na organização"),
+            @ApiResponse(responseCode = "502", description = "Falha de comunicação com a API de frete")
+    })
+    @PutMapping("/organizar-devolucoes")
+    public ResponseEntity<String> organizarDevolucoesParaEnvio(@RequestBody List<Long> devolucoes) {
+        String message = controller.organizarDevolucoesParaEnvio(devolucoes);
+        if (message != null) {
+            return ResponseEntity.badRequest().body(message);
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Recusar devolução", description = "Recusa a devolução informada — exclusivo para funcionários")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Devolução recusada"),

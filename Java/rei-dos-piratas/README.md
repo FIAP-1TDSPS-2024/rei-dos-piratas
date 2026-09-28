@@ -182,6 +182,31 @@ Sem essa autorizacao, as operacoes de frete podem falhar na etapa de organizacao
 | PUT | /pedidos/envio/{id} | Marcar envio/entrega do pedido |
 | PUT | /pedidos/cancelamento/{id} | Cancelar pedido |
 
+### Organização de devoluções (API)
+
+Após a aprovação e criação do pedido de frete reverso, a devolução fica em
+`PREPARANDO_RETORNO`. Para pagar os fretes, envie:
+
+```http
+PUT /devolucoes/organizar-devolucoes
+Authorization: Bearer <token>
+Content-Type: application/json
+
+[1, 2, 3]
+```
+
+A operação exige a permissão `PEDIDO_WRITE` e utiliza `FreteService.organizarFretes`.
+Assim como na organização de pedidos, somente os IDs encontrados no status elegível
+são processados. Após sucesso, passam para `AGUARDANDO_POSTAGEM_RETORNO`, sem etapa
+de geração de novas notas; a nota existente é reutilizada.
+
+- `200`, sem corpo: fretes organizados.
+- `400`: lista inválida, nenhuma devolução elegível, ausência de pedido de frete ou erro retornado pelo provedor.
+- `502`: falha de comunicação com o serviço de frete.
+
+Em caso de erro do provedor, os status não avançam. Devoluções já persistidas em
+`AGUARDANDO_POSTAGEM_RETORNO` não são reprocessadas por este endpoint.
+
 ### Carrinho
 
 | Metodo | Endpoint | Descricao |

@@ -17,6 +17,7 @@ public interface DevolucaoService {
     Devolucao findById(Long id);
     Devolucao solicitarDevolucao(Devolucao devolucao);
     Devolucao aprovarDevolucao(Long id);
+    String organizarDevolucoesParaEnvio(List<Long> devolucoes);
     Devolucao recusarDevolucao(Long id);
     Devolucao concluirDevolucao(Long id);
     Optional<Devolucao> findByPedidoFrete(UUID pedidoFrete);

@@ -200,6 +200,18 @@
 	</dependencies>
 
 	<build>
+		<!-- Reutiliza as migrations de produção nos testes, substituindo apenas a V29 por sua variante H2. -->
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<directory>src/main/resources/db.migracao</directory>
+				<targetPath>db/test-migrations</targetPath>
+				<includes><include>*.SQL</include></includes>
+				<excludes><exclude>V29__alter_devolucoes_add_fluxo_frete.SQL</exclude></excludes>
+			</testResource>
+		</testResources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

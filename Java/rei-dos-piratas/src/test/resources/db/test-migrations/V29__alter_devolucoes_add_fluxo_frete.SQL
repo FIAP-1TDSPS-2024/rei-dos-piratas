@@ -1,3 +1,7 @@
+-- Variante H2 para testes, reunida pelo Maven com as demais migrations.
+-- A única adaptação funcional
+-- é ALTER COLUMN ... SET NOT NULL no lugar de MODIFY ... NOT NULL.
+-- Manter alinhada à V29 de produção até a migração do projeto para PostgreSQL.
 ALTER TABLE DEVOLUCOES ADD motivo_devolucao_id NUMBER;
 ALTER TABLE DEVOLUCOES ADD valor_total NUMBER(12,2);
 ALTER TABLE DEVOLUCOES ADD valor_frete NUMBER(12,2);
@@ -21,9 +25,8 @@ UPDATE DEVOLUCOES d
    SET d.status = 'PREPARANDO_ENVIO'
  WHERE d.status IS NULL;
 
-ALTER TABLE DEVOLUCOES MODIFY motivo_devolucao_id NOT NULL;
+ALTER TABLE DEVOLUCOES ALTER COLUMN motivo_devolucao_id SET NOT NULL;
 
 ALTER TABLE DEVOLUCOES
     ADD CONSTRAINT fk_dev_motivo_devolucao
         FOREIGN KEY (motivo_devolucao_id) REFERENCES MOTIVOS_DEVOLUCAO(id);
-

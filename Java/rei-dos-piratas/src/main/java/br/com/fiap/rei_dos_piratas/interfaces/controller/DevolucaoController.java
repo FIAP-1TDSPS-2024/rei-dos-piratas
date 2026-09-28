@@ -16,6 +16,7 @@ public interface DevolucaoController {
     DevolucaoOutDto findById(Long id);
     DevolucaoOutDto solicitarDevolucao(DevolucaoInDto devolucaoInDto);
     DevolucaoOutDto aprovarDevolucao(Long id);
+    String organizarDevolucoesParaEnvio(List<Long> devolucoes);
     DevolucaoOutDto recusarDevolucao(Long id);
     DevolucaoOutDto concluirDevolucao(Long id);
 }

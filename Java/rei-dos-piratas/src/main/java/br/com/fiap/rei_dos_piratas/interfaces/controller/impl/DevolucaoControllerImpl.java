@@ -123,6 +123,11 @@ public class DevolucaoControllerImpl implements DevolucaoController {
     }
 
     @Override
+    public String organizarDevolucoesParaEnvio(List<Long> devolucoes) {
+        return service.organizarDevolucoesParaEnvio(devolucoes);
+    }
+
+    @Override
     public DevolucaoOutDto concluirDevolucao(Long id) {
         return DevolucaoDtoMapper.toDto(service.concluirDevolucao(id));
     }
