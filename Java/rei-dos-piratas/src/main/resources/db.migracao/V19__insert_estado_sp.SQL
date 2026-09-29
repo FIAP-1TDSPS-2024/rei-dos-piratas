@@ -1,4 +1,5 @@
 -- V19: Dados iniciais - Estado de São Paulo
--- OVERRIDING SYSTEM VALUE permite forçar o id na sequence do Oracle
+-- ID fixo usado pelos dados iniciais de cidade.
 INSERT INTO ESTADOS (id, estado_nome, estado_sigla)
 VALUES (1, 'São Paulo', 'SP');
+ALTER TABLE ESTADOS ALTER COLUMN id RESTART WITH 2;

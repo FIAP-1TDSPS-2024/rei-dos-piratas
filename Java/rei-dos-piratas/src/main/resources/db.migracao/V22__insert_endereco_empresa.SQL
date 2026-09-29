@@ -15,8 +15,9 @@ VALUES (
            '05876030',
            11,
            'Rua Chaia Zingerevitz',
-           1,
+           TRUE,
            42,
            NULL,
            1
        );
+ALTER TABLE ENDERECO ALTER COLUMN id RESTART WITH 22;

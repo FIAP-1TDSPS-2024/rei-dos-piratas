@@ -19,12 +19,10 @@ public class JpaTokenEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Lob
-    @Column(name = "token", nullable = false)
+    @Column(name = "token", nullable = false, columnDefinition = "text")
     private String token;
 
-    @Lob
-    @Column(name = "refresh_token", nullable = false)
+    @Column(name = "refresh_token", nullable = false, columnDefinition = "text")
     private String refreshToken;
 
     @Column(name = "data_criacao", nullable = false)

@@ -10,7 +10,7 @@ import org.hibernate.annotations.Where;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Where(clause = "ENDERECO_ATIVO = 1")
+@Where(clause = "ENDERECO_ATIVO = true")
 @Entity
 @Table(name = "ENDERECO")
 public class JpaEnderecoEntity {

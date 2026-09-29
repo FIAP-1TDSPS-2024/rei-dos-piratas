@@ -94,7 +94,7 @@ Variaveis de seguranca JWT (recomendado definir em producao):
 Exemplo de configuracao no PowerShell (sessao atual):
 
 ```powershell
-$env:DB_URL = "jdbc:oracle:thin:@//localhost:1521/XEPDB1"
+$env:DB_URL = "jdbc:postgresql://localhost:5432/reidospiratas"
 $env:DB_USER = "seu_usuario"
 $env:DB_PASSWORD = "sua_senha"
 $env:FLYWAY_ENABLED = "true"
@@ -113,6 +113,21 @@ $env:JWT_EXPIRATION = "86400000"
 ### 3) Executar migrations
 
 As migrations Flyway estao em `src/main/resources/db.migracao` e so rodam quando `FLYWAY_ENABLED=true`.
+
+Os scripts foram convertidos para PostgreSQL e devem ser aplicados em uma base vazia. Esta alteracao nao transfere dados do Oracle nem reaproveita seu historico Flyway. Para bases existentes, planeje a exportacao/importacao dos dados e o ajuste das sequences separadamente.
+
+Os testes H2 usam os mesmos scripts, em modo PostgreSQL.
+
+Para validar as migrations e a persistencia em PostgreSQL real, use uma base exclusiva de testes vazia:
+
+```powershell
+$env:TEST_DB_URL = "jdbc:postgresql://localhost:5432/reidospiratas_test"
+$env:TEST_DB_USER = "seu_usuario"
+$env:TEST_DB_PASSWORD = "sua_senha"
+mvn test "-Dtest=DatabaseMigrationIntegrationTest" "-Dspring.profiles.active=postgresql-test"
+```
+
+Esse teste aplica V1-V30 e verifica IDs apos os seeds, filtro de enderecos ativos e leitura/escrita de tokens longos. Nao aponte para uma base de producao.
 
 Fluxo recomendado:
 
@@ -235,14 +250,14 @@ Em caso de erro do provedor, os status não avançam. Devoluções já persistid
 - Java 17
 - Spring Boot 3.5.6
 - Maven
-- Banco de dados: Oracle (principal) e H2 (testes)
+- Banco de dados: PostgreSQL (principal) e H2 (testes)
 
 ## Dependencias principais
 
 - `org.springframework.boot:spring-boot-starter-data-jpa`
 - `org.springframework.boot:spring-boot-starter-web`
 - `org.springframework.boot:spring-boot-starter-validation`
-- `com.oracle.database.jdbc:ojdbc11` (runtime)
+- `org.postgresql:postgresql` (runtime)
 - `org.projectlombok:lombok` (optional)
 
 Ferramentas adicionais:

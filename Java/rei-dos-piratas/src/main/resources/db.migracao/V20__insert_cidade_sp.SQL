@@ -2,3 +2,5 @@
 INSERT INTO CIDADES (id, cidade_nome, estado_id)
     VALUES (42, 'São Paulo', 1);
 
+
+ALTER TABLE CIDADES ALTER COLUMN id RESTART WITH 43;

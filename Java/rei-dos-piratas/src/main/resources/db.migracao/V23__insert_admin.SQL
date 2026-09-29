@@ -20,8 +20,8 @@ VALUES (
     'Administrador do Sistema',
     'admin@reidospiratas.com.br',
     '$2a$12$.yviqjcXUtK7OJd6/CgBUu43wCCiyH9.PlcDZIXyXigL6dwAbGS/C',
-    1,
-    CURRENT_TIMESTAMP,
+    TRUE,
+    CURRENT_DATE,
     (SELECT id FROM PERFIS WHERE nome = 'ADMIN'),
     NULL,
     0
