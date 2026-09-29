@@ -21,6 +21,21 @@ services:
     networks:
       - app-network
 
+
+  postgres:
+    image: postgres:18
+    container_name: postgres-local
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rei_dos_piratas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+
   dd-agent:
     image: registry.datadoghq.com/agent:7
     container_name: dd-agent
@@ -47,3 +62,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres_data:
