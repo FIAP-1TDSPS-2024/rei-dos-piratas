@@ -265,6 +265,9 @@ class PedidoServiceImplTest {
         Pedido resultado = pedidoService.fazerPedido(pedido);
 
         // Assert
+        assertThat(pedido.getValorTotal()).isEqualByComparingTo("221.19");
+        produto.setPreco(new BigDecimal("150.00"));
+        assertThat(itens.getFirst().getPrecoUnitario()).isEqualByComparingTo("100.00");
         verify(produtoRepository, times(1)).update(produto);
         verify(pedidoRepository, times(1)).create(pedido);
         assertThat(resultado).isNotNull();

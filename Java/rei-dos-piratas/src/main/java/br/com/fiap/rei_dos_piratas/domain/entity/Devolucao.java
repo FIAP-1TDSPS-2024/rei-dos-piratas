@@ -34,6 +34,7 @@ public class Devolucao {
     private String descricao;
 
     @NotNull(message = "A devolução deve possuir itens")
+    @jakarta.validation.Valid
     private List<ItemDevolucao> itens;
 
     @Digits(fraction = 2, integer = 6, message = "O preço total do pedido deve ter até 8 digitos com 2 dígitos após a vírgula")
@@ -103,6 +104,7 @@ public class Devolucao {
         this.dataSolicitacao = LocalDate.now();
         this.aprovada = null;
         validarPedido(itens, pedido, true);
+        itens.forEach(item -> item.setPrecoUnitario(item.getItemPedido().getPrecoUnitario()));
         validarDatasEMotivos();
     }
 

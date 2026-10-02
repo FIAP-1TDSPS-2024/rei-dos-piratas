@@ -516,12 +516,12 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     private List<ProdutoPedidoFreteDto> definirProdutosFrete(Pedido pedido) {
-        return pedido.getProdutosAdicionados()
+return pedido.getProdutosAdicionados()
                 .stream()
                 .map(produto -> new ProdutoPedidoFreteDto(
                         produto.getProduto().getNome(),
                         String.valueOf(produto.getQuantidade()),
-                        String.valueOf(produto.getProduto().getPreco())))
+                        String.valueOf(produto.getPrecoUnitario())))
                 .toList();
     }
 
@@ -563,8 +563,7 @@ public class PedidoServiceImpl implements PedidoService {
         return pedido.getProdutosAdicionados()
                 .stream()
                 .map(item -> item
-                        .getProduto()
-                        .getPreco()
+                        .getPrecoUnitario()
                         .multiply(BigDecimal.valueOf(item.getQuantidade())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .add(pedido.getValorFrete());

@@ -68,7 +68,7 @@
                             <td class="px-6 py-4 font-medium text-gray-800" th:text="${item.produto.nome}"></td>
                             <td class="px-6 py-4 text-center text-gray-600" th:text="${item.quantidade}"></td>
                             <td class="px-6 py-4 text-right text-gray-600"
-                                th:text="${'R$ ' + #numbers.formatDecimal(item.produto.preco, 1, 'POINT', 2, 'COMMA')}"></td>
+                                th:text="${'R$ ' + #numbers.formatDecimal(item.precoUnitario, 1, 'POINT', 2, 'COMMA')}"></td>
                             <td class="px-6 py-4 text-right font-bold text-gray-900"
                                 th:text="${'R$ ' + #numbers.formatDecimal(item.subtotal(), 1, 'POINT', 2, 'COMMA')}"></td>
                         </tr>

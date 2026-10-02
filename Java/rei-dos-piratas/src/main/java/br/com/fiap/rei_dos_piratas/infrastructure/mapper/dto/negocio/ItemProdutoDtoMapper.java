@@ -9,14 +9,14 @@ public class ItemProdutoDtoMapper {
     public static ItemProdutoOutDto toDto(ItemProdutoPedido itemProdutoPedido) {
         return new ItemProdutoOutDto(
                 ProdutoDtoMapper.toDto(itemProdutoPedido.getProduto()),
-                itemProdutoPedido.getQuantidade()
+                itemProdutoPedido.getQuantidade(), itemProdutoPedido.getPrecoUnitario()
         );
     }
 
     public static ItemProdutoOutDto toDto(ItemProdutoCarrinho itemProdutoCarrinho) {
         return new ItemProdutoOutDto(
                 ProdutoDtoMapper.toDto(itemProdutoCarrinho.getProduto()),
-                itemProdutoCarrinho.getQuantidade()
+                itemProdutoCarrinho.getQuantidade(), itemProdutoCarrinho.getPrecoUnitario()
         );
     }
 

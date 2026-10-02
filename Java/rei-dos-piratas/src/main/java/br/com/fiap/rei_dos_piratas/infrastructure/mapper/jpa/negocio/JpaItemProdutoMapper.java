@@ -17,14 +17,14 @@ public class JpaItemProdutoMapper {
         return new ItemProdutoCarrinho(
                 jpaProdutosCarrinhoEntity.getId(),
                 JpaProdutoMapper.toEntity(jpaProdutosCarrinhoEntity.getProduto()),
-                jpaProdutosCarrinhoEntity.getQuantidade());
+                jpaProdutosCarrinhoEntity.getQuantidade(), jpaProdutosCarrinhoEntity.getPrecoUnitario());
     }
 
     public static ItemProdutoPedido toEntity(JpaProdutosPedidoEntity jpaProdutosPedidoEntity) {
         return new ItemProdutoPedido(
                 jpaProdutosPedidoEntity.getId(),
                 JpaProdutoMapper.toEntity(jpaProdutosPedidoEntity.getProduto()),
-                jpaProdutosPedidoEntity.getQuantidade());
+                jpaProdutosPedidoEntity.getQuantidade(), jpaProdutosPedidoEntity.getPrecoUnitario());
     }
 
     public static JpaProdutosPedidoEntity toJpaProdutosPedidosEntity(ItemProdutoPedido itemProdutoPedido){
@@ -32,7 +32,7 @@ public class JpaItemProdutoMapper {
                 itemProdutoPedido.getId(),
                 JpaProdutoMapper.toJpaEntity(itemProdutoPedido.getProduto()),
                 null,
-                itemProdutoPedido.getQuantidade()
+                itemProdutoPedido.getQuantidade(), itemProdutoPedido.getPrecoUnitario()
         );
     }
 
@@ -41,7 +41,7 @@ public class JpaItemProdutoMapper {
                 itemProdutoPedido.getId(),
                 JpaProdutoMapper.toJpaEntity(itemProdutoPedido.getProduto()),
                 null,
-                itemProdutoPedido.getQuantidade()
+                itemProdutoPedido.getQuantidade(), itemProdutoPedido.getPrecoUnitario()
         );
     }
 

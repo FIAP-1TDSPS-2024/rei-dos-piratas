@@ -43,7 +43,7 @@ public class FreteServiceImpl implements FreteService {
                 Map.of("postal_code", enderecoEmpresa.getCep()),
                 Map.of("postal_code", cepCliente),
                 itens.stream()
-                        .map(produto -> ProdutoFreteDtoMapper.toDto(produto.getProduto(), produto.getQuantidade()))
+                        .map(produto -> ProdutoFreteDtoMapper.toDto(produto.getProduto(), produto.getQuantidade(), produto.getPrecoUnitario()))
                         .toList());
 
         try {

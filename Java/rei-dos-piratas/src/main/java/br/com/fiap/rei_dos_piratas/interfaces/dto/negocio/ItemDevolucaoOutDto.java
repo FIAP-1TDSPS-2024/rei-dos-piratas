@@ -5,7 +5,7 @@ public record ItemDevolucaoOutDto(
         Long itemPedidoId,
         Long produtoId,
         String produtoNome,
-        Integer quantidade
+        Integer quantidade, java.math.BigDecimal precoUnitario
 ) {
 }
 

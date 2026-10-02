@@ -14,5 +14,6 @@ public class Carrinho {
     private Long id;
 
     @Size(min = 1, message = "O pedido deve ter pelo menos um produto")
+    @jakarta.validation.Valid
     private List<ItemProdutoCarrinho> produtosAdicionados;
 }

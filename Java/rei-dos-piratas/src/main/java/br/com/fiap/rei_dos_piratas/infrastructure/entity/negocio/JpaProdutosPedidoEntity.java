@@ -29,4 +29,6 @@ public class JpaProdutosPedidoEntity {
     @Max(value = 999999, message = "Quantidade máxima é 999999")
     @Column(nullable = false)
     private int quantidade;
+    @Column(name = "preco_unitario", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal precoUnitario;
 }

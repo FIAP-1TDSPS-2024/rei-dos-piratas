@@ -22,7 +22,7 @@ public class DevolucaoDtoMapper {
                                 item.getItemPedido() != null ? item.getItemPedido().getId() : null,
                                 item.getItemPedido() != null && item.getItemPedido().getProduto() != null ? item.getItemPedido().getProduto().getId() : null,
                                 item.getItemPedido() != null && item.getItemPedido().getProduto() != null ? item.getItemPedido().getProduto().getNome() : null,
-                                item.getQuantidade()))
+                                item.getQuantidade(), item.getPrecoUnitario()))
                         .toList(),
                 devolucao.getValorTotal(),
                 devolucao.getValorFrete(),

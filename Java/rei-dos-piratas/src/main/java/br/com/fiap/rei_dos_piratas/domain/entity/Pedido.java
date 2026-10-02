@@ -45,6 +45,7 @@ public class Pedido {
     private Cliente cliente;
 
     @Size(min = 1, message = "O pedido deve ter pelo menos um produto")
+    @jakarta.validation.Valid
     private List<ItemProdutoPedido> produtosAdicionados;
 
     @NotNull(message = "O pedido deve possuir um endereço para entrega")

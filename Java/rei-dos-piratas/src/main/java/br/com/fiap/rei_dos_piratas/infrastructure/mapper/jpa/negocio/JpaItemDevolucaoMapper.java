@@ -9,7 +9,7 @@ public class JpaItemDevolucaoMapper {
 		return new ItemDevolucao(
 				entity.getId(),
 				JpaItemProdutoMapper.toEntity(entity.getItemPedido()),
-				entity.getQuantidade()
+				entity.getQuantidade(), entity.getPrecoUnitario()
 		);
 	}
 
@@ -18,7 +18,7 @@ public class JpaItemDevolucaoMapper {
 				itemDevolucao.getId(),
 				null,
 				JpaItemProdutoMapper.toJpaPedidoProdutoReference(itemDevolucao.getItemPedido().getId()),
-				itemDevolucao.getQuantidade()
+				itemDevolucao.getQuantidade(), itemDevolucao.getPrecoUnitario()
 		);
 	}
 

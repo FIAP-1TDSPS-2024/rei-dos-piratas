@@ -65,10 +65,14 @@ public class DevolucaoServiceImpl implements DevolucaoService {
     }
 
     @Override
+    @Transactional
     public Devolucao solicitarDevolucao(Devolucao devolucao) {
         log.info("[SERVICE-DEVOLUCAO] Solicitando devolução para pedido ID={}, motivo={}", devolucao.getPedido().getId(), devolucao.getMotivo());
         // Regras de negócio serão implementadas aqui
         Pedido pedido = devolucao.getPedido();
+        devolucao.setValorTotal(devolucao.getItens().stream()
+                .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
 
         //Verificar se há devoluções em aberto para o pedido
         List<Devolucao> devolucoes = this.findAllByPedidoId(pedido.getId());
@@ -87,7 +91,8 @@ public class DevolucaoServiceImpl implements DevolucaoService {
         //Valida se a devolução é por arrependimento, se for, a aprovação é automática
         //As datas são validadas na classe Devolucao.java
         if (devolucao.getMotivo().getArrependimento()){
-            this.aprovarDevolucao(devolucao.getId());
+            Devolucao criada = repository.create(devolucao);
+            return this.aprovarDevolucao(criada.getId());
         }
 
         log.info("Pedido de devolucao criado com sucesso: ID={}, status={}, valor total=R${}",
@@ -102,7 +107,7 @@ public class DevolucaoServiceImpl implements DevolucaoService {
         // Atualiza status e datas da devolução aprovada
         Devolucao devolucao = repository.findById(id);
 
-        devolucao.setAprovada(true);
+devolucao.setAprovada(true);
         devolucao.setDataAprovacao(LocalDate.now());
         devolucao.setStatus(StatusDevolucaoEnum.PREPARANDO_RETORNO);
 
@@ -306,9 +311,7 @@ public class DevolucaoServiceImpl implements DevolucaoService {
         return devolucao.getItens()
                 .stream()
                 .map(item -> item
-                        .getItemPedido()
-                        .getProduto()
-                        .getPreco()
+                        .getPrecoUnitario()
                         .multiply(BigDecimal.valueOf(item.getQuantidade())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .add(devolucao.getValorFrete());

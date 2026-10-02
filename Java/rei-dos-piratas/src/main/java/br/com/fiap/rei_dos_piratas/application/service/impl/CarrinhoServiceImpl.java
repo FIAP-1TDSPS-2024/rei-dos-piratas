@@ -74,6 +74,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
             log.debug("[CARRINHO] Produto ID={} já no carrinho - atualizando quantidade de {} para {}",
                     produto.getId(), itemAtual.getQuantidade(), novaQuantidade);
             itemAtual.setQuantidade(novaQuantidade);
+            itemAtual.setPrecoUnitario(produto.getPreco());
         } else {
             // 3. Se não existe, cria o item novo
             log.debug("[CARRINHO] Produto ID={} não encontrado no carrinho - adicionando novo item", produto.getId());
@@ -125,6 +126,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
             log.debug("[CARRINHO] Atualizando quantidade do produto ID={} de {} para {}",
                     produto.getId(), itemAtual.getQuantidade(), novaQuantidade);
             itemAtual.setQuantidade(novaQuantidade);
+            itemAtual.setPrecoUnitario(produto.getPreco());
         }
 
         Carrinho carrinhoAtualizado = this.repository.update(carrinho);

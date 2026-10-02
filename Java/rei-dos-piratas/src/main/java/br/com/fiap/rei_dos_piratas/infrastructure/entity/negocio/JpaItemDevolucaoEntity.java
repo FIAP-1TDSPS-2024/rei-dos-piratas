@@ -28,5 +28,7 @@ public class JpaItemDevolucaoEntity {
 
     @Column(nullable = false)
     private Integer quantidade;
+    @Column(name = "preco_unitario", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal precoUnitario;
 }
 
