@@ -1,6 +1,5 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
-import br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
@@ -10,18 +9,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public abstract class Usuario implements UsuarioDetails {
+public abstract class Usuario {
 
     private Long id;
 
@@ -35,6 +32,7 @@ public abstract class Usuario implements UsuarioDetails {
     private String nomeCompleto;
 
     @Email(message = "Insira um e-mail válido")
+    @jakarta.validation.constraints.NotBlank(message = "O e-mail e obrigatorio")
     @Length(max = 40, message = "O e-mail deve ter até 20 caracteres")
     private String email;
 
@@ -51,27 +49,38 @@ public abstract class Usuario implements UsuarioDetails {
     private Perfil perfil;
 
     @JsonIgnore
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.perfil == null || this.perfil.getNome() == null) {
+    public List<String> getPermissoes() {
+        if (this.perfil == null || this.perfil.getRoles() == null) {
             return List.of();
         }
 
         return perfil
                 .getRoles()
                 .stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getNome()))
+                .map(Role::getNome)
                 .collect(Collectors.toList());
     }
 
-    @Override
     public String getPassword() {
         return this.senha;
     }
 
-    @Override
     public String getUsername() {
         return this.userName;
+    }
+
+    public static String normalizarEmail(String email) {
+        return email == null ? null : email.strip().toLowerCase(Locale.ROOT);
+    }
+
+    public void setEmail(String email) {
+        this.email = normalizarEmail(email);
+    }
+
+    public void validarAcesso() {
+        if (!usuarioAtivo) {
+            throw new br.com.fiap.rei_dos_piratas.domain.exceptions.CredenciaisInvalidasException();
+        }
     }
 
     public Usuario(String userName, String nomeCompleto, String email, String senha, Perfil perfil) {
@@ -79,7 +88,7 @@ public abstract class Usuario implements UsuarioDetails {
         this.dataCadastro = LocalDate.now();
         this.userName = userName;
         this.nomeCompleto = nomeCompleto;
-        this.email = email;
+        setEmail(email);
         this.senha = senha;
         this.perfil = perfil;
     }
@@ -89,7 +98,7 @@ public abstract class Usuario implements UsuarioDetails {
         this.userName = userName;
         this.id = id;
         this.nomeCompleto = nomeCompleto;
-        this.email = email;
+        setEmail(email);
         this.senha = senha;
         this.usuarioAtivo = usuarioAtivo;
         this.dataCadastro = dataCadastro;

@@ -15,7 +15,8 @@ import org.mockito.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import br.com.fiap.rei_dos_piratas.application.service.SenhaService;
+import br.com.fiap.rei_dos_piratas.domain.repository.ContaRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ class ClienteServiceImplTest {
     private ClienteService clienteService;
     private ClienteRepository clienteRepository;
     private PerfilRepository perfilRepository;
-    private PasswordEncoder passwordEncoder;
+    private SenhaService passwordEncoder;
     private Perfil perfilCliente;
     private Validator validator;
 
@@ -37,7 +38,7 @@ class ClienteServiceImplTest {
     void setUp() {
         this.clienteRepository = mock(ClienteRepository.class);
         this.perfilRepository = mock(PerfilRepository.class);
-        this.passwordEncoder = mock(PasswordEncoder.class);
+        this.passwordEncoder = mock(SenhaService.class);
         this.perfilCliente = new Perfil(1L, "CLIENT", "Perfil de cliente", null);
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             this.validator = factory.getValidator();
@@ -46,7 +47,7 @@ class ClienteServiceImplTest {
         when(perfilRepository.findByNome("CLIENT")).thenReturn(perfilCliente);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository, validator);
+        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository, validator, mock(ContaRepository.class), new br.com.fiap.rei_dos_piratas.infrastructure.security.SpringUsuarioAtual());
     }
 
     @AfterEach
@@ -58,9 +59,11 @@ class ClienteServiceImplTest {
     private void mockSecurityContext(Long userId) {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn(userId);
+        when(userDetails.getTipo()).thenReturn(br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta.CLIENTE);
 
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(authentication.isAuthenticated()).thenReturn(true);
 
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(authentication);

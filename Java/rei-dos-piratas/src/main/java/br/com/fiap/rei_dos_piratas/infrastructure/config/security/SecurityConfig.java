@@ -41,14 +41,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JwtUtil jwtUtil,
-                                                   UserDetailsService userDetailsService,
+                                                   br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetailsService userDetailsService,
                                                    TokenBlocklistService tokenBlocklistService) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Público geral
-                        .requestMatchers("/auth/**", "/error", "/health", "/",
+                        .requestMatchers("/auth/login", "/auth/cadastro", "/error", "/health", "/",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/rastreio/webhook").permitAll()
                         // Logout precisa de autenticação mas deve ser acessível sem session
                         .requestMatchers("/auth/logout").authenticated()

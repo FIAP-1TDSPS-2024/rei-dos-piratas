@@ -7,22 +7,17 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
-public class JwtUtil {
+public class JwtUtil implements br.com.fiap.rei_dos_piratas.application.service.TokenAcessoService {
 
     @Value("${jwt.secret}")
     private String secret;
@@ -32,6 +27,25 @@ public class JwtUtil {
 
     private SecretKey signingKey;
 
+    @Override
+    public String emitir(br.com.fiap.rei_dos_piratas.domain.entity.Conta conta) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tipo", conta.identidade().tipo().name());
+        claims.put("uid", conta.identidade().id());
+        return createToken(claims, conta.identidade().subject(), expiration);
+    }
+
+    public br.com.fiap.rei_dos_piratas.domain.entity.IdentidadeConta extractIdentidade(String token) {
+        Claims claims = extractAllClaims(token);
+        String tipoClaim = claims.get("tipo", String.class);
+        Number id = claims.get("uid", Number.class);
+        if (tipoClaim == null || id == null) throw new IllegalArgumentException("Token sem identidade de conta");
+        var tipo = br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta.valueOf(tipoClaim);
+        var identidade = new br.com.fiap.rei_dos_piratas.domain.entity.IdentidadeConta(tipo, id.longValue());
+        if (!identidade.subject().equals(claims.getSubject())) throw new IllegalArgumentException("Identidade invalida");
+        return identidade;
+    }
+
     @PostConstruct
     void init() {
         // Expecting BASE64-encoded key material
@@ -39,34 +53,18 @@ public class JwtUtil {
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-        return createToken(claims, userDetails.getUsername(), expiration);
-    }
-
-    public String generateToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails);
-    }
-
     public String createToken(Map<String, Object> claims, String subject, Long expirationTime) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
 
         return Jwts.builder()
+                .id(java.util.UUID.randomUUID().toString())
                 .claims(claims)
                 .subject(subject)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(signingKey)
                 .compact();
-    }
-
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
     }
 
     public Date extractExpiration(String token) {
@@ -92,8 +90,9 @@ public class JwtUtil {
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         try {
-            final String username = extractUsername(token);
-            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            if (!(userDetails instanceof CustomUserDetails details) || !details.isEnabled()) return false;
+            var identidade = extractIdentidade(token);
+            return identidade.id().equals(details.getId()) && identidade.tipo() == details.getTipo() && !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
@@ -111,9 +110,4 @@ public class JwtUtil {
         }
     }
 
-    public List<SimpleGrantedAuthority> extractRole(String token) {
-        Claims claims = extractAllClaims(token);
-        List<String> roles = claims.get("roles",List.class);
-        return roles.stream().map( SimpleGrantedAuthority::new).toList();
-    }
 }

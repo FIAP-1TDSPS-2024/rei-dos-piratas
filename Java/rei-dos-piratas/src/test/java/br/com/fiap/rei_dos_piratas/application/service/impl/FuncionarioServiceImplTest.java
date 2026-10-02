@@ -10,7 +10,8 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import br.com.fiap.rei_dos_piratas.application.service.SenhaService;
+import br.com.fiap.rei_dos_piratas.domain.repository.ContaRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ class FuncionarioServiceImplTest {
 
     private FuncionarioService funcionarioService;
     private FuncionarioRepository funcionarioRepository;
-    private PasswordEncoder passwordEncoder;
+    private SenhaService passwordEncoder;
     private PerfilRepository perfilRepository;
     private Perfil perfilPadrao;
     private Validator validator;
@@ -33,7 +34,7 @@ class FuncionarioServiceImplTest {
     @BeforeEach
     void setUp() {
         this.funcionarioRepository = mock(FuncionarioRepository.class);
-        this.passwordEncoder = mock(PasswordEncoder.class);
+        this.passwordEncoder = mock(SenhaService.class);
         this.perfilRepository = mock(PerfilRepository.class);
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             this.validator = factory.getValidator();
@@ -44,7 +45,7 @@ class FuncionarioServiceImplTest {
         when(passwordEncoder.encode(any())).thenAnswer(invocation -> "encoded-");
         when(perfilRepository.findByNome("FUNCIONARIO")).thenReturn(perfilPadrao);
 
-        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository, passwordEncoder, perfilRepository, validator);
+        this.funcionarioService = new FuncionarioServiceImpl(funcionarioRepository, passwordEncoder, perfilRepository, validator, mock(ContaRepository.class));
     }
 
     @Test

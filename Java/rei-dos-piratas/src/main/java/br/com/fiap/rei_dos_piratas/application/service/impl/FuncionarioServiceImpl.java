@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+
 import br.com.fiap.rei_dos_piratas.application.service.FuncionarioService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
@@ -11,7 +12,12 @@ import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import br.com.fiap.rei_dos_piratas.application.service.SenhaService;
+import br.com.fiap.rei_dos_piratas.domain.repository.ContaRepository;
+
+import br.com.fiap.rei_dos_piratas.domain.entity.IdentidadeConta;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
@@ -23,15 +29,17 @@ import java.util.stream.Collectors;
 public class FuncionarioServiceImpl implements FuncionarioService {
 
     private final FuncionarioRepository repository;
-    private final PasswordEncoder passwordEncoder;
+    private final SenhaService passwordEncoder;
     private final PerfilRepository perfilRepository;
     private final Validator validator;
+    private final ContaRepository contas;
 
-    public FuncionarioServiceImpl(FuncionarioRepository repository, PasswordEncoder passwordEncoder, PerfilRepository perfilRepository, Validator validator) {
+    public FuncionarioServiceImpl(FuncionarioRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.perfilRepository = perfilRepository;
         this.validator = validator;
+        this.contas = contas;
     }
 
     @Override
@@ -57,7 +65,9 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         log.info("[FUNCIONARIO] Criando novo funcionário - username='{}', email='{}', perfil='{}'",
                 funcionario.getUsername(), funcionario.getEmail(),
                 funcionario.getPerfil() != null ? funcionario.getPerfil().getNome() : "N/A");
+
         validar(funcionario);
+        validarEmail(funcionario.getEmail(), null);
         String encryptedPassword = this.passwordEncoder.encode(funcionario.getPassword());
         funcionario.setSenha(encryptedPassword);
         Perfil perfil = this.perfilRepository.findByNome(funcionario.getPerfil().getNome());
@@ -72,7 +82,9 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     @Transactional
     public Funcionario update(Funcionario funcionario) {
         log.info("[FUNCIONARIO] Atualizando funcionário ID={}", funcionario.getId());
+
         validar(funcionario);
+        validarEmail(funcionario.getEmail(), new IdentidadeConta(TipoConta.FUNCIONARIO, funcionario.getId()));
         String encryptedPassword = this.passwordEncoder.encode(funcionario.getPassword());
         funcionario.setSenha(encryptedPassword);
         Funcionario funcionarioAtualizado = this.repository.update(funcionario);
@@ -85,6 +97,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     }
 
     @Override
+    @Transactional
     public Funcionario ativarDesativar(Long id) {
         Funcionario funcionario = this.findById(id);
         boolean novoStatus = !funcionario.isUsuarioAtivo();
@@ -119,6 +132,12 @@ public class FuncionarioServiceImpl implements FuncionarioService {
                             (m1, m2) -> m1
                     ));
             throw new ValidacaoException(erros);
+        }
+    }
+
+    private void validarEmail(String email, IdentidadeConta propriaConta) {
+        if (contas.emailOcupado(email, propriaConta)) {
+            throw new UniqueKeyDuplicatedException("O e-mail ja pertence a uma conta.");
         }
     }
 }

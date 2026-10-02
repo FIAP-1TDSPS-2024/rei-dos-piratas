@@ -10,19 +10,21 @@ import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import jakarta.validation.Validator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import br.com.fiap.rei_dos_piratas.application.service.SenhaService;
+import br.com.fiap.rei_dos_piratas.domain.repository.ContaRepository;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 
 @Configuration
 public class UsuarioServiceConfig {
 
     @Bean
-    public ClienteService clienteService(ClienteRepository repository, PasswordEncoder passwordEncoder, PerfilRepository perfilRepository, Validator validator) {
-        return new ClienteServiceImpl(repository, passwordEncoder, perfilRepository, validator);
+    public ClienteService clienteService(ClienteRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas, UsuarioAtualService usuarioAtual) {
+        return new ClienteServiceImpl(repository, passwordEncoder, perfilRepository, validator, contas, usuarioAtual);
     }
 
     @Bean
-    public FuncionarioService funcionarioService(FuncionarioRepository repository, PasswordEncoder passwordEncoder, PerfilRepository perfilRepository, Validator validator) {
-        return new FuncionarioServiceImpl(repository, passwordEncoder, perfilRepository, validator);
+    public FuncionarioService funcionarioService(FuncionarioRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas) {
+        return new FuncionarioServiceImpl(repository, passwordEncoder, perfilRepository, validator, contas);
     }
 
 }
