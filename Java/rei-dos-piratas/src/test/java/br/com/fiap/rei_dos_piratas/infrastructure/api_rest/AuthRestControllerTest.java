@@ -2,7 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.TokenBlocklistService;
+import br.com.fiap.rei_dos_piratas.application.service.AutenticacaoService;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.AuthResponse;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
@@ -42,7 +42,7 @@ class AuthRestControllerTest {
     private JwtUtil jwtUtil;
 
     @MockBean
-    private TokenBlocklistService tokenBlocklistService;
+    private AutenticacaoService autenticacaoService;
 
     @Test
     void loginCliente_DeveRetornarToken() throws Exception {
@@ -63,7 +63,7 @@ class AuthRestControllerTest {
                 null
         );
 
-        AuthResponse response = new AuthResponse("token-abc", clienteOutDto, null, java.util.List.of("CLIENT"));
+        AuthResponse response = new AuthResponse("token-abc", clienteOutDto, null, java.util.List.of("CLIENT"), "refresh-abc", java.time.Instant.now().plusSeconds(604800));
 
         when(authController.login(any(LoginRequest.class))).thenReturn(response);
 
@@ -110,7 +110,7 @@ class AuthRestControllerTest {
                 null
         );
 
-        AuthResponse out = new AuthResponse("token-abc", clienteOutDto, null, java.util.List.of("CLIENT"));
+        AuthResponse out = new AuthResponse("token-abc", clienteOutDto, null, java.util.List.of("CLIENT"), "refresh-abc", java.time.Instant.now().plusSeconds(604800));
 
         when(authController.cadastrar(any(ClienteInDto.class))).thenReturn(out);
 

@@ -60,6 +60,22 @@ class AutenticacaoIntegrationTest {
     }
 
     @Test
+    void cadastroCriaSessaoInicialERefreshUtilizavel() throws Exception {
+        String body = mvc.perform(post("/auth/cadastro").contentType(MediaType.APPLICATION_JSON).content("""
+                {"user_name":"cliente_sessao", "nome_completo":"Cliente Sessao", "email":"cadastro@example.com",
+                 "senha":"SenhaSegura123", "data_nascimento":"1990-01-01", "sexo":"M",
+                 "cpf":"52998224725", "celular":"11987654321"}
+                """))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.refresh_token").isNotEmpty())
+                .andReturn().getResponse().getContentAsString();
+        var dados = mapper.readTree(body);
+        assertThat(jwt.extractIdentidade(dados.get("token").asText()).tipo()).isEqualTo(TipoConta.CLIENTE);
+        mvc.perform(post("/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(Map.of("refresh_token", dados.get("refresh_token").asText()))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.cliente.email").value("cadastro@example.com"));
+    }
+
+    @Test
     void desativacaoBloqueiaJwtJaEmitidoELoginRetorna401() throws Exception {
         funcionario(true);
         String token = login();

@@ -2,7 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.infrastructure.config.security.SecurityConfig;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.TokenBlocklistService;
+import br.com.fiap.rei_dos_piratas.application.service.AutenticacaoService;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.DevolucaoController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ class DevolucaoRestControllerTest {
     @Autowired private MockMvc mockMvc;
     @MockBean private DevolucaoController controller;
     @MockBean private JwtUtil jwtUtil;
-    @MockBean private TokenBlocklistService tokenBlocklistService;
+    @MockBean private AutenticacaoService autenticacaoService;
     @MockBean private UsuarioDetailsService userDetailsService;
 
     @Test

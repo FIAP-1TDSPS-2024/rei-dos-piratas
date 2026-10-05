@@ -43,11 +43,6 @@
             <span id="errorText">Credenciais inv&aacute;lidas.</span>
         </div>
 
-        <!--
-            O formul&aacute;rio submete via JS para /auth/login (mesmo endpoint da API).
-            O token JWT retornado &eacute; salvo em cookie e reutilizado pelo JwtAuthenticationFilter
-            tanto para chamadas de API quanto para as p&aacute;ginas Thymeleaf &mdash; um &uacute;nico m&eacute;todo de autentica&ccedil;&atilde;o.
-        -->
         <form id="loginForm" class="space-y-5">
 
             <div>
@@ -86,30 +81,17 @@
 
         const email    = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const button = e.submitter;
+        if (button) button.disabled = true;
 
         try {
-            const response = await fetch('/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (!response.ok) {
-                showError('Credenciais inv\u00e1lidas. Verifique seu e-mail e senha.');
-                return;
-            }
-
-            const data = await response.json();
-
-            // Salva o JWT em cookie acess\u00edvel ao servidor (HttpOnly n\u00e3o pode ser definido via JS,
-            // mas o JwtAuthenticationFilter l\u00ea o cookie "jwt_token" em todas as requisi\u00e7\u00f5es)
-            const expiresDate = new Date(Date.now() + 86400 * 1000).toUTCString();
-            document.cookie = `jwt_token=${data.token}; path=/; expires=${expiresDate}; SameSite=Strict`;
-
+            await window.webAuth.login(email, password);
             window.location.href = '/web/produtos';
 
         } catch (err) {
-            showError('Erro ao conectar. Tente novamente.');
+            showError(err.message || 'Erro ao conectar. Tente novamente.');
+        } finally {
+            if (button) button.disabled = false;
         }
     });
 
@@ -117,6 +99,9 @@
         const el = document.getElementById('errorMessage');
         document.getElementById('errorText').textContent = msg;
         el.classList.remove('hidden');
+    }
+    if (new URLSearchParams(location.search).has('error')) {
+        showError('Entre novamente para continuar.');
     }
 </script>
 </body>

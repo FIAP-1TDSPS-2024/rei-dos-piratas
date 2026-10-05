@@ -1,32 +1,32 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mvc;
 
-import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.TokenBlocklistService;
-import jakarta.servlet.http.Cookie;
+import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.AuthCookieService;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Arrays;
 
 /**
  * Controller MVC para a página de login web e redirect raiz.
- * A autenticação em si é processada pelo /auth/login (POST) da API.
+ * A autenticacao web e processada pelo /web/auth/login (POST).
  */
 @Controller
 public class LoginMvcController {
 
-    private final JwtUtil jwtUtil;
-    private final TokenBlocklistService tokenBlocklistService;
+    private final AuthController controller;
+    private final AuthCookieService cookies;
+    private final CsrfTokenRepository csrf;
 
-    public LoginMvcController(JwtUtil jwtUtil, TokenBlocklistService tokenBlocklistService) {
-        this.jwtUtil = jwtUtil;
-        this.tokenBlocklistService = tokenBlocklistService;
+    public LoginMvcController(AuthController controller, AuthCookieService cookies, CsrfTokenRepository csrf) {
+        this.controller = controller;
+        this.cookies = cookies;
+        this.csrf = csrf;
     }
 
     /** Redireciona a raiz da aplicação para a listagem web de produtos. */
@@ -51,34 +51,26 @@ public class LoginMvcController {
     }
 
     /**
-     * Logout web: invalida o token na blocklist (server-side) e apaga o cookie.
+     * Logout web: revoga a sessao persistida e apaga os cookies.
      * Chamado pelo formulário <form method="post" action="/web/logout"> da navbar.
      */
     @PostMapping("/web/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response) {
-        // 1. Extrai o token do cookie
-        String jwt = null;
-        if (request.getCookies() != null) {
-            jwt = Arrays.stream(request.getCookies())
-                    .filter(c -> "jwt_token".equals(c.getName()))
-                    .map(Cookie::getValue)
-                    .findFirst()
-                    .orElse(null);
-        }
+        controller.logout();
 
-        // 2. Adiciona na blocklist
-        if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
-            tokenBlocklistService.invalidar(jwt, jwtUtil.extractExpiration(jwt));
-        }
-
-        // 3. Apaga o cookie no cliente
-        Cookie cookie = new Cookie("jwt_token", "");
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        cookie.setHttpOnly(true);
-        response.addCookie(cookie);
+        // Apaga os cookies no cliente.
+        cookies.limpar(response);
+        csrf.saveToken(null, request, response);
 
         return "redirect:/web/login?logout";
     }
-}
 
+    @GetMapping("/web/renovar")
+    public String renovar(@RequestParam(defaultValue = "/web/produtos") String destino, Model model) {
+        boolean seguro = destino.startsWith("/web/") && !destino.contains("\\")
+                && !destino.contains("\r") && !destino.contains("\n")
+                && !destino.startsWith("/web/renovar") && !destino.startsWith("/web/auth/");
+        model.addAttribute("destino", seguro ? destino : "/web/produtos");
+        return "renovar";
+    }
+}

@@ -11,9 +11,12 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.*;
 
 public class AuthControllerImpl implements AuthController {
     private final AutenticacaoService autenticacao;
+    private final br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService usuarioAtual;
 
-    public AuthControllerImpl(AutenticacaoService autenticacao) {
+    public AuthControllerImpl(AutenticacaoService autenticacao,
+                              br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService usuarioAtual) {
         this.autenticacao = autenticacao;
+        this.usuarioAtual = usuarioAtual;
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -38,6 +41,12 @@ public class AuthControllerImpl implements AuthController {
                         .getPermissoes()
                         .stream()
                         .map(nome -> "ROLE_" + nome)
-                        .toList());
+                        .toList(), resultado.refreshToken(), resultado.refreshExpiraEm());
     }
+
+    public AuthResponse renovar(String refreshToken) {
+        return toDto(autenticacao.renovar(refreshToken));
+    }
+
+    public void logout() { autenticacao.logout(usuarioAtual.sessaoId()); }
 }

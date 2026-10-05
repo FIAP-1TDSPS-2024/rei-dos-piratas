@@ -9,4 +9,6 @@ public interface AuthController {
     AuthResponse login(LoginRequest loginRequest);
 
     AuthResponse cadastrar(ClienteInDto clienteInDto);
+    AuthResponse renovar(String refreshToken);
+    void logout();
 }

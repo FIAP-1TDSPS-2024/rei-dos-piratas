@@ -1,0 +1,16 @@
+CREATE TABLE AUTH_SESSOES (
+    id UUID PRIMARY KEY,
+    tipo_conta VARCHAR(20) NOT NULL CHECK (tipo_conta IN ('CLIENTE', 'FUNCIONARIO')),
+    usuario_id BIGINT NOT NULL,
+    criada_em TIMESTAMP WITH TIME ZONE NOT NULL,
+    expira_em TIMESTAMP WITH TIME ZONE NOT NULL,
+    revogada_em TIMESTAMP WITH TIME ZONE,
+    refresh_hash VARCHAR(64) NOT NULL UNIQUE,
+    CHECK (expira_em > criada_em)
+);
+
+CREATE TABLE AUTH_REFRESH_USADOS (
+    sessao_id UUID NOT NULL REFERENCES AUTH_SESSOES(id) ON DELETE CASCADE,
+    refresh_hash VARCHAR(64) NOT NULL,
+    PRIMARY KEY (sessao_id, refresh_hash)
+);

@@ -2,7 +2,14 @@ package br.com.fiap.rei_dos_piratas.infrastructure.config.security;
 
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtAuthenticationFilter;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.TokenBlocklistService;
+import br.com.fiap.rei_dos_piratas.application.service.AutenticacaoService;
+import br.com.fiap.rei_dos_piratas.infrastructure.security.AuthCookieService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +22,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -37,18 +43,29 @@ import java.util.List;
 @EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
+    @Bean
+    public CsrfTokenRepository csrfTokenRepository(@Value("${app.auth.cookie-secure:true}") boolean secure) {
+        CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
+        repository.setCookiePath("/web");
+        repository.setCookieCustomizer(cookie -> cookie.httpOnly(true).secure(secure).sameSite("Strict"));
+        return repository;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JwtUtil jwtUtil,
                                                    br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetailsService userDetailsService,
-                                                   TokenBlocklistService tokenBlocklistService) throws Exception {
+                                                   AutenticacaoService autenticacao, CsrfTokenRepository csrfTokens,
+                                                   @org.springframework.beans.factory.annotation.Qualifier("corsConfigurationSource")
+                                                   CorsConfigurationSource corsSource) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsSource))
+                .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
+                        .requireCsrfProtectionMatcher(request -> request.getRequestURI().startsWith("/web/")
+                                && CsrfFilter.DEFAULT_CSRF_MATCHER.matches(request)))
                 .authorizeHttpRequests(auth -> auth
                         // Público geral
-                        .requestMatchers("/auth/login", "/auth/cadastro", "/error", "/health", "/",
+                        .requestMatchers("/auth/login", "/auth/cadastro", "/auth/refresh", "/error", "/health", "/",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/rastreio/webhook").permitAll()
                         // Logout precisa de autenticação mas deve ser acessível sem session
                         .requestMatchers("/auth/logout").authenticated()
@@ -57,8 +74,8 @@ public class SecurityConfig {
                         // Visualização de produtos (API e web)
                         .requestMatchers(HttpMethod.GET, "/produtos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/web/produtos", "/web/produtos/{id:[0-9]+}").permitAll()
-                        // Login web — página pública, o token é emitido pelo /auth/login normal
-                        .requestMatchers("/web/login").permitAll()
+                        // Autenticacao web publica; POSTs continuam protegidos por CSRF.
+                        .requestMatchers("/web/login", "/web/renovar", "/web/auth/**", "/assets/**").permitAll()
                         // Logout web — precisa estar autenticado (o filtro extrai o token do cookie)
                         .requestMatchers("/web/logout").authenticated()
                         // Gerenciamento de carrinho
@@ -96,7 +113,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider(userDetailsService))
                 .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtUtil, userDetailsService, tokenBlocklistService),
+                        new JwtAuthenticationFilter(jwtUtil, userDetailsService, autenticacao),
                         UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
@@ -109,8 +126,12 @@ public class SecurityConfig {
         return (request, response, authException) -> {
             // Requisições web (Thymeleaf): redireciona para login
             String accept = request.getHeader("Accept");
-            if (accept != null && accept.contains("text/html")) {
-                response.sendRedirect("/web/login");
+            if (request.getRequestURI().startsWith("/web/") && accept != null && accept.contains("text/html")) {
+                if ("GET".equals(request.getMethod()) && AuthCookieService.ler(request, "refresh_token") != null) {
+                    String destino = request.getRequestURI();
+                    if (request.getQueryString() != null) destino += "?" + request.getQueryString();
+                    response.sendRedirect("/web/renovar?destino=" + URLEncoder.encode(destino, StandardCharsets.UTF_8));
+                } else response.sendRedirect("/web/login");
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
             }
@@ -142,14 +163,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:http://localhost:8080}") String origens) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "https://*.vercel.app",
-                "https://*.render.com",
-                "http://localhost:*",
-                "http://127.0.0.1:*"
-        ));
+        configuration.setAllowedOrigins(Arrays.stream(origens.split(",")).map(String::trim)
+                .filter(origem -> !origem.isEmpty()).toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -158,6 +176,8 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        return source;
+        // O fluxo web e same-origin; CORS configuravel e reservado aos clientes da API.
+        return request -> request.getRequestURI().startsWith("/web/")
+                ? new CorsConfiguration() : source.getCorsConfiguration(request);
     }
 }

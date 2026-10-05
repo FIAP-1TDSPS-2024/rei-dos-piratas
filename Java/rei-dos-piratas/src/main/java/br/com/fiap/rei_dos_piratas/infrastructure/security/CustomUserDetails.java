@@ -16,6 +16,9 @@ public class CustomUserDetails implements UsuarioDetails{
     @Getter
     private br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta tipo;
     private boolean ativo;
+    @Getter
+    @lombok.Setter
+    private java.util.UUID sessaoId;
 
     public CustomUserDetails(Long id, String user, String password, List<? extends GrantedAuthority> authorities) {
         this(id, user, password, authorities, br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta.CLIENTE, true);

@@ -22,17 +22,26 @@ public class JwtUtil implements br.com.fiap.rei_dos_piratas.application.service.
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}")
+    @Value("${jwt.expiration:900000}")
     private Long expiration;
 
     private SecretKey signingKey;
 
     @Override
-    public String emitir(br.com.fiap.rei_dos_piratas.domain.entity.Conta conta) {
+    public String emitir(br.com.fiap.rei_dos_piratas.domain.entity.Conta conta,
+                         br.com.fiap.rei_dos_piratas.domain.entity.Sessao sessao) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("tipo", conta.identidade().tipo().name());
         claims.put("uid", conta.identidade().id());
-        return createToken(claims, conta.identidade().subject(), expiration);
+        claims.put("sid", sessao.getId().toString());
+        long restante = sessao.getExpiraEm().toEpochMilli() - System.currentTimeMillis();
+        return createToken(claims, conta.identidade().subject(), Math.min(expiration, restante));
+    }
+
+    public java.util.UUID extractSessaoId(String token) {
+        String id = extractAllClaims(token).get("sid", String.class);
+        if (id == null) throw new IllegalArgumentException("Token sem sessao");
+        return java.util.UUID.fromString(id);
     }
 
     public br.com.fiap.rei_dos_piratas.domain.entity.IdentidadeConta extractIdentidade(String token) {

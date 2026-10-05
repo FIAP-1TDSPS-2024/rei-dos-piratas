@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuar - Rei dos Piratas</title>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body>
+    <p>Continuando seu acesso…</p>
+    <noscript><a href="/web/login">Entre novamente para continuar.</a></noscript>
+    <script th:inline="javascript">
+        window.webAuth.renew(true)
+            .then(() => location.replace(/*[[${destino}]]*/ '/web/produtos'))
+            .catch(() => location.replace('/web/login?error'));
+    </script>
+</body>
+</html>

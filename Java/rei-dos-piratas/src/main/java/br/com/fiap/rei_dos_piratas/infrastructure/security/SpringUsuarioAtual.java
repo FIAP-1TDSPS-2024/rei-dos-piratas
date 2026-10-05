@@ -8,6 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SpringUsuarioAtual implements UsuarioAtualService {
+    public java.util.UUID sessaoId() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof CustomUserDetails details)
+                || details.getSessaoId() == null) throw new CredenciaisInvalidasException();
+        return details.getSessaoId();
+    }
+
     public IdentidadeConta identidade() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()

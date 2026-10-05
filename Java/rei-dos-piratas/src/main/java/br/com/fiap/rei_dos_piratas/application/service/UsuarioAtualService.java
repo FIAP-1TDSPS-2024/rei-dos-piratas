@@ -4,4 +4,5 @@ import br.com.fiap.rei_dos_piratas.domain.entity.IdentidadeConta;
 
 public interface UsuarioAtualService {
     IdentidadeConta identidade();
+    java.util.UUID sessaoId();
 }
