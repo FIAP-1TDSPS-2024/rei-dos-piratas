@@ -23,7 +23,7 @@ class DatabaseMigrationIntegrationTest {
 
     @Test
     void appliesAllProductionMigrations() {
-        assertEquals(32, flyway.info().applied().length);
+        assertEquals(33, flyway.info().applied().length);
         assertEquals(0, flyway.info().pending().length);
         flyway.validate();
     }

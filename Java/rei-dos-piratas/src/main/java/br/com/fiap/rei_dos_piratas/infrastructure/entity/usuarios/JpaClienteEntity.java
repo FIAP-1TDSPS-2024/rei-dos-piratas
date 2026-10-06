@@ -20,6 +20,7 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
     private LocalDate dataNascimento;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private SexoEnum sexo;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = false)

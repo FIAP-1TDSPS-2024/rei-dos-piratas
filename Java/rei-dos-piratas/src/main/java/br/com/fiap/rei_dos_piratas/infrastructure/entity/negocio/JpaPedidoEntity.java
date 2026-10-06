@@ -40,6 +40,7 @@ public class JpaPedidoEntity {
     private BigDecimal valorFrete;
 
     @Column(nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
     private StatusEnum status;
 
     @ManyToOne(fetch = FetchType.LAZY)

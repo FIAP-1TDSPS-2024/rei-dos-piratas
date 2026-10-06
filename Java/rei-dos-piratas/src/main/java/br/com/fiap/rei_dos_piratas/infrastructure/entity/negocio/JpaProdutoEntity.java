@@ -30,6 +30,7 @@ public class JpaProdutoEntity {
     private String autor;
 
     @Column(nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
     private CategoriaEnum categoria;
 
     @Column(nullable = false)
@@ -53,6 +54,7 @@ public class JpaProdutoEntity {
     private BigDecimal peso;
 
     @Column(nullable = false, length = 255)
+    @Enumerated(EnumType.STRING)
     private CondicaoEnum condicao;
 
     @ManyToOne(fetch = FetchType.LAZY)
