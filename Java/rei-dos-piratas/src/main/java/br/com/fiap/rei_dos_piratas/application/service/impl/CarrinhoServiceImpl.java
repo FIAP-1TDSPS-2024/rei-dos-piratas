@@ -152,6 +152,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Carrinho visualizarCarrinho() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         log.debug("[CARRINHO] Visualizando carrinho do cliente ID={}", userDetails.getId());

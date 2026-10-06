@@ -55,7 +55,7 @@ public class PedidoServiceImpl implements PedidoService {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //Verifica se usuário é um funcionário procurando uma ROLE comum a todos
-        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("PEDIDO_WRITE"))) {
+        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_PEDIDO_WRITE"))) {
             log.debug("Listando todos os pedidos (funcionário ID={}) — página={}, tamanho={}", userDetails.getId(), pageNumber, pageSize);
             return this.repository.listAll(pageNumber, pageSize);
         } else {

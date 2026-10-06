@@ -6,6 +6,8 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEnti
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco.JpaEnderecoMapper;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -58,6 +60,8 @@ public class JpaPedidoEntity {
 
     private String notaFiscal;
 
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(length = 36)
     private UUID pedidoFrete;
 
     private String protocoloEnvio;
@@ -66,6 +70,7 @@ public class JpaPedidoEntity {
 
     private String tracking;
 
+    @Column(length = 500)
     private String trackingUrl;
 
 }

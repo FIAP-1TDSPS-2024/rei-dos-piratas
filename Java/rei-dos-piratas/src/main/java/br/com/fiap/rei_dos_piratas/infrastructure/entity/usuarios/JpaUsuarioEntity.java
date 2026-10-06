@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class JpaUsuarioEntity {
+public abstract class JpaUsuarioEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

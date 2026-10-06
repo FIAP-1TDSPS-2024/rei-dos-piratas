@@ -8,6 +8,8 @@ import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaDevolucaoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaDevolucaoEntityRepository;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.persistence.EntityManager;
+import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +18,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
+@Transactional(readOnly = true)
 public class DevolucaoRepositoryImpl implements DevolucaoRepository {
 
     private final JpaDevolucaoEntityRepository repository;
+    private final EntityManager entityManager;
 
-    public DevolucaoRepositoryImpl(JpaDevolucaoEntityRepository repository) {
+    public DevolucaoRepositoryImpl(JpaDevolucaoEntityRepository repository, EntityManager entityManager) {
         this.repository = repository;
+        this.entityManager = entityManager;
+    }
+
+    private JpaDevolucaoEntity comReferenciasGerenciadas(Devolucao devolucao) {
+        JpaDevolucaoEntity entity = JpaDevolucaoMapper.toJpaEntity(devolucao);
+        entity.setPedido(entityManager.getReference(JpaPedidoEntity.class, devolucao.getPedido().getId()));
+        entity.setMotivo(entityManager.getReference(JpaMotivoDevolucaoEntity.class, devolucao.getMotivo().getId()));
+        entity.getItens().forEach(item -> item.setItemPedido(
+                entityManager.getReference(JpaProdutosPedidoEntity.class, item.getItemPedido().getId())));
+        return entity;
     }
 
     @Override
@@ -64,20 +78,22 @@ public class DevolucaoRepositoryImpl implements DevolucaoRepository {
     }
 
     @Override
+    @Transactional
     public Devolucao create(Devolucao devolucao) {
         log.debug("[REPO-DEVOLUCAO] Persistindo nova devolução para pedido ID={}", devolucao.getPedido().getId());
         Devolucao criada = JpaDevolucaoMapper.toEntity(
-                this.repository.save(JpaDevolucaoMapper.toJpaEntity(devolucao)));
+                this.repository.save(comReferenciasGerenciadas(devolucao)));
         log.info("[REPO-DEVOLUCAO] Devolução criada com sucesso - ID={}, pedidoId={}", criada.getId(), criada.getPedido().getId());
         return criada;
     }
 
     @Override
+    @Transactional
     public Devolucao update(Devolucao devolucao) {
         log.debug("[REPO-DEVOLUCAO] Atualizando devolução ID={}", devolucao.getId());
         if (this.repository.findById(devolucao.getId()).isPresent()) {
             Devolucao atualizada = JpaDevolucaoMapper.toEntity(
-                    this.repository.save(JpaDevolucaoMapper.toJpaEntity(devolucao)));
+                    this.repository.save(comReferenciasGerenciadas(devolucao)));
             log.debug("[REPO-DEVOLUCAO] Devolução ID={} atualizada com sucesso", devolucao.getId());
             return atualizada;
         } else {
@@ -94,6 +110,7 @@ public class DevolucaoRepositoryImpl implements DevolucaoRepository {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         log.debug("[REPO-DEVOLUCAO] Deletando devolução ID={}", id);
         this.repository.deleteById(id);
@@ -116,4 +133,3 @@ public class DevolucaoRepositoryImpl implements DevolucaoRepository {
         this.repository.updateStatusBatch(ids, newStatus);
     }
 }
-

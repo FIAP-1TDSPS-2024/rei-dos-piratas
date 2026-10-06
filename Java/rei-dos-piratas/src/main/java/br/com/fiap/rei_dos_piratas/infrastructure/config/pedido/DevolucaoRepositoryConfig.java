@@ -10,8 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class DevolucaoRepositoryConfig {
 
     @Bean
-    public DevolucaoRepository devolucaoRepository(JpaDevolucaoEntityRepository jpaDevolucaoEntityRepository) {
-        return new DevolucaoRepositoryImpl(jpaDevolucaoEntityRepository);
+    public DevolucaoRepository devolucaoRepository(JpaDevolucaoEntityRepository jpaDevolucaoEntityRepository, jakarta.persistence.EntityManager entityManager) {
+        return new DevolucaoRepositoryImpl(jpaDevolucaoEntityRepository, entityManager);
     }
 }
-

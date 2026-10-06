@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EnumPersistenceIntegrationTest {
     @Autowired EntityManager em;
     @Autowired JpaPedidoEntityRepository pedidos;
+    @Autowired br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaDevolucaoEntityRepository devolucoes;
 
     @BeforeEach
     void dados() {
@@ -38,9 +39,48 @@ class EnumPersistenceIntegrationTest {
                     'https://example.com/manga.jpg', 29.90, 29.90, 10, 'NOVO', 1)
                 """).executeUpdate();
         em.createNativeQuery("""
-                INSERT INTO PEDIDOS (id, data_pedido, valor_total, valor_frete, status, cliente_id, endereco_entrega_id)
-                VALUES (9500, CURRENT_DATE, 29.90, 10, 'PREPARANDO_ENVIO', 9500, (SELECT MIN(id) FROM ENDERECO))
+                INSERT INTO PEDIDOS (id, data_pedido, valor_total, valor_frete, status, cliente_id, endereco_entrega_id, pedido_frete)
+                VALUES (9500, CURRENT_DATE, 29.90, 10, 'PREPARANDO_ENVIO', 9500, (SELECT MIN(id) FROM ENDERECO), '123e4567-e89b-12d3-a456-426614174000')
                 """).executeUpdate();
+    }
+
+    @Test
+    void uuidDeFreteTextualPodeSerLidoGravadoEBuscadoEmPedidosEDevolucoes() {
+        var original = java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        var novo = java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
+        assertThat(pedidos.findByIdsAndStatus(List.of(9500L), StatusEnum.PREPARANDO_ENVIO))
+                .extracting(p -> p.getPedidoFrete()).containsExactly(original);
+        var pedido = pedidos.findByPedidoFrete(original).orElseThrow();
+        assertThat(pedido.getId()).isEqualTo(9500L);
+        pedido.setPedidoFrete(novo);
+        em.flush();
+        em.clear();
+        assertThat(em.createNativeQuery("SELECT pedido_frete FROM PEDIDOS WHERE id = 9500").getSingleResult())
+                .isEqualTo(novo.toString());
+        assertThat(pedidos.findByPedidoFrete(novo).orElseThrow().getPedidoFrete()).isEqualTo(novo);
+
+        em.createNativeQuery("""
+                INSERT INTO DEVOLUCOES (id, pedido_id, motivo, motivo_devolucao_id, data_solicitacao, status, pedido_frete)
+                VALUES (9500, 9500, 'ARREPENDIMENTO',
+                    (SELECT id FROM MOTIVOS_DEVOLUCAO WHERE codigo = 'ARREPENDIMENTO'),
+                    CURRENT_DATE, 'PREPARANDO_RETORNO', '123e4567-e89b-12d3-a456-426614174000')
+                """).executeUpdate();
+        var devolucao = devolucoes.findByPedidoFrete(original).orElseThrow();
+        assertThat(devolucao.getId()).isEqualTo(9500L);
+        assertThat(devolucoes.findByIdsAndStatus(List.of(9500L), StatusDevolucaoEnum.PREPARANDO_RETORNO))
+                .extracting(d -> d.getPedidoFrete()).containsExactly(original);
+        devolucao.setPedidoFrete(novo);
+        em.flush();
+        em.clear();
+        assertThat(em.createNativeQuery("SELECT pedido_frete FROM DEVOLUCOES WHERE id = 9500").getSingleResult())
+                .isEqualTo(novo.toString());
+        assertThat(devolucoes.findByPedidoFrete(novo).orElseThrow().getPedidoFrete()).isEqualTo(novo);
+        devolucoes.findById(9500L).orElseThrow().setPedidoFrete(null);
+        pedidos.findById(9500L).orElseThrow().setPedidoFrete(null);
+        em.flush();
+        em.clear();
+        assertThat(pedidos.findById(9500L).orElseThrow().getPedidoFrete()).isNull();
+        assertThat(devolucoes.findById(9500L).orElseThrow().getPedidoFrete()).isNull();
     }
 
     @Test

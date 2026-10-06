@@ -53,7 +53,7 @@ public class JpaPedidoMapper {
                 pedido.getProdutosAdicionados()
                         .stream()
                         .map(JpaItemProdutoMapper::toJpaProdutosPedidosEntity)
-                        .toList(),
+                        .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new)),
                 JpaEnderecoMapper.toJpaEntity(pedido.getEnderecoEntrega()),
                 pedido.getServicoEntrega(),
                 pedido.getNotaFiscal(),

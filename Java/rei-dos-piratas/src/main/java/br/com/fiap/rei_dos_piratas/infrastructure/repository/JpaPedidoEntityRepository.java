@@ -25,7 +25,7 @@ public interface JpaPedidoEntityRepository extends JpaRepository<JpaPedidoEntity
     @Query("SELECT p FROM JpaPedidoEntity p WHERE p.id IN :ids AND p.status = :status")
     List<JpaPedidoEntity> findByIdsAndStatus(@Param("ids") List<Long> ids, @Param("status") StatusEnum status);
 
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE JpaPedidoEntity p SET p.status = :newStatus WHERE p.id IN :ids")
     void updateStatusBatch(@Param("ids") List<Long> ids, @Param("newStatus") StatusEnum newStatus);
 }

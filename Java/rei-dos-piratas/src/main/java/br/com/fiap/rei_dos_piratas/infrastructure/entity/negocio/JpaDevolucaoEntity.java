@@ -3,6 +3,8 @@ package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,6 +56,8 @@ public class JpaDevolucaoEntity {
 
     private Long servicoEntrega;
 
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(length = 36)
     private UUID pedidoFrete;
 
     private String protocoloEnvio;
@@ -62,6 +66,6 @@ public class JpaDevolucaoEntity {
 
     private String tracking;
 
+    @Column(length = 500)
     private String trackingUrl;
 }
-

@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
+@Transactional(readOnly = true)
 public class PedidoRepositoryImpl implements PedidoRepository {
 
     private final JpaPedidoEntityRepository repository;
@@ -56,6 +57,7 @@ public class PedidoRepositoryImpl implements PedidoRepository {
     }
 
     @Override
+    @Transactional
     public Pedido create(Pedido pedido) {
         log.debug("[REPO-PEDIDO] Persistindo novo pedido no banco");
         Pedido criado = JpaPedidoMapper.toEntity(
@@ -65,6 +67,7 @@ public class PedidoRepositoryImpl implements PedidoRepository {
     }
 
     @Override
+    @Transactional
     public Pedido update(Pedido pedido) {
         log.debug("[REPO-PEDIDO] Atualizando pedido ID={}", pedido.getId());
         Optional<JpaPedidoEntity> pedidoExistente = this.repository.findById(pedido.getId());

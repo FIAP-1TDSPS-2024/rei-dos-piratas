@@ -26,8 +26,7 @@ public interface JpaDevolucaoEntityRepository extends JpaRepository<JpaDevolucao
     @Query("SELECT d FROM JpaDevolucaoEntity d WHERE d.id IN :ids AND d.status = :status")
     List<JpaDevolucaoEntity> findByIdsAndStatus(@Param("ids") List<Long> ids, @Param("status") StatusDevolucaoEnum status);
 
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE JpaDevolucaoEntity d SET d.status = :newStatus WHERE d.id IN :ids")
     void updateStatusBatch(@Param("ids") List<Long> ids, @Param("newStatus") StatusDevolucaoEnum newStatus);
 }
-

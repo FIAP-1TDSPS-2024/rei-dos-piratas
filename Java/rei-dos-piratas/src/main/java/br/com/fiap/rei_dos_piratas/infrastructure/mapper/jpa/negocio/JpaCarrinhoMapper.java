@@ -26,7 +26,7 @@ public class JpaCarrinhoMapper {
                 carrinho.getProdutosAdicionados()
                         .stream()
                         .map(JpaItemProdutoMapper::toJpaProdutosCarrinhoEntity)
-                        .toList()
+                        .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new))
         );
 
         jpaCarrinho

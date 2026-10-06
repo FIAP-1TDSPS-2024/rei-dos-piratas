@@ -47,9 +47,9 @@ public class JpaDevolucaoMapper {
                 jpaPedido,
                 jpaMotivo,
                 devolucao.getDescricao(),
-                devolucao.getItens() == null ? Collections.emptyList() : devolucao.getItens().stream()
+                devolucao.getItens() == null ? new java.util.ArrayList<>() : devolucao.getItens().stream()
                         .map(JpaItemDevolucaoMapper::toJpaEntity)
-                        .toList(),
+                        .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new)),
                 devolucao.getValorTotal(),
                 devolucao.getValorFrete(),
                 devolucao.getStatus(),
@@ -71,4 +71,3 @@ public class JpaDevolucaoMapper {
 
     private JpaDevolucaoMapper() {}
 }
-
