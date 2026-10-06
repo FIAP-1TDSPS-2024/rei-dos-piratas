@@ -25,4 +25,10 @@ public interface JpaFuncionarioEntityRepository extends JpaRepository<JpaFuncion
            "LEFT JOIN FETCH p.roles " +
            "WHERE f.email = :email")
     Optional<JpaFuncionarioEntity> findByEmailWithRoles(@Param("email") String email);
+
+    @Query("SELECT f FROM JpaFuncionarioEntity f " +
+           "LEFT JOIN FETCH f.perfil p " +
+           "LEFT JOIN FETCH p.roles " +
+           "WHERE f.id = :id")
+    Optional<JpaFuncionarioEntity> findByIdWithRoles(@Param("id") Long id);
 }

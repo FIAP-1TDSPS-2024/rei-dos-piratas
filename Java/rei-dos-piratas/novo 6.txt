@@ -1,0 +1,9 @@
+DB_PASSWORD=postgres
+DB_URL=jdbc:postgresql://postgres-local:5432/rei_dos_piratas
+DB_USER=postgres
+ME_CLIENT_ID=6820
+ME_REDIRECT_URI=https://google.com
+ME_SECRET=XP2gsVWtIrmzUypbSKzdc434TvEuxs2v2fUZS2Su
+ME_SERVICE_DEVOLUCAO=2
+ME_URL=https://sandbox.melhorenvio.com.br
+FLYWAY_ENABLED=true

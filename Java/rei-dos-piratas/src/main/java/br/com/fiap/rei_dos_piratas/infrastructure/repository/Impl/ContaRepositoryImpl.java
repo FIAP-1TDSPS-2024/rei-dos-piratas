@@ -42,7 +42,7 @@ public class ContaRepositoryImpl implements ContaRepository {
     public Optional<Conta> findByIdentidade(IdentidadeConta identidade) {
         try {
             Usuario usuario = identidade.tipo() == TipoConta.CLIENTE
-                    ? clientes.findById(identidade.id()) : funcionarios.findById(identidade.id());
+                    ? clientes.findById(identidade.id()) : funcionarios.findByIdWithRoles(identidade.id());
             return usuario == null ? Optional.empty() : Optional.of(conta(identidade.tipo(), usuario));
         } catch (NoSuchElementException e) {
             return Optional.empty();

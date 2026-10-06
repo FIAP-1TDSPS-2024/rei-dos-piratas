@@ -38,6 +38,12 @@ public class FuncionarioRepositoryImpl implements FuncionarioRepository {
     }
 
     @Override
+    public Funcionario findByIdWithRoles(Long id) {
+        return JpaFuncionarioMapper.toEntityWithRoles(
+                this.repository.findByIdWithRoles(id).orElseThrow());
+    }
+
+    @Override
     public Funcionario create(Funcionario funcionario) {
         log.debug("[REPO-FUNCIONARIO] Verificando duplicidade antes de criar funcionário - username='{}', email='{}'",
                 funcionario.getUsername(), funcionario.getEmail());

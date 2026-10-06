@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface FuncionarioRepository {
     Page<Funcionario> listAll(int pageNumber, int pageSize);
     Funcionario findById(Long id);
+    Funcionario findByIdWithRoles(Long id);
     Funcionario create(Funcionario funcionario);
     Funcionario update(Funcionario funcionario);
     Page<Funcionario> findAllByUsuarioAtivoTrue(int pageNumber, int pageSize);
