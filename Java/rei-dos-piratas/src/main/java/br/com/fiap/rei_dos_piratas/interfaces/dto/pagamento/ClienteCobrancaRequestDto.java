@@ -1,6 +1,6 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento;
 
-public record ClienteCobrancaRequentDto(
+public record ClienteCobrancaRequestDto(
         String name,
         String cpfCnpj,
         String email,
