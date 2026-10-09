@@ -655,7 +655,7 @@ class CarrinhoServiceImplTest {
         when(carrinhoRepository.update(any(Carrinho.class))).thenReturn(carrinhoLimpo);
 
         // Act
-        Pedido resultado = carrinhoService.finalizarCompra(endereco, freteServiceId);
+        Pedido resultado = carrinhoService.finalizarCompra(endereco, freteServiceId, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX);
 
         // Assert
         verify(clienteService, times(2)).findById(1L); // Uma para finalizar e outra para limpar
@@ -711,7 +711,7 @@ class CarrinhoServiceImplTest {
         when(clienteService.findById(1L)).thenReturn(cliente);
 
         // Act & Assert
-        assertThatThrownBy(() -> carrinhoService.finalizarCompra(endereco, 3L))
+        assertThatThrownBy(() -> carrinhoService.finalizarCompra(endereco, 3L, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX))
                 .isInstanceOf(RegraDeNegocioException.class)
                 .hasMessageContaining("O carrinho está vazio");
 

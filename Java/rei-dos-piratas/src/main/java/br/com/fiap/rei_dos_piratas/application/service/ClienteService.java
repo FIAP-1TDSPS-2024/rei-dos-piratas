@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.application.service;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
+import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 
 public interface ClienteService {
     Page<Cliente> listAll(int pageNumber, int pageSize);
@@ -17,4 +18,6 @@ public interface ClienteService {
     Cliente update(Cliente cliente);
 
     void delete();
+
+    Cliente obterOuCriarClienteCobranca(Cliente cliente, Endereco endereco);
 }

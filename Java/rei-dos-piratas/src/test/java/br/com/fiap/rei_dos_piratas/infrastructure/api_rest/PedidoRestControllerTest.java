@@ -173,7 +173,7 @@ class PedidoRestControllerTest {
         List<ItemProdutoInDto> produtosIn = new ArrayList<>();
         produtosIn.add(new ItemProdutoInDto(1L, 2));
 
-        PedidoInDto pedidoIn = new PedidoInDto(FRETE_SERVICE_ID, 1L, produtosIn);
+        PedidoInDto pedidoIn = new PedidoInDto(FRETE_SERVICE_ID, 1L, produtosIn, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX);
 
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,

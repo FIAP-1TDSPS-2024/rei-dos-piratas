@@ -148,7 +148,7 @@ class CarrinhoControllerImplTest {
     @Test
     void finalizarCompra() {
         Endereco endereco = criarEndereco();
-        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(FRETE_SERVICE_ID, 1L);
+        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(FRETE_SERVICE_ID, 1L, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX);
 
         Cliente cliente = new Cliente(
                 1L,
@@ -176,11 +176,11 @@ class CarrinhoControllerImplTest {
         pedido.setValorTotal(BigDecimal.valueOf(221.19));
 
         when(enderecoService.findById(1L)).thenReturn(endereco);
-        when(carrinhoService.finalizarCompra(endereco, FRETE_SERVICE_ID)).thenReturn(pedido);
+        when(carrinhoService.finalizarCompra(endereco, FRETE_SERVICE_ID, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX)).thenReturn(pedido);
 
         carrinhoController.finalizarCompra(pedidoIn);
 
         verify(enderecoService, times(1)).findById(1L);
-        verify(carrinhoService, times(1)).finalizarCompra(endereco, FRETE_SERVICE_ID);
+        verify(carrinhoService, times(1)).finalizarCompra(endereco, FRETE_SERVICE_ID, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX);
     }
 }

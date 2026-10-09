@@ -47,7 +47,7 @@ class ClienteServiceImplTest {
         when(perfilRepository.findByNome("CLIENT")).thenReturn(perfilCliente);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository, validator, mock(ContaRepository.class), new br.com.fiap.rei_dos_piratas.infrastructure.security.SpringUsuarioAtual());
+        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository, validator, mock(ContaRepository.class), new br.com.fiap.rei_dos_piratas.infrastructure.security.SpringUsuarioAtual(), mock(br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient.class));
     }
 
     @AfterEach

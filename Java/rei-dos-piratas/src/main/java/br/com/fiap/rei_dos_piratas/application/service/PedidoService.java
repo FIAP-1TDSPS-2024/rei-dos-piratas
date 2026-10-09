@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
 
 import java.util.List;
 import java.util.Map;
@@ -22,4 +23,5 @@ public interface PedidoService {
     void rastreioPedidoWebhook(Pedido pedido, RastreioWebhookDto rastreio);
     Optional<Pedido> findByPedidoFrete(UUID pedidoFrete);
     Pedido cancelarPedido(Long id);
+    PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id);
 }

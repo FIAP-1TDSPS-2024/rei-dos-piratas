@@ -17,5 +17,13 @@ public record ClienteOutDto(
         LocalDate dataCadastro,
         LocalDate dataNascimento,
         SexoEnum sexo,
-        Carrinho carrinho
-) {}
+        Carrinho carrinho,
+        String idCobranca
+) {
+    public ClienteOutDto(Long id, String userName, String nomeCompleto, String cpf, String email, String celular,
+                         boolean usuarioAtivo, LocalDate dataCadastro, LocalDate dataNascimento, SexoEnum sexo,
+                         Carrinho carrinho) {
+        this(id, userName, nomeCompleto, cpf, email, celular, usuarioAtivo, dataCadastro, dataNascimento, sexo,
+                carrinho, null);
+    }
+}

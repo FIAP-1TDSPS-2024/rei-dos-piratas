@@ -109,7 +109,7 @@ public class ClienteRepositoryImpl implements ClienteRepository {
             entidadeGerenciada.setSexo(updCliente.getSexo());
             entidadeGerenciada.setCpf(updCliente.getCpf());
             entidadeGerenciada.setCelular(updCliente.getCelular());
-
+            entidadeGerenciada.setIdCobranca(updCliente.getIdCobranca());
             log.debug("[REPO-CLIENTE] Cliente ID={} atualizado (dirty-check Hibernate)", updCliente.getId());
             return JpaClienteMapper.toEntity(entidadeGerenciada);
         } else {

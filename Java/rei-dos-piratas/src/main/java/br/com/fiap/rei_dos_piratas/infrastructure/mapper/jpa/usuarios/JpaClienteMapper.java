@@ -25,6 +25,7 @@ public class JpaClienteMapper {
                 cliente.getCelular(),
                 jpaCarrinho
         );
+        clienteJpa.setIdCobranca(cliente.getIdCobranca());
 
         clienteJpa.getCarrinho().setCliente(clienteJpa);
 
@@ -48,6 +49,7 @@ public class JpaClienteMapper {
                 cliente.getCelular(),
                 jpaCarrinho
         );
+        clienteJpa.setIdCobranca(cliente.getIdCobranca());
 
         clienteJpa.getCarrinho().setCliente(clienteJpa);
 
@@ -56,7 +58,7 @@ public class JpaClienteMapper {
 
     public static Cliente toEntity(JpaClienteEntity jpaCliente) {
         if (jpaCliente == null) return null;
-        return new Cliente(
+        Cliente cliente = new Cliente(
                 jpaCliente.getId(),
                 jpaCliente.getUserName(),
                 jpaCliente.getNomeCompleto(),
@@ -71,6 +73,8 @@ public class JpaClienteMapper {
                 jpaCliente.getCelular(),
                 JpaCarrinhoMapper.toEntity(jpaCliente.getCarrinho())
         );
+        cliente.setIdCobranca(jpaCliente.getIdCobranca());
+        return cliente;
     }
 
     private JpaClienteMapper() {

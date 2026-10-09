@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.application.service;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Carrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
@@ -11,5 +12,5 @@ public interface CarrinhoService {
     Carrinho removerProduto(ItemProdutoPedido itemProdutoPedido);
     Carrinho limparCarrinho();
     Carrinho visualizarCarrinho();
-    Pedido finalizarCompra(Endereco enderecoEntrega, Long freteServiceId);
+    Pedido finalizarCompra(Endereco enderecoEntrega, Long freteServiceId, TipoPagamentoEnum tipoPagamento);
 }

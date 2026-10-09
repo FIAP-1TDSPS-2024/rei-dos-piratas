@@ -50,6 +50,7 @@ class PedidoFluxoIntegrationTest {
     @Autowired PedidoRepository pedidoRepo;
     @Autowired DevolucaoRepository devolucaoRepo;
     @MockBean FreteService fretes;
+    @MockBean br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient cobranca;
     TransactionTemplate tx;
     final UUID ida = UUID.fromString("123e4567-e89b-12d3-a456-426614174010");
     final UUID volta = UUID.fromString("123e4567-e89b-12d3-a456-426614174011");
@@ -83,6 +84,9 @@ class PedidoFluxoIntegrationTest {
             return null;
         });
         clienteLogado();
+        when(cobranca.criarNovoCliente(any())).thenReturn(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaResponseDto(
+                "customer","cus_000009601",LocalDate.now(),"Cliente Fluxo","52998224725","fluxo@example.com",null,
+                "11987654321","Rua Fluxo","100","Centro","01001000","9601",true));
         when(fretes.calcularFreteProdutos(anyString(), anyList())).thenReturn(List.of(
                 new FreteServiceDto(1L,"Entrega",new BigDecimal("10.25"),null,null,"BRL",3,null)));
         when(fretes.criarPedidoFrete(any())).thenReturn(new PedidoFreteResponseDto(
@@ -261,7 +265,7 @@ class PedidoFluxoIntegrationTest {
         carrinhos.adicionarProduto(new ItemProdutoPedido(produto,3));
         assertThat(carrinhos.visualizarCarrinho().getProdutosAdicionados()).hasSize(1);
         Endereco endereco = banco(() -> enderecos.findById(9601L));
-        Pedido pedido = carrinhos.finalizarCompra(endereco,1L);
+        Pedido pedido = carrinhos.finalizarCompra(endereco,1L, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX);
         assertThat(pedidos.findById(pedido.getId()).getProdutosAdicionados()).hasSize(1);
         assertThat(((Number)valor("SELECT COUNT(*) FROM CARRINHO_PRODUTO WHERE carrinho_id=9601")).intValue()).isZero();
     }

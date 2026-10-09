@@ -1,9 +1,11 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
@@ -12,6 +14,7 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
 import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
@@ -19,6 +22,9 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteRes
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaRequestDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,12 +47,18 @@ public class PedidoServiceImpl implements PedidoService {
 
     private final FreteService freteService;
 
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService) {
+    private final ClienteService clienteService;
+
+    private final CobrancaAppClient apiCobranca;
+
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, CobrancaAppClient apiCobranca) {
         this.repository = repository;
         this.produtoRepository = produtoRepository;
         this.enderecoService = enderecoService;
         this.dadosEmpresaRepository = dadosEmpresaRepository;
         this.freteService = freteService;
+        this.clienteService = clienteService;
+        this.apiCobranca = apiCobranca;
     }
 
     @Override
@@ -73,11 +85,30 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public Pedido findById(Long id) {
         log.debug("Buscando pedido por ID={}", id);
+        Pedido pedido;
         try {
-            return this.repository.findById(id);
+            pedido = this.repository.findById(id);
         } catch (NoSuchElementException e) {
             log.warn("Pedido não encontrado: ID={}", id);
             throw new ResourceNotFoundException("Não foi possível encontrar um pedido com o id " + id);
+        }
+
+        this.validarAcessoAoPedido(pedido);
+        return pedido;
+    }
+
+    private void validarAcessoAoPedido(Pedido pedido) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            return;
+        }
+
+        boolean funcionario = userDetails.getTipo() == TipoConta.FUNCIONARIO;
+        boolean dono = pedido.getCliente() != null && userDetails.getId().equals(pedido.getCliente().getId());
+
+        if (!funcionario && !dono) {
+            log.warn("Acesso negado: pedido ID={} solicitado pelo usuário ID={}", pedido.getId(), userDetails.getId());
+            throw new ResourceNotFoundException("Não foi possível encontrar um pedido com o id " + pedido.getId());
         }
     }
 
@@ -112,10 +143,38 @@ public class PedidoServiceImpl implements PedidoService {
         log.debug("Valor do frete definido: R${}, valor total do pedido: R${}", pedido.getValorFrete(), pedido.getValorTotal());
 
         this.verificaEAtualizaEstoqueparaPedido(pedido);
+
+        Cliente cliente = this.clienteService.obterOuCriarClienteCobranca(pedido.getCliente(), pedido.getEnderecoEntrega());
+        pedido.setCliente(cliente);
+
         Pedido pedidoCriado = this.repository.create(pedido);
+
         log.info("Pedido criado com sucesso: ID={}, status={}, valor total=R${}",
                 pedidoCriado.getId(), pedidoCriado.getStatus(), pedidoCriado.getValorTotal());
-        return pedidoCriado;
+
+        return this.criarCobrancaPedido(pedidoCriado);
+    }
+
+    private Pedido criarCobrancaPedido(Pedido pedido) {
+        PagamentoCobrancaRequestDto request = definirPagamentoCobrancaRequest(pedido);
+        PagamentoCobrancaResponseDto response = this.apiCobranca.criarNovaCobranca(request);
+
+        pedido.setIdCobranca(response.id());
+        pedido.setValorLiquido(response.netValue());
+
+        log.info("Cobrança criada com sucesso: ID={}, valor líquido=R${}", response.id(), response.netValue());
+
+        return this.repository.update(pedido);
+    }
+
+    private PagamentoCobrancaRequestDto definirPagamentoCobrancaRequest(Pedido pedido) {
+        return new PagamentoCobrancaRequestDto(
+                pedido.getCliente().getIdCobranca(),
+                pedido.getTipoPagamento(),
+                pedido.getValorTotal(),
+                LocalDate.now().plusDays(1),
+                "cobrança do pedido " + pedido.getId(),
+                pedido.getId().toString());
     }
 
     @Transactional
@@ -406,6 +465,24 @@ public class PedidoServiceImpl implements PedidoService {
         }
     }
 
+    @Override
+    public PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id) {
+        log.info("Iniciando consulta de QR Code de cobrança do pedido ID={}", id);
+        Pedido pedido = this.findById(id);
+
+        if (pedido.getStatus() != StatusEnum.AGUARDANDO_PAGAMENTO) {
+            log.warn("Pedido ID={} não está aguardando pagamento — status atual={}", id, pedido.getStatus());
+            throw new WrongStatusException("O pedido não está aguardando pagamento.");
+        }
+
+        if (pedido.getIdCobranca() == null) {
+            log.warn("Pedido ID={} não possui cobrança associada — não é possível gerar QR Code", id);
+            throw new RegraDeNegocioException("O pedido não possui cobrança associada.");
+        }
+
+        return this.apiCobranca.obterQrCodePix(pedido.getIdCobranca());
+    }
+
     private void verificaEAtualizaEstoqueparaPedido(Pedido pedido) {
         log.debug("Verificando estoque para {} produto(s) do pedido", pedido.getProdutosAdicionados().size());
         pedido.getProdutosAdicionados()
@@ -568,4 +645,6 @@ return pedido.getProdutosAdicionados()
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .add(pedido.getValorFrete());
     }
+
+
 }

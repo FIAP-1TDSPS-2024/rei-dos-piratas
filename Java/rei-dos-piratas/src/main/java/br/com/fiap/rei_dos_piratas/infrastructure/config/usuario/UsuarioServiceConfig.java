@@ -7,6 +7,7 @@ import br.com.fiap.rei_dos_piratas.application.service.impl.FuncionarioServiceIm
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
 import jakarta.validation.Validator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +19,8 @@ import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 public class UsuarioServiceConfig {
 
     @Bean
-    public ClienteService clienteService(ClienteRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas, UsuarioAtualService usuarioAtual) {
-        return new ClienteServiceImpl(repository, passwordEncoder, perfilRepository, validator, contas, usuarioAtual);
+    public ClienteService clienteService(ClienteRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas,     UsuarioAtualService usuarioAtual, CobrancaAppClient apiCobranca) {
+            return new ClienteServiceImpl(repository, passwordEncoder, perfilRepository, validator, contas, usuarioAtual, apiCobranca);
     }
 
     @Bean

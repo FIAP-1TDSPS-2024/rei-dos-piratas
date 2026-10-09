@@ -11,6 +11,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
@@ -87,7 +88,7 @@ public class PedidoControllerImpl implements PedidoController {
 
         Endereco enderecoEntrega = this.enderecoService.findById(pedido.EnderecoEntregaId());
 
-        Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, enderecoEntrega, items, pedido.freteServiceId());
+        Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, enderecoEntrega, items, pedido.freteServiceId(), pedido.tipoPagamento());
 
         return PedidoDtoMapper.toDto(
                 this.service.fazerPedido(pedidoEntity));
@@ -119,5 +120,10 @@ public class PedidoControllerImpl implements PedidoController {
     public PedidoOutDto cancelarPedido(Long id) {
         return PedidoDtoMapper.toDto(
                 this.service.cancelarPedido(id));
+    }
+
+    @Override
+    public PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id) {
+        return this.service.obterQrCodeCobrancaPix(id);
     }
 }

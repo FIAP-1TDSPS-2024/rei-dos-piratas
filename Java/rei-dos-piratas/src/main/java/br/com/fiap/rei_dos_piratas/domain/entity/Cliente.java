@@ -33,6 +33,9 @@ public class Cliente extends Usuario{
     @NotNull(message = "O cliente deve possuir um carrinho")
     private Carrinho carrinho;
 
+    /** ID do cliente na API de pagamentos. Opcional. */
+    private String idCobranca;
+
     public Cliente(
             String userName,
             String nomeCompleto,

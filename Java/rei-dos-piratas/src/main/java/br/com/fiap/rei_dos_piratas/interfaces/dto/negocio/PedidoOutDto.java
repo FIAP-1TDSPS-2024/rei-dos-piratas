@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.interfaces.dto.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
@@ -54,6 +55,18 @@ public record PedidoOutDto(
         // Código de rastreio
         String tracking,
         // URL de rastreio
-        String trackingUrl
+        String trackingUrl,
+        TipoPagamentoEnum tipoPagamento,
+        BigDecimal valorLiquido,
+        String idCobranca
 ) {
+    public PedidoOutDto(Long id, LocalDate dataPedido, LocalDate dataEntrega, LocalDate previsaoEntrega,
+                        LocalDate dataCancelamento, BigDecimal valorTotal, BigDecimal valorFrete, StatusEnum status,
+                        List<ItemProdutoOutDto> produtosAdicionados, String nomeCliente, String enderecoEntrega,
+                        String notaFiscal, UUID pedidoFrete, String protocoloEnvio, String statusEnvio,
+                        String tracking, String trackingUrl) {
+        this(id, dataPedido, dataEntrega, previsaoEntrega, dataCancelamento, valorTotal, valorFrete, status,
+                produtosAdicionados, nomeCliente, enderecoEntrega, notaFiscal, pedidoFrete, protocoloEnvio,
+                statusEnvio, tracking, trackingUrl, null, null, null);
+    }
 }

@@ -42,6 +42,7 @@ class PedidoServiceImplTest {
     private PedidoRepository pedidoRepository;
     private ProdutoRepository produtoRepository;
     private EnderecoService enderecoService;
+    private br.com.fiap.rei_dos_piratas.application.service.ClienteService clienteService;
     private FreteService freteService;
     private DadosEmpresaRepository dadosEmpresaRepository;
 
@@ -66,7 +67,9 @@ class PedidoServiceImplTest {
         this.enderecoService = mock(EnderecoService.class);
         HmacUtil hmacUtil = mock(HmacUtil.class);
         ObjectMapper objectMapper = new ObjectMapper();
-        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService);
+        this.clienteService = mock(br.com.fiap.rei_dos_piratas.application.service.ClienteService.class);
+        when(clienteService.obterOuCriarClienteCobranca(any(), any())).thenAnswer(inv -> inv.getArgument(0));
+        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService);
     }
 
     @AfterEach

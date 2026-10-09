@@ -3,20 +3,20 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
-import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
-import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
+import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ValidacaoException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaRequestDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaResponseDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import br.com.fiap.rei_dos_piratas.application.service.SenhaService;
 import br.com.fiap.rei_dos_piratas.domain.repository.ContaRepository;
-import br.com.fiap.rei_dos_piratas.domain.entity.IdentidadeConta;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedException;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,14 +36,16 @@ public class ClienteServiceImpl implements ClienteService {
     private final Validator validator;
     private final ContaRepository contas;
     private final UsuarioAtualService usuarioAtual;
+    private final CobrancaAppClient apiCobranca;
 
-    public ClienteServiceImpl(ClienteRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas, UsuarioAtualService usuarioAtual) {
+    public ClienteServiceImpl(ClienteRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas, UsuarioAtualService usuarioAtual, CobrancaAppClient apiCobranca) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.perfilRepository = perfilRepository;
         this.validator = validator;
         this.contas = contas;
         this.usuarioAtual = usuarioAtual;
+        this.apiCobranca = apiCobranca;
     }
 
     @Override
@@ -112,17 +114,25 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setUserName(updCliente.getUsername());
         cliente.setNomeCompleto(updCliente.getNomeCompleto());
         cliente.setEmail(updCliente.getEmail());
-        boolean atualizarSenha = updCliente.getPassword() != null && !updCliente.getPassword().isBlank();
-        if (atualizarSenha) {
-            log.debug("[CLIENTE] Atualização de senha solicitada para cliente ID={}", identidade.id());
-            cliente.setSenha(updCliente.getSenha());
-        }
         cliente.setDataNascimento(updCliente.getDataNascimento());
         cliente.setSexo(updCliente.getSexo());
         cliente.setCpf(updCliente.getCpf());
         cliente.setCelular(updCliente.getCelular());
+        if (updCliente.getIdCobranca() != null && !updCliente.getIdCobranca().isBlank()) {
+            cliente.setIdCobranca(updCliente.getIdCobranca());
+        }
+
+        boolean atualizarSenha = false;
+
+        if (updCliente.getPassword() != null && !updCliente.getPassword().isBlank()) {
+            // Cliente carregado do banco já traz o hash: igual ao atual significa que não há troca
+            boolean mesmoHash = updCliente.getPassword().equals(cliente.getSenha());
+            atualizarSenha = !mesmoHash && !this.passwordEncoder.matches(updCliente.getPassword(), cliente.getSenha());
+        }
 
         if (atualizarSenha) {
+            log.debug("[CLIENTE] Atualização de senha solicitada para cliente ID={}", identidade.id());
+            cliente.setSenha(updCliente.getSenha());
             validar(cliente);
             String encryptedPassword = this.passwordEncoder.encode(updCliente.getPassword());
             cliente.setSenha(encryptedPassword);
@@ -150,6 +160,40 @@ public class ClienteServiceImpl implements ClienteService {
         log.info("[CLIENTE] Desativando conta do cliente ID={}", identidade.id());
         this.repository.delete(identidade.id());
         log.info("[CLIENTE] Conta do cliente ID={} desativada com sucesso", identidade.id());
+    }
+
+    @Override
+    public Cliente obterOuCriarClienteCobranca(Cliente cliente, Endereco endereco) {
+        log.info("[COBRANCA - CLIENTE] Verificando se há cliente de cobrança para o cliente ID={}", cliente.getId());
+
+        if (cliente.getIdCobranca() != null && !cliente.getIdCobranca().isBlank()) {
+            log.info("[COBRANCA - CLIENTE] Cliente de cobrança já existe para o cliente ID={}", cliente.getId());
+            return cliente;
+        }
+
+        log.info("[COBRANCA - CLIENTE] Criando cliente de cobrança para o cliente ID={}", cliente.getId());
+        ClienteCobrancaRequestDto request = definirClienteCobrancaRequest(cliente, endereco);
+        ClienteCobrancaResponseDto response = this.apiCobranca.criarNovoCliente(request);
+
+        log.info("[COBRANCA - CLIENTE] Criado cliente de cobrança com ID {} para o cliente ID={}", response.id(), cliente.getId());
+        cliente.setIdCobranca(response.id());
+
+        return this.update(cliente);
+    }
+
+    private ClienteCobrancaRequestDto definirClienteCobrancaRequest(Cliente cliente, Endereco endereco) {
+        return new ClienteCobrancaRequestDto(
+                cliente.getNomeCompleto(),
+                cliente.getCpf(),
+                cliente.getEmail(),
+                cliente.getCelular(),
+                endereco.getLogradouro(),
+                String.valueOf(endereco.getNumero()),
+                endereco.getBairro(),
+                endereco.getCep(),
+                cliente.getId().toString(),
+                true
+        );
     }
 
     private void validar(Cliente cliente) {

@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -65,6 +66,17 @@ public class PedidoRestController {
     public ResponseEntity<PedidoOutDto> findById(@PathVariable("id") Long id) {
         PedidoOutDto pedido = this.controller.findById(id);
         return ResponseEntity.ok(pedido);
+    }
+
+    @Operation(summary = "Gerar QR Code Pix do pedido", description = "Retorna o QR Code Pix e o código copia e cola da cobrança do pedido")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "QR Code gerado"),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
+            @ApiResponse(responseCode = "400", description = "Pedido não está aguardando pagamento")
+    })
+    @GetMapping("/{id}/pix-qrcode")
+    public ResponseEntity<PixQrCodeResponseDto> obterQrCodePix(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(this.controller.obterQrCodeCobrancaPix(id));
     }
 
     @Operation(summary = "Fazer pedido", description = "Finaliza itens e cria um novo pedido")

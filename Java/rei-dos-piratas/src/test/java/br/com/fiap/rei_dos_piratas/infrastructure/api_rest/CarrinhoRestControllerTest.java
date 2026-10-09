@@ -250,7 +250,7 @@ class CarrinhoRestControllerTest {
                 null, null, null, null, null, null, null, null
         );
 
-        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(3L, 1L);
+        PedidoCarrinhoInDto pedidoIn = new PedidoCarrinhoInDto(3L, 1L, br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX);
         when(this.carrinhoController.finalizarCompra(any(PedidoCarrinhoInDto.class))).thenReturn(pedido);
 
         ObjectMapper mapper = new ObjectMapper();

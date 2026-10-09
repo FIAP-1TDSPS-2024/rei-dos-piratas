@@ -35,6 +35,9 @@ public class JpaClienteEntity extends JpaUsuarioEntity{
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private JpaCarrinhoEntity carrinho;
 
+    @Column(length = 50)
+    private String idCobranca;
+
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JpaPedidoEntity> pedidos;
 

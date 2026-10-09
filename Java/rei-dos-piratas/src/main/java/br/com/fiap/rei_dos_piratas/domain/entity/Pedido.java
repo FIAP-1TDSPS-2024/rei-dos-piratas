@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -66,12 +67,35 @@ public class Pedido {
 
     private String trackingUrl;
 
+    private TipoPagamentoEnum tipoPagamento;
+
+    @Digits(fraction = 2, integer = 10, message = "O valor líquido do pedido deve ter até 12 digitos com 2 dígitos após a vírgula")
+    private BigDecimal valorLiquido;
+
+    /** ID da cobrança na API de pagamentos. */
+    private String idCobranca;
+
+    public Pedido(Long id, LocalDate dataPedido, LocalDate dataEntrega, LocalDate dataPrevisaoEntrega,
+                  LocalDate dataCancelamento, BigDecimal valorTotal, BigDecimal valorFrete, StatusEnum status,
+                  Cliente cliente, List<ItemProdutoPedido> produtosAdicionados, Endereco enderecoEntrega,
+                  Long servicoEntrega, String notaFiscal, UUID pedidoFrete, String protocoloEnvio,
+                  String statusEnvio, String tracking, String trackingUrl) {
+        this(id, dataPedido, dataEntrega, dataPrevisaoEntrega, dataCancelamento, valorTotal, valorFrete, status,
+                cliente, produtosAdicionados, enderecoEntrega, servicoEntrega, notaFiscal, pedidoFrete,
+                protocoloEnvio, statusEnvio, tracking, trackingUrl, null, null, null);
+    }
+
     public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega) {
+        this(cliente, enderecoEntrega, produtosAdicionados, servicoEntrega, null);
+    }
+
+    public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega, TipoPagamentoEnum tipoPagamento) {
         this.dataPedido = LocalDate.now();
         this.status = StatusEnum.AGUARDANDO_PAGAMENTO;
         this.cliente = cliente;
         this.enderecoEntrega = enderecoEntrega;
         this.produtosAdicionados = produtosAdicionados;
         this.servicoEntrega = servicoEntrega;
+        this.tipoPagamento = tipoPagamento;
     }
 }

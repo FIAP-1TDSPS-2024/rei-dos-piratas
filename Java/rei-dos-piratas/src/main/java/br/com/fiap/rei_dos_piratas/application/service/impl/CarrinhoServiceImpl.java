@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
@@ -161,7 +162,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
     @Transactional
     @Override
-    public Pedido finalizarCompra(Endereco enderecoEntrega, Long freteServiceId) {
+    public Pedido finalizarCompra(Endereco enderecoEntrega, Long freteServiceId, TipoPagamentoEnum tipoPagamento) {
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Cliente cliente = clienteService.findById(userDetails.getId());
@@ -185,7 +186,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
                 .map(JpaItemProdutoMapper::toPedido)
                 .collect(Collectors.toList());
 
-        Pedido pedido = new Pedido(cliente, enderecoEntrega, produtosAdicionados, freteServiceId);
+        Pedido pedido = new Pedido(cliente, enderecoEntrega, produtosAdicionados, freteServiceId, tipoPagamento);
         Pedido pedidoFinalizado = this.pedidoService.fazerPedido(pedido);
 
         log.info("[CARRINHO] Compra finalizada com sucesso - pedido ID={} criado para cliente ID={}",

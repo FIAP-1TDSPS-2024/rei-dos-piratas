@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.endereco.JpaEnderecoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco.JpaEnderecoMapper;
@@ -72,5 +73,14 @@ public class JpaPedidoEntity {
 
     @Column(length = 500)
     private String trackingUrl;
+
+    @Column(length = 50)
+    @Enumerated(EnumType.STRING)
+    private TipoPagamentoEnum tipoPagamento;
+
+    private BigDecimal valorLiquido;
+
+    @Column(length = 50)
+    private String idCobranca;
 
 }

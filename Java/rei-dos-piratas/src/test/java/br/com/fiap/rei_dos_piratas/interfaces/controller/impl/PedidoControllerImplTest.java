@@ -162,7 +162,8 @@ class PedidoControllerImplTest {
         PedidoInDto inDto = new PedidoInDto(
                 FRETE_SERVICE_ID,
                 1L,
-                List.of(new ItemProdutoInDto(1L, 2))
+                List.of(new ItemProdutoInDto(1L, 2)),
+                br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX
         );
 
         when(clienteService.findById(1L)).thenReturn(cliente);

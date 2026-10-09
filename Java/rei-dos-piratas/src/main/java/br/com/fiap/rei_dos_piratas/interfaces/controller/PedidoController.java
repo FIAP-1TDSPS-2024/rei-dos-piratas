@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
 
 import java.util.List;
 import java.util.Map;
@@ -18,4 +19,5 @@ public interface PedidoController {
     Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos);
     String imprimirEtiquetasEnvio(List<Long> pedidos);
     PedidoOutDto cancelarPedido(Long id);
+    PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id);
 }

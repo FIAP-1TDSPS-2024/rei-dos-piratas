@@ -32,7 +32,8 @@ public class ClienteDtoMapper {
                 cliente.getDataCadastro(),
                 cliente.getDataNascimento(),
                 cliente.getSexo(),
-                cliente.getCarrinho());
+                cliente.getCarrinho(),
+                cliente.getIdCobranca());
     }
 
     private ClienteDtoMapper() {

@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
@@ -10,8 +11,8 @@ import java.util.List;
 
 public class PedidoDtoMapper {
 
-    public static Pedido toEntity(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtos, Long freteServiceId) {
-        return new Pedido(cliente, enderecoEntrega, produtos, freteServiceId);
+    public static Pedido toEntity(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtos, Long freteServiceId, TipoPagamentoEnum tipoPagamento) {
+        return new Pedido(cliente, enderecoEntrega, produtos, freteServiceId, tipoPagamento);
     }
 
     public static PedidoOutDto toDto(Pedido pedido) {
@@ -38,7 +39,10 @@ public class PedidoDtoMapper {
                 pedido.getProtocoloEnvio(),
                 pedido.getStatusEnvio(),
                 pedido.getTracking(),
-                pedido.getTrackingUrl()
+                pedido.getTrackingUrl(),
+                pedido.getTipoPagamento(),
+                pedido.getValorLiquido(),
+                pedido.getIdCobranca()
         );
     }
 
