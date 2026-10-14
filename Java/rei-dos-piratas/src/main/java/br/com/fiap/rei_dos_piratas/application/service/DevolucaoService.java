@@ -14,6 +14,7 @@ public interface DevolucaoService {
     Page<Devolucao> findAllByPedido(int pageNumber, int pageSize, Long pedidoId);
     Page<Devolucao> findAllByStatus(int pageNumber, int pageSize, StatusDevolucaoEnum status);
     List<Devolucao> findAllByPedidoId(Long pedidoId);
+    Optional<Devolucao> findDevolucaoAtivaByPedidoId(Long pedidoId);
     Devolucao findById(Long id);
     Devolucao solicitarDevolucao(Devolucao devolucao);
     Devolucao aprovarDevolucao(Long id);
@@ -23,4 +24,3 @@ public interface DevolucaoService {
     Optional<Devolucao> findByPedidoFrete(UUID pedidoFrete);
     void rastreioDevolucaoWebhook(Devolucao devolucao, RastreioWebhookDto rastreio);
 }
-

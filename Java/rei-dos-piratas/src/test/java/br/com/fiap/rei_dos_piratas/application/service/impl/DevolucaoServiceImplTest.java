@@ -66,6 +66,30 @@ class DevolucaoServiceImplTest {
     }
 
     @Test
+    void findDevolucaoAtivaByPedidoIdDeveIgnorarDevolucoesCanceladasOuRetornadas() {
+        Devolucao cancelada = new Devolucao();
+        cancelada.setStatus(StatusDevolucaoEnum.CANCELADO);
+        Devolucao ativa = new Devolucao();
+        ativa.setStatus(StatusDevolucaoEnum.PREPARANDO_RETORNO);
+        Devolucao retornada = new Devolucao();
+        retornada.setStatus(StatusDevolucaoEnum.RETORNADO);
+        when(repository.findAllByPedidoId(42L)).thenReturn(List.of(cancelada, ativa, retornada));
+
+        assertThat(service.findDevolucaoAtivaByPedidoId(42L)).containsSame(ativa);
+    }
+
+    @Test
+    void findDevolucaoAtivaByPedidoIdDeveRetornarVazioQuandoNaoHouverDevolucaoAtiva() {
+        Devolucao cancelada = new Devolucao();
+        cancelada.setStatus(StatusDevolucaoEnum.CANCELADO);
+        Devolucao retornada = new Devolucao();
+        retornada.setStatus(StatusDevolucaoEnum.RETORNADO);
+        when(repository.findAllByPedidoId(42L)).thenReturn(List.of(cancelada, retornada));
+
+        assertThat(service.findDevolucaoAtivaByPedidoId(42L)).isEmpty();
+    }
+
+    @Test
     void organizarDevePagarSomenteFretesElegiveisEAvancarDiretoParaPostagem() {
         Devolucao devolucao = prepararDevolucao(List.of(1L, 2L));
         List<String> fretes = List.of(devolucao.getPedidoFrete().toString());

@@ -22,6 +22,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteRes
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaRequestDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
@@ -481,6 +482,42 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         return this.apiCobranca.obterQrCodePix(pedido.getIdCobranca());
+    }
+
+    @Override
+    public void processarEventoCobranca(Long pedidoId, EventoCobrancaDto evento) {
+        log.info("Processando evento de cobrança para pedido ID={} — evento={}", pedidoId, evento.event());
+
+        switch (evento.event()) {
+            case "PAYMENT_RECEIVED":
+                log.info("Pagamento recebido para pedido ID={} — atualizando status para PREPARANDO_ENVIO", pedidoId);
+                this.pagarPedido(pedidoId);
+                break;
+
+            case "PAYMENT_OVERDUE":
+                log.info("Pagamento vencido para pedido ID={} — atualizando status para CANCELADO", pedidoId);
+                break;
+
+            case "PAYMENT_CREATED":
+                log.info("Cobrança criada para pedido ID={}", pedidoId);
+                break;
+
+            case "PAYMENT_AUTHORIZED":
+                log.info("Pagamento autorizado para pedido ID={}", pedidoId);
+                break;
+
+            case "PAYMENT_CONFIRMED":
+                log.info("Pagamento confirmado, aguardando saldo ser disponibilizado para pedido ID={}", pedidoId);
+                break;
+
+            case "PAYMENT_DELETED":
+                log.info("Cobrança deletada para pedido ID={}", pedidoId);
+                break;
+
+            default:
+                log.warn("Evento de cobrança desconhecido recebido: event={}, pedido ID={}", evento.event(), pedidoId);
+                break;
+        }
     }
 
     private void verificaEAtualizaEstoqueparaPedido(Pedido pedido) {

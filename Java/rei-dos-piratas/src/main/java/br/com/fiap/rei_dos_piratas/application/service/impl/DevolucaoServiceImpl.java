@@ -59,6 +59,15 @@ public class DevolucaoServiceImpl implements DevolucaoService {
     }
 
     @Override
+    public Optional<Devolucao> findDevolucaoAtivaByPedidoId(Long pedidoId) {
+        log.debug("[SERVICE-DEVOLUCAO] findDevolucaoAtivaByPedidoId - pedidoId={}", pedidoId);
+        return findAllByPedidoId(pedidoId).stream()
+                .filter(devolucao -> devolucao.getStatus() != StatusDevolucaoEnum.CANCELADO
+                        && devolucao.getStatus() != StatusDevolucaoEnum.RETORNADO)
+                .findFirst();
+    }
+
+    @Override
     public Devolucao findById(Long id) {
         log.debug("[SERVICE-DEVOLUCAO] findById - ID={}", id);
         return repository.findById(id);
@@ -325,4 +334,3 @@ devolucao.setAprovada(true);
     }
 
 }
-
