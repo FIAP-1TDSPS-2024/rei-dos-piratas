@@ -561,7 +561,7 @@ public class PedidoServiceImpl implements PedidoService {
         DestinoRemetenteDto remetente = this.definirRemetenteEmpresa(enderecoEmpresa, dadosEmpresa);
 
         //Definir cliente como destino
-        Endereco enderecoDestino = this.enderecoService.findById(pedido.getEnderecoEntrega().getId());
+        Endereco enderecoDestino = pedido.getEnderecoEntrega();
         Cliente cliente = pedido.getCliente();
         DestinoRemetenteDto destino = this.definirDestinoEntrega(enderecoDestino, cliente);
 

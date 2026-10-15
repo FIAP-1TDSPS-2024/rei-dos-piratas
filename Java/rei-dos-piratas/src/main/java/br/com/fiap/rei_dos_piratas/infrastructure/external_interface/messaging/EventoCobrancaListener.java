@@ -35,7 +35,7 @@ public class EventoCobrancaListener implements EventoListener{
 
         log.info("[ WEBHOOK COBRANCA ASAAS - SQS ] Evento recebido: ID: {}, Evento: {}",
                 evento.id(),
-                evento.event()
+                evento
         );;
 
         return evento;
