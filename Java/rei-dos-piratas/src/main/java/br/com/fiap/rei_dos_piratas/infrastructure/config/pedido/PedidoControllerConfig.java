@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.impl.PedidoControllerImpl;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PedidoControllerConfig {
     @Bean
-    public PedidoController pedidoController(PedidoService service, ClienteService clienteService, ProdutoService produtoService, EnderecoService enderecoService) {
-        return new PedidoControllerImpl(service, clienteService, produtoService, enderecoService);
+    public PedidoController pedidoController(PedidoService service, ClienteService clienteService, ProdutoService produtoService, EnderecoService enderecoService, UsuarioAtualService usuarioAtual) {
+        return new PedidoControllerImpl(service, clienteService, produtoService, enderecoService, usuarioAtual);
     }
 }

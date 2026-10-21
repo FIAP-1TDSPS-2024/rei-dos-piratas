@@ -31,4 +31,8 @@ public class ItemProdutoCarrinho {
         this.quantidade = quantidade;
         this.precoUnitario = produto.getPreco();
     }
+
+    public ItemProdutoPedido paraItemPedido() {
+        return new ItemProdutoPedido(this.produto, this.quantidade);
+    }
 }

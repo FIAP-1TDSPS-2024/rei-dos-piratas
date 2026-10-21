@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.endereco.EnderecoDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.endereco.EnderecoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.EnderecoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.EnderecoOutDto;

@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.application.service.impl.CarrinhoServiceImpl;
 import br.com.fiap.rei_dos_piratas.application.service.impl.PedidoServiceImpl;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
@@ -15,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CarrinhoServiceConfig {
     @Bean
-    public CarrinhoService carrinhoService(CarrinhoRepository carrinhoRepository, PedidoService pedidoService, ProdutoService produtoService, ClienteService clienteService) {
-        return new CarrinhoServiceImpl(carrinhoRepository, pedidoService, produtoService, clienteService);
+    public CarrinhoService carrinhoService(CarrinhoRepository carrinhoRepository, PedidoService pedidoService, ProdutoService produtoService, ClienteService clienteService, UsuarioAtualService usuarioAtual) {
+        return new CarrinhoServiceImpl(carrinhoRepository, pedidoService, produtoService, clienteService, usuarioAtual);
     }
 }

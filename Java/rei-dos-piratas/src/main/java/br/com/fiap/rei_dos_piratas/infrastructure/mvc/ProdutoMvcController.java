@@ -2,7 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.mvc;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ValidacaoException;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.ProdutoDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.ProdutoDtoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;

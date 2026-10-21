@@ -4,15 +4,14 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PedidoDtoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,10 @@ public class PedidoControllerImpl implements PedidoController {
 
     private final EnderecoService enderecoService;
 
-    public PedidoControllerImpl(PedidoService service, ClienteService clienteService, ProdutoService produtoService, EnderecoService enderecoService) {
+    private final UsuarioAtualService usuarioAtual;
+
+    public PedidoControllerImpl(PedidoService service, ClienteService clienteService, ProdutoService produtoService, EnderecoService enderecoService, UsuarioAtualService usuarioAtual) {
+        this.usuarioAtual = usuarioAtual;
         this.service = service;
         this.clienteService = clienteService;
         this.produtoService = produtoService;
@@ -75,8 +77,7 @@ public class PedidoControllerImpl implements PedidoController {
     @Override
     public PedidoOutDto fazerPedido(PedidoInDto pedido) {
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cliente cliente = clienteService.findById(userDetails.getId());
+        Cliente cliente = clienteService.findById(this.usuarioAtual.identidade().id());
 
         List<ItemProdutoPedido> items = pedido
                 .produtosAdicionados()

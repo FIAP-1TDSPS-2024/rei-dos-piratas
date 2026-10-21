@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.repository.Impl;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.repository.EnderecoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.endereco.JpaEnderecoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaEnderecoEntityRepository;
 import org.springframework.data.domain.Pageable;

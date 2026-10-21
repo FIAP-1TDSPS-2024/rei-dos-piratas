@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.endereco;
+package br.com.fiap.rei_dos_piratas.interfaces.mapper.endereco;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Cidade;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;

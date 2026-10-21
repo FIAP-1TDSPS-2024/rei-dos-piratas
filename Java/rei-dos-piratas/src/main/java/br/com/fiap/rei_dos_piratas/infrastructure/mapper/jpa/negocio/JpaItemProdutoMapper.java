@@ -7,11 +7,6 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaProdutosPedi
 
 public class JpaItemProdutoMapper {
 
-    public static ItemProdutoPedido toPedido(ItemProdutoCarrinho itemProdutoCarrinho) {
-        return new ItemProdutoPedido(
-                itemProdutoCarrinho.getProduto(),
-                itemProdutoCarrinho.getQuantidade());
-    }
 
     public static ItemProdutoCarrinho toEntity(JpaProdutosCarrinhoEntity jpaProdutosCarrinhoEntity) {
         return new ItemProdutoCarrinho(

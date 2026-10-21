@@ -29,7 +29,11 @@ public class DevolucaoServiceImpl implements DevolucaoService {
 
     private final FreteService freteService;
 
-    public DevolucaoServiceImpl(DevolucaoRepository repository, FreteService freteService) {
+    /** Id do servico de entrega (Melhor Envio) usado nas devolucoes; vem de ME_SERVICE_DEVOLUCAO. */
+    private final Long servicoEntregaDevolucao;
+
+    public DevolucaoServiceImpl(DevolucaoRepository repository, FreteService freteService, Long servicoEntregaDevolucao) {
+        this.servicoEntregaDevolucao = servicoEntregaDevolucao;
         this.repository = repository;
         this.freteService = freteService;
     }
@@ -79,6 +83,9 @@ public class DevolucaoServiceImpl implements DevolucaoService {
         log.info("[SERVICE-DEVOLUCAO] Solicitando devolução para pedido ID={}, motivo={}", devolucao.getPedido().getId(), devolucao.getMotivo());
         // Regras de negócio serão implementadas aqui
         Pedido pedido = devolucao.getPedido();
+        if (devolucao.getServicoEntrega() == null) {
+            devolucao.setServicoEntrega(this.servicoEntregaDevolucao);
+        }
         devolucao.setValorTotal(devolucao.getItens().stream()
                 .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
@@ -272,7 +279,7 @@ devolucao.setAprovada(true);
         DevolucaoOptionsDto optionsDto = new DevolucaoOptionsDto(false, false);
 
         return new DevolucaoFreteRequestDto(
-                Math.toIntExact(devolucao.getServicoEntrega()),
+                Math.toIntExact(this.servicoEntregaDaDevolucao(devolucao)),
                 devolucao.getPedido().getCliente().getEmail(),
                 devolucao.getPedido().getCliente().getCelular(),
                 devolucao.getValorTotal(),
@@ -280,6 +287,19 @@ devolucao.setAprovada(true);
                 devolucaoPackage,
                 optionsDto
         );
+    }
+
+    /** Usa o servico gravado na devolucao; devolucoes antigas (sem servico) usam o configurado. */
+    private Long servicoEntregaDaDevolucao(Devolucao devolucao) {
+        if (devolucao.getServicoEntrega() != null) {
+            return devolucao.getServicoEntrega();
+        }
+        if (this.servicoEntregaDevolucao == null) {
+            throw new IllegalStateException(
+                    "Servico de entrega para devolucoes nao configurado. Defina a variavel ME_SERVICE_DEVOLUCAO.");
+        }
+        devolucao.setServicoEntrega(this.servicoEntregaDevolucao);
+        return this.servicoEntregaDevolucao;
     }
 
     private DevolucaoPackageDto definirDimensoesPacote(Devolucao devolucao) {

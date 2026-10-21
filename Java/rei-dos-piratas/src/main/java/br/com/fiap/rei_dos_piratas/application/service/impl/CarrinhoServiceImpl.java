@@ -4,16 +4,14 @@ import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaItemProdutoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -32,7 +30,10 @@ public class CarrinhoServiceImpl implements CarrinhoService {
 
     private final ClienteService clienteService;
 
-    public CarrinhoServiceImpl(CarrinhoRepository repository, PedidoService pedidoService, ProdutoService produtoService, ClienteService clienteService) {
+    private final UsuarioAtualService usuarioAtual;
+
+    public CarrinhoServiceImpl(CarrinhoRepository repository, PedidoService pedidoService, ProdutoService produtoService, ClienteService clienteService, UsuarioAtualService usuarioAtual) {
+        this.usuarioAtual = usuarioAtual;
         this.repository = repository;
         this.pedidoService = pedidoService;
         this.produtoService = produtoService;
@@ -44,8 +45,8 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     public Carrinho adicionarProduto(ItemProdutoPedido itemProdutoPedido) {
         Produto produto = produtoService.findById(itemProdutoPedido.getProduto().getId());
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cliente cliente = clienteService.findById(userDetails.getId());
+        IdentidadeConta usuario = this.usuarioAtual.identidade();
+        Cliente cliente = clienteService.findById(usuario.id());
 
         log.info("[CARRINHO] Cliente ID={} adicionando produto ID={} ('{}') - quantidade: {}",
                 cliente.getId(), produto.getId(), produto.getNome(), itemProdutoPedido.getQuantidade());
@@ -93,8 +94,8 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     public Carrinho removerProduto(ItemProdutoPedido itemProdutoPedido) {
         Produto produto = produtoService.findById(itemProdutoPedido.getProduto().getId());
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cliente cliente = clienteService.findById(userDetails.getId());
+        IdentidadeConta usuario = this.usuarioAtual.identidade();
+        Cliente cliente = clienteService.findById(usuario.id());
 
         log.info("[CARRINHO] Cliente ID={} removendo produto ID={} ('{}') - quantidade: {}",
                 cliente.getId(), produto.getId(), produto.getNome(), itemProdutoPedido.getQuantidade());
@@ -139,8 +140,8 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     @Transactional
     @Override
     public Carrinho limparCarrinho() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cliente cliente = clienteService.findById(userDetails.getId());
+        IdentidadeConta usuario = this.usuarioAtual.identidade();
+        Cliente cliente = clienteService.findById(usuario.id());
 
         log.info("[CARRINHO] Limpando carrinho do cliente ID={}", cliente.getId());
 
@@ -155,17 +156,17 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     @Override
     @Transactional(readOnly = true)
     public Carrinho visualizarCarrinho() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        log.debug("[CARRINHO] Visualizando carrinho do cliente ID={}", userDetails.getId());
-        return this.clienteService.findById(userDetails.getId()).getCarrinho();
+        IdentidadeConta usuario = this.usuarioAtual.identidade();
+        log.debug("[CARRINHO] Visualizando carrinho do cliente ID={}", usuario.id());
+        return this.clienteService.findById(usuario.id()).getCarrinho();
     }
 
     @Transactional
     @Override
     public Pedido finalizarCompra(Endereco enderecoEntrega, Long freteServiceId, TipoPagamentoEnum tipoPagamento) {
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cliente cliente = clienteService.findById(userDetails.getId());
+        IdentidadeConta usuario = this.usuarioAtual.identidade();
+        Cliente cliente = clienteService.findById(usuario.id());
 
         log.info("[CARRINHO] Cliente ID={} iniciando finalização de compra - CEP entrega: {}, serviço frete ID: {}",
                 cliente.getId(), enderecoEntrega.getCep(), freteServiceId);
@@ -183,7 +184,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         List<ItemProdutoPedido> produtosAdicionados = carrinho
                 .getProdutosAdicionados()
                 .stream()
-                .map(JpaItemProdutoMapper::toPedido)
+                .map(ItemProdutoCarrinho::paraItemPedido)
                 .collect(Collectors.toList());
 
         Pedido pedido = new Pedido(cliente, enderecoEntrega, produtosAdicionados, freteServiceId, tipoPagamento);

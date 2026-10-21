@@ -3,6 +3,7 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.*;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
@@ -11,18 +12,13 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
 import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,20 +42,13 @@ class PedidoServiceImplTest {
     private br.com.fiap.rei_dos_piratas.application.service.ClienteService clienteService;
     private FreteService freteService;
     private DadosEmpresaRepository dadosEmpresaRepository;
+    private UsuarioAtualService usuarioAtual;
 
     @BeforeEach
     void setUp() {
 
-        // Limpa qualquer contexto anterior
-        SecurityContextHolder.clearContext();
-
-        // Cria usuário cliente
-        SimpleGrantedAuthority auth = new SimpleGrantedAuthority("ROLE_CLIENT");
-        CustomUserDetails userDetails = new CustomUserDetails(1L, "joao", "pwd", List.of(auth));
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        this.usuarioAtual = mock(UsuarioAtualService.class);
+        autenticarComo(TipoConta.CLIENTE, 1L);
 
         this.pedidoRepository = mock(PedidoRepository.class);
         this.produtoRepository = mock(ProdutoRepository.class);
@@ -69,12 +59,22 @@ class PedidoServiceImplTest {
         ObjectMapper objectMapper = new ObjectMapper();
         this.clienteService = mock(br.com.fiap.rei_dos_piratas.application.service.ClienteService.class);
         when(clienteService.obterOuCriarClienteCobranca(any(), any())).thenAnswer(inv -> inv.getArgument(0));
-        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService);
+        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, mock(br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient.class), usuarioAtual);
     }
 
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
+    private void autenticarComo(TipoConta tipo, Long id, String... permissoes) {
+        IdentidadeConta identidade = new IdentidadeConta(tipo, id);
+        when(usuarioAtual.identidade()).thenReturn(identidade);
+        when(usuarioAtual.identidadeSeAutenticado()).thenReturn(Optional.of(identidade));
+        when(usuarioAtual.possuiPermissao(anyString())).thenReturn(false);
+        for (String permissao : permissoes) {
+            when(usuarioAtual.possuiPermissao(permissao)).thenReturn(true);
+        }
+    }
+
+    private Pedido pedidoDoCliente(Long idPedido, Cliente cliente) {
+        return new Pedido(idPedido, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.ZERO,
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, new ArrayList<>(), criarEndereco(cliente), 1L, null, null, null, null, null, null);
     }
 
     private Cliente criarCliente() {
@@ -182,19 +182,6 @@ class PedidoServiceImplTest {
         // Mock do repository
         when(pedidoRepository.listAllByClient(0, 10, 1L)).thenReturn(page);
 
-        // Cria CustomUserDetails com ROLE_CLIENT corretamente
-        CustomUserDetails userDetails = new CustomUserDetails(
-                1L,
-                "joao",
-                "pwd",
-                List.of(new SimpleGrantedAuthority("ROLE_CLIENT"))
-        );
-
-        // Define autenticação no SecurityContext
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())
-        );
-
         // Act
         Page<Pedido> resultado = pedidoService.findAll(0, 10);
 
@@ -203,9 +190,51 @@ class PedidoServiceImplTest {
         assertThat(resultado.pageItems()).hasSize(2);
         assertThat(resultado.pageNumber()).isEqualTo(0);
         assertThat(resultado.numberOfPages()).isEqualTo(1);
+    }
 
-        // Limpa contexto para evitar interferência em outros testes
-        SecurityContextHolder.clearContext();
+    @Test
+    void findAll_FuncionarioComPermissaoDeEscritaDeveListarTodosOsPedidos() {
+        autenticarComo(TipoConta.FUNCIONARIO, 5L, "PEDIDO_WRITE");
+        Page<Pedido> todos = new Page<>(1, 0, List.of());
+        when(pedidoRepository.listAll(0, 10)).thenReturn(todos);
+
+        Page<Pedido> resultado = pedidoService.findAll(0, 10);
+
+        assertThat(resultado).isSameAs(todos);
+        verify(pedidoRepository, never()).listAllByClient(anyInt(), anyInt(), any());
+    }
+
+    @Test
+    void findById_ClienteNaoDeveVerPedidoDeOutroCliente() {
+        Cliente outroCliente = criarCliente();
+        outroCliente.setId(99L);
+        Pedido pedidoDeOutro = pedidoDoCliente(7L, outroCliente);
+        when(pedidoRepository.findById(7L)).thenReturn(pedidoDeOutro);
+
+        assertThatThrownBy(() -> pedidoService.findById(7L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void findById_FuncionarioDeveVerPedidoDeQualquerCliente() {
+        autenticarComo(TipoConta.FUNCIONARIO, 5L);
+        Cliente outroCliente = criarCliente();
+        outroCliente.setId(99L);
+        Pedido pedidoDeOutro = pedidoDoCliente(7L, outroCliente);
+        when(pedidoRepository.findById(7L)).thenReturn(pedidoDeOutro);
+
+        assertThat(pedidoService.findById(7L)).isSameAs(pedidoDeOutro);
+    }
+
+    @Test
+    void findById_SemUsuarioAutenticadoDevePermitirAcesso_FluxosInternosEWebhooks() {
+        when(usuarioAtual.identidadeSeAutenticado()).thenReturn(Optional.empty());
+        Cliente outroCliente = criarCliente();
+        outroCliente.setId(99L);
+        Pedido pedido = pedidoDoCliente(7L, outroCliente);
+        when(pedidoRepository.findById(7L)).thenReturn(pedido);
+
+        assertThat(pedidoService.findById(7L)).isSameAs(pedido);
     }
 
 

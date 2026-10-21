@@ -4,8 +4,10 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
@@ -15,7 +17,6 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
@@ -27,8 +28,6 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaReq
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -51,8 +50,10 @@ public class PedidoServiceImpl implements PedidoService {
     private final ClienteService clienteService;
 
     private final CobrancaAppClient apiCobranca;
+    private final UsuarioAtualService usuarioAtual;
 
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, CobrancaAppClient apiCobranca) {
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, CobrancaAppClient apiCobranca, UsuarioAtualService usuarioAtual) {
+        this.usuarioAtual = usuarioAtual;
         this.repository = repository;
         this.produtoRepository = produtoRepository;
         this.enderecoService = enderecoService;
@@ -65,15 +66,15 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public Page<Pedido> findAll(int pageNumber, int pageSize) {
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        IdentidadeConta usuario = this.usuarioAtual.identidade();
 
-        //Verifica se usuário é um funcionário procurando uma ROLE comum a todos
-        if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_PEDIDO_WRITE"))) {
-            log.debug("Listando todos os pedidos (funcionário ID={}) — página={}, tamanho={}", userDetails.getId(), pageNumber, pageSize);
+        //Verifica se usuário é um funcionário procurando uma permissão comum a todos
+        if (this.usuarioAtual.possuiPermissao("PEDIDO_WRITE")) {
+            log.debug("Listando todos os pedidos (funcionário ID={}) — página={}, tamanho={}", usuario.id(), pageNumber, pageSize);
             return this.repository.listAll(pageNumber, pageSize);
         } else {
-            log.debug("Listando pedidos do cliente ID={} — página={}, tamanho={}", userDetails.getId(), pageNumber, pageSize);
-            return this.repository.listAllByClient(pageNumber, pageSize, userDetails.getId());
+            log.debug("Listando pedidos do cliente ID={} — página={}, tamanho={}", usuario.id(), pageNumber, pageSize);
+            return this.repository.listAllByClient(pageNumber, pageSize, usuario.id());
         }
     }
 
@@ -99,16 +100,18 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     private void validarAcessoAoPedido(Pedido pedido) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+        // Sem usuário autenticado: chamadas internas (webhooks, processamento de eventos)
+        Optional<IdentidadeConta> identidade = this.usuarioAtual.identidadeSeAutenticado();
+        if (identidade.isEmpty()) {
             return;
         }
+        IdentidadeConta usuario = identidade.get();
 
-        boolean funcionario = userDetails.getTipo() == TipoConta.FUNCIONARIO;
-        boolean dono = pedido.getCliente() != null && userDetails.getId().equals(pedido.getCliente().getId());
+        boolean funcionario = usuario.tipo() == TipoConta.FUNCIONARIO;
+        boolean dono = pedido.getCliente() != null && usuario.id().equals(pedido.getCliente().getId());
 
         if (!funcionario && !dono) {
-            log.warn("Acesso negado: pedido ID={} solicitado pelo usuário ID={}", pedido.getId(), userDetails.getId());
+            log.warn("Acesso negado: pedido ID={} solicitado pelo usuário ID={}", pedido.getId(), usuario.id());
             throw new ResourceNotFoundException("Não foi possível encontrar um pedido com o id " + pedido.getId());
         }
     }
@@ -169,13 +172,55 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     private PagamentoCobrancaRequestDto definirPagamentoCobrancaRequest(Pedido pedido) {
+
+        switch (pedido.getTipoPagamento()){
+
+            case TipoPagamentoEnum.PIX:
+                return new PagamentoCobrancaRequestDto(
+                        pedido.getCliente().getIdCobranca(),
+                        pedido.getTipoPagamento(),
+                        pedido.getValorTotal(),
+                        LocalDate.now().plusDays(1),
+                        "cobrança do pedido " + pedido.getId(),
+                        pedido.getId().toString(),
+                        null,
+                        null
+                );
+
+            case TipoPagamentoEnum.CREDIT_CARD:
+                return new PagamentoCobrancaRequestDto(
+                        pedido.getCliente().getIdCobranca(),
+                        pedido.getTipoPagamento(),
+                        pedido.getValorTotal(),
+                        LocalDate.now().plusDays(1),
+                        "cobrança do pedido " + pedido.getId(),
+                        pedido.getId().toString(),
+                        null,
+                        null
+                );
+
+            case TipoPagamentoEnum.BOLETO:
+                return new PagamentoCobrancaRequestDto(
+                        pedido.getCliente().getIdCobranca(),
+                        pedido.getTipoPagamento(),
+                        pedido.getValorTotal(),
+                        LocalDate.now().plusDays(1),
+                        "cobrança do pedido " + pedido.getId(),
+                        pedido.getId().toString(),
+                        null,
+                        null
+                );
+        }
+
         return new PagamentoCobrancaRequestDto(
                 pedido.getCliente().getIdCobranca(),
                 pedido.getTipoPagamento(),
                 pedido.getValorTotal(),
                 LocalDate.now().plusDays(1),
                 "cobrança do pedido " + pedido.getId(),
-                pedido.getId().toString());
+                pedido.getId().toString(),
+                null,
+                null);
     }
 
     @Transactional

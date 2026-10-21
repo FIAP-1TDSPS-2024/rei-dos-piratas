@@ -9,7 +9,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaClienteEnti
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaPerfilEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaCarrinhoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaClienteMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaPerfilMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaClienteEntityRepository;
 import lombok.extern.slf4j.Slf4j;

@@ -85,6 +85,7 @@ Variaveis obrigatorias para API Melhor Envio:
 - `ME_CLIENT_ID`
 - `ME_SECRET`
 - `ME_REDIRECT_URI`
+- `ME_SERVICE_DEVOLUCAO` (id do servico de entrega usado no frete reverso das devolucoes)
 
 Variaveis de seguranca JWT (recomendado definir em producao):
 

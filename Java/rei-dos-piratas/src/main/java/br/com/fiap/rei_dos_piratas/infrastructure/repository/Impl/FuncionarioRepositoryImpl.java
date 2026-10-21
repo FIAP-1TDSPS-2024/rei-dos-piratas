@@ -6,7 +6,7 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.UniqueKeyDuplicatedExceptio
 import br.com.fiap.rei_dos_piratas.domain.repository.FuncionarioRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.usuarios.JpaFuncionarioEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaFuncionarioMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaFuncionarioEntityRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;

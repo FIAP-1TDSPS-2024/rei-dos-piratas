@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete;
+package br.com.fiap.rei_dos_piratas.interfaces.mapper.frete;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.ProdutoCalculoFreteDto;

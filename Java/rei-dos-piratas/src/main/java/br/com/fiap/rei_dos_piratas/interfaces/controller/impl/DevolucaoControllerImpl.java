@@ -11,7 +11,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.MotivoDevolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.DevolucaoDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.DevolucaoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.DevolucaoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.DevolucaoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.DevolucaoOutDto;

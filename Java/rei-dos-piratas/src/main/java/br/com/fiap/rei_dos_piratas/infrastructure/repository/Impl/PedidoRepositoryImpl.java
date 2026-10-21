@@ -6,7 +6,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.infrastructure.entity.negocio.JpaPedidoEntity;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaPedidoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaPedidoEntityRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;

@@ -8,7 +8,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FuncionarioController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.FuncionarioOutDto;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.FuncionarioDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.usuarios.FuncionarioDtoMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

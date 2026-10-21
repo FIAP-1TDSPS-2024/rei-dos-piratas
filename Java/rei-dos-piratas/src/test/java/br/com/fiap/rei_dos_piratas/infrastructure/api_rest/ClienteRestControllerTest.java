@@ -2,7 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.usuarios.ClienteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ClienteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.ClienteOutDto;

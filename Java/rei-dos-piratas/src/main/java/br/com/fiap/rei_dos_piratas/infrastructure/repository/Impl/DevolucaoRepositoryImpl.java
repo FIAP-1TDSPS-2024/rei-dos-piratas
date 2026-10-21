@@ -4,7 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Devolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.repository.DevolucaoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio.PageMapper;
+import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.PageMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.JpaDevolucaoMapper;
 import br.com.fiap.rei_dos_piratas.infrastructure.repository.JpaDevolucaoEntityRepository;
 import lombok.extern.slf4j.Slf4j;

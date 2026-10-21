@@ -14,5 +14,7 @@ public record PagamentoCobrancaRequestDto(
         BigDecimal value,
         LocalDate dueDate,
         String description,
-        String externalReference
+        String externalReference,
+        Integer installmentCount,
+        CartaoCreditoRequestDto creditCard
 ) {}

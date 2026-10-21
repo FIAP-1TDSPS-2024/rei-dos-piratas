@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.application.service.impl.PedidoServiceImpl;
 import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
@@ -22,8 +23,9 @@ public class PedidoServiceConfig {
                                        DadosEmpresaRepository dadosEmpresaRepository,
                                        FreteService freteService,
                                        ClienteService clienteService,
-                                       CobrancaAppClient apiCobranca) {
-        return new PedidoServiceImpl(repository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, apiCobranca);
+                                       CobrancaAppClient apiCobranca,
+                                       UsuarioAtualService usuarioAtual) {
+        return new PedidoServiceImpl(repository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, apiCobranca, usuarioAtual);
     }
 
 }

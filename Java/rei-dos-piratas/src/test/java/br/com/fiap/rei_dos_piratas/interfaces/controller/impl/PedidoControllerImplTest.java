@@ -4,22 +4,19 @@ import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +34,7 @@ class PedidoControllerImplTest {
     private ProdutoService produtoService;
     private EnderecoService enderecoService;
     private PedidoController pedidoController;
+    private UsuarioAtualService usuarioAtual;
 
     @BeforeEach
     void setUp() {
@@ -44,18 +42,9 @@ class PedidoControllerImplTest {
         this.clienteService = mock(ClienteService.class);
         this.produtoService = mock(ProdutoService.class);
         this.enderecoService = mock(EnderecoService.class);
-        this.pedidoController = new PedidoControllerImpl(pedidoService, clienteService, produtoService, enderecoService);
-
-        SimpleGrantedAuthority auth = new SimpleGrantedAuthority("ROLE_CLIENT");
-        CustomUserDetails userDetails = new CustomUserDetails(1L, "joao", "pwd", List.of(auth));
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
+        this.usuarioAtual = mock(UsuarioAtualService.class);
+        when(usuarioAtual.identidade()).thenReturn(new IdentidadeConta(TipoConta.CLIENTE, 1L));
+        this.pedidoController = new PedidoControllerImpl(pedidoService, clienteService, produtoService, enderecoService, usuarioAtual);
     }
 
     private Cliente criarCliente() {

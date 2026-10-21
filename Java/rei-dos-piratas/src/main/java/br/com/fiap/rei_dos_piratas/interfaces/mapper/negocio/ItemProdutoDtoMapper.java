@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio;
+package br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoCarrinho;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;

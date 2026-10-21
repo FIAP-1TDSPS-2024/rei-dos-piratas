@@ -6,7 +6,6 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,7 +59,6 @@ public class Devolucao {
 
     private Boolean aprovada;
 
-    @Value("${ME_SERVICE_DEVOLUCAO}")
     @NotNull(message = "O pedido deve definir um serviço para entrega")
     private Long servicoEntrega;
 

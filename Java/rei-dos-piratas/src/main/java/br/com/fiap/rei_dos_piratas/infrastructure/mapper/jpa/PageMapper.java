@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.negocio;
+package br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 

@@ -17,11 +17,27 @@ public class SpringUsuarioAtual implements UsuarioAtualService {
     }
 
     public IdentidadeConta identidade() {
+        return identidadeSeAutenticado().orElseThrow(CredenciaisInvalidasException::new);
+    }
+
+    @Override
+    public boolean possuiPermissao(String permissao) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        String role = "ROLE_" + permissao;
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> role.equals(authority.getAuthority()));
+    }
+
+    @Override
+    public java.util.Optional<IdentidadeConta> identidadeSeAutenticado() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()
                 || !(authentication.getPrincipal() instanceof CustomUserDetails details)) {
-            throw new CredenciaisInvalidasException();
+            return java.util.Optional.empty();
         }
-        return new IdentidadeConta(details.getTipo(), details.getId());
+        return java.util.Optional.of(new IdentidadeConta(details.getTipo(), details.getId()));
     }
 }

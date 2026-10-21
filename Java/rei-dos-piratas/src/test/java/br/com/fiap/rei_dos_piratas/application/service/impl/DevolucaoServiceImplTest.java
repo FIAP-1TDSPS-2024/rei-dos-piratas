@@ -17,11 +17,17 @@ import java.util.Arrays;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
+import org.mockito.ArgumentCaptor;
+import br.com.fiap.rei_dos_piratas.domain.entity.MotivoDevolucao;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class DevolucaoServiceImplTest {
+
+    private static final Long SERVICO_DEVOLUCAO_CONFIGURADO = 2L;
     private DevolucaoRepository repository;
     private FreteService freteService;
     private DevolucaoServiceImpl service;
@@ -30,7 +36,7 @@ class DevolucaoServiceImplTest {
     void setUp() {
         repository = mock(DevolucaoRepository.class);
         freteService = mock(FreteService.class);
-        service = new DevolucaoServiceImpl(repository, freteService);
+        service = new DevolucaoServiceImpl(repository, freteService, SERVICO_DEVOLUCAO_CONFIGURADO);
     }
 
     private Devolucao prepararDevolucao(List<Long> ids) {
@@ -161,5 +167,74 @@ class DevolucaoServiceImplTest {
                     .isInstanceOf(RegraDeNegocioException.class);
         }
         verifyNoInteractions(repository, freteService);
+    }
+
+    // --- Serviço de entrega da devolução (antes vinha de um @Value na entidade, que nunca era aplicado) ---
+
+    private Devolucao devolucaoAprovavelSemServicoDeEntrega() {
+        Devolucao devolucao = new Devolucao();
+        devolucao.setId(1L);
+        devolucao.setPedido(mock(Pedido.class, RETURNS_DEEP_STUBS));
+        devolucao.setItens(List.of());
+        when(repository.findById(1L)).thenReturn(devolucao);
+        when(repository.update(devolucao)).thenReturn(devolucao);
+        when(freteService.criarPedidoDevolucaoFrete(any())).thenReturn(
+                new DevolucaoFreteResponseDto(UUID.randomUUID(), "protocolo", 1, null, BigDecimal.TEN,
+                        null, null, null, null, null, null, 1));
+        return devolucao;
+    }
+
+    private DevolucaoFreteRequestDto requisicaoEnviadaAoFrete() {
+        ArgumentCaptor<DevolucaoFreteRequestDto> captor = ArgumentCaptor.forClass(DevolucaoFreteRequestDto.class);
+        verify(freteService).criarPedidoDevolucaoFrete(captor.capture());
+        return captor.getValue();
+    }
+
+    @Test
+    void aprovarDevolucao_SemServicoDeEntregaDeveUsarOServicoConfigurado() {
+        devolucaoAprovavelSemServicoDeEntrega();
+
+        service.aprovarDevolucao(1L);
+
+        assertThat(requisicaoEnviadaAoFrete().service()).isEqualTo(2);
+    }
+
+    @Test
+    void aprovarDevolucao_ComServicoDeEntregaDefinidoDeveManterOServicoDaDevolucao() {
+        Devolucao devolucao = devolucaoAprovavelSemServicoDeEntrega();
+        devolucao.setServicoEntrega(1L);
+
+        service.aprovarDevolucao(1L);
+
+        assertThat(requisicaoEnviadaAoFrete().service()).isEqualTo(1);
+    }
+
+    @Test
+    void aprovarDevolucao_SemServicoNaDevolucaoESemConfiguracaoDeveFalharComMensagemClara() {
+        devolucaoAprovavelSemServicoDeEntrega();
+        DevolucaoServiceImpl semConfiguracao = new DevolucaoServiceImpl(repository, freteService, null);
+
+        assertThatThrownBy(() -> semConfiguracao.aprovarDevolucao(1L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("ME_SERVICE_DEVOLUCAO");
+        verify(freteService, never()).criarPedidoDevolucaoFrete(any());
+    }
+
+    @Test
+    void solicitarDevolucao_DeveRegistrarOServicoDeEntregaConfigurado() {
+        Pedido pedido = mock(Pedido.class);
+        when(pedido.getId()).thenReturn(10L);
+        MotivoDevolucao motivo = mock(MotivoDevolucao.class);
+        when(motivo.getArrependimento()).thenReturn(false);
+        Devolucao devolucao = new Devolucao();
+        devolucao.setPedido(pedido);
+        devolucao.setMotivo(motivo);
+        devolucao.setItens(new ArrayList<>());
+        when(repository.findAllByPedidoId(10L)).thenReturn(List.of());
+        when(repository.create(any(Devolucao.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Devolucao criada = service.solicitarDevolucao(devolucao);
+
+        assertThat(criada.getServicoEntrega()).isEqualTo(SERVICO_DEVOLUCAO_CONFIGURADO);
     }
 }

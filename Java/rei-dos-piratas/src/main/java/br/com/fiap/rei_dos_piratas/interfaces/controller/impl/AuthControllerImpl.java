@@ -4,8 +4,8 @@ import br.com.fiap.rei_dos_piratas.application.service.AutenticacaoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.ClienteDtoMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios.FuncionarioDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.usuarios.ClienteDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.usuarios.FuncionarioDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.AuthController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.usuarios.*;
 

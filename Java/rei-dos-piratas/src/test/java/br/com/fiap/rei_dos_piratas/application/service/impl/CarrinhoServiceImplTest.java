@@ -4,20 +4,15 @@ import br.com.fiap.rei_dos_piratas.application.service.CarrinhoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.*;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CarrinhoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.security.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,29 +30,19 @@ class CarrinhoServiceImplTest {
     private PedidoService pedidoService;
     private ProdutoService produtoService;
     private ClienteService clienteService;
+    private UsuarioAtualService usuarioAtual;
 
     @BeforeEach
     void setUp() {
 
-        CustomUserDetails mockCliente = new CustomUserDetails(
-                1L,
-                "joaosilva",
-                "SenhaSegura123",
-                List.of(new SimpleGrantedAuthority("ROLE_CLIENT")));
-
-        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-        Authentication authentication = Mockito.mock(Authentication.class);
-
-        Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
-        Mockito.when(authentication.getPrincipal()).thenReturn(mockCliente);
-
-        SecurityContextHolder.setContext(securityContext);
+        this.usuarioAtual = mock(UsuarioAtualService.class);
+        when(usuarioAtual.identidade()).thenReturn(new IdentidadeConta(TipoConta.CLIENTE, 1L));
 
         this.carrinhoRepository = mock(CarrinhoRepository.class);
         this.pedidoService = mock(PedidoService.class);
         this.produtoService = mock(ProdutoService.class);
         this.clienteService = mock(ClienteService.class);
-        this.carrinhoService = new CarrinhoServiceImpl(carrinhoRepository, pedidoService, produtoService, clienteService);
+        this.carrinhoService = new CarrinhoServiceImpl(carrinhoRepository, pedidoService, produtoService, clienteService, usuarioAtual);
     }
 
     @Test
@@ -718,5 +703,21 @@ class CarrinhoServiceImplTest {
         verify(clienteService, times(1)).findById(1L);
         verify(pedidoService, never()).fazerPedido(any(Pedido.class));
         verify(carrinhoRepository, never()).update(any(Carrinho.class));
+    }
+
+    @Test
+    void visualizarCarrinho_DeveUsarOClienteDoUsuarioAutenticado() {
+        // Arrange
+        when(usuarioAtual.identidade()).thenReturn(new IdentidadeConta(TipoConta.CLIENTE, 99L));
+        Carrinho carrinhoDoCliente99 = new Carrinho(5L, new ArrayList<>());
+        Cliente cliente99 = mock(Cliente.class);
+        when(cliente99.getCarrinho()).thenReturn(carrinhoDoCliente99);
+        when(clienteService.findById(99L)).thenReturn(cliente99);
+
+        // Act
+        Carrinho carrinho = carrinhoService.visualizarCarrinho();
+
+        // Assert
+        assertThat(carrinho).isSameAs(carrinhoDoCliente99);
     }
 }

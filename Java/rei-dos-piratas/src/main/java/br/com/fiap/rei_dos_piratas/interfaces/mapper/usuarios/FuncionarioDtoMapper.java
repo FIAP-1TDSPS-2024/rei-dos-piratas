@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.usuarios;
+package br.com.fiap.rei_dos_piratas.interfaces.mapper.usuarios;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;

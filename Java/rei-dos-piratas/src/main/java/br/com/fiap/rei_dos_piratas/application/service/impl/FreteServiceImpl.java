@@ -7,7 +7,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.ItemDevolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.FreteAppClient;
-import br.com.fiap.rei_dos_piratas.infrastructure.mapper.dto.frete.ProdutoFreteDtoMapper;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.frete.ProdutoFreteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
