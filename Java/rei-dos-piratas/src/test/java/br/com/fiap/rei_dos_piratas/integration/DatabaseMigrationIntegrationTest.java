@@ -23,7 +23,9 @@ class DatabaseMigrationIntegrationTest {
 
     @Test
     void appliesAllProductionMigrations() {
-        assertEquals(34, flyway.info().applied().length);
+        // Compara com as migrations encontradas no classpath para nao quebrar a cada nova migration
+        assertTrue(flyway.info().applied().length > 0);
+        assertEquals(flyway.info().all().length, flyway.info().applied().length);
         assertEquals(0, flyway.info().pending().length);
         flyway.validate();
     }

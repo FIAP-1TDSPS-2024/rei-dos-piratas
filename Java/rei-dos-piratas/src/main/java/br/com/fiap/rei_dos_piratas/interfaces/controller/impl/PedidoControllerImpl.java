@@ -6,7 +6,10 @@ import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.PagamentoCartaoCreditoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.PedidoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
@@ -91,14 +94,21 @@ public class PedidoControllerImpl implements PedidoController {
 
         Pedido pedidoEntity = PedidoDtoMapper.toEntity(cliente, enderecoEntrega, items, pedido.freteServiceId(), pedido.tipoPagamento());
 
+        if (pedidoEntity.getTipoPagamento().equals(TipoPagamentoEnum.CREDIT_CARD)) {
+
+            if (pedido.cartao() == null) {
+                throw new RegraDeNegocioException("Informe o cartão de crédito para pagamento com cartão");
+            }
+            else{
+                PagamentoCartao pagamentoCartao = PagamentoCartaoCreditoMapper.toEntity(pedido.cartao());
+
+                return PedidoDtoMapper.toDto(
+                        this.service.fazerPedido(pedidoEntity, pagamentoCartao));
+            }
+        }
+
         return PedidoDtoMapper.toDto(
                 this.service.fazerPedido(pedidoEntity));
-    }
-
-    @Override
-    public PedidoOutDto pagarPedido(Long id) {
-        return PedidoDtoMapper.toDto(
-                this.service.pagarPedido(id));
     }
 
     @Override

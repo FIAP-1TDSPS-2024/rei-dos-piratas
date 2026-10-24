@@ -13,5 +13,10 @@ public record PedidoInDto(
         @NotNull
         List<ItemProdutoInDto> produtosAdicionados,
         @NotNull
-        TipoPagamentoEnum tipoPagamento
-) {}
+        TipoPagamentoEnum tipoPagamento,
+        CartaoPedidoInDto cartao
+) {
+    public PedidoInDto(Long freteServiceId, Long EnderecoEntregaId, List<ItemProdutoInDto> produtosAdicionados, TipoPagamentoEnum tipoPagamento) {
+        this(freteServiceId, EnderecoEntregaId, produtosAdicionados, tipoPagamento, null);
+    }
+}

@@ -82,6 +82,31 @@ class PermissoesIntegrationTest {
     }
 
     @Test
+    void cartoesSalvosSaoConsultadosPeloClienteENaoPorFuncionarios() throws Exception {
+        mvc.perform(post("/auth/cadastro").contentType(MediaType.APPLICATION_JSON).content("""
+                {"user_name":"cliente_cartoes", "nome_completo":"Cliente Cartoes", "email":"cliente-cartoes@example.com",
+                 "senha":"SenhaSegura123", "data_nascimento":"1990-01-01", "sexo":"M",
+                 "cpf":"52998224725", "celular":"11987654321"}
+                """))
+                .andExpect(status().isCreated());
+        em.flush();
+        em.clear();
+        var resposta = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"cliente-cartoes@example.com\",\"password\":\"SenhaSegura123\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String clienteToken = mapper.readTree(resposta).get("token").asText();
+
+        mvc.perform(get("/cartoes").header("Authorization", "Bearer " + clienteToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+        // Admin (funcionario) nao tem cartoes salvos: bloqueado pela permissao, nao chega ao servico
+        mvc.perform(get("/cartoes").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/cartoes"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void adminCriaProdutoEConsultaPedidosNaApi() throws Exception {
         mvc.perform(post("/produtos").header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON).content("""

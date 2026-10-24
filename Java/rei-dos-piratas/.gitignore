@@ -34,3 +34,5 @@ build/
 
 .env
 .env.production
+### Banco H2 local (arquivo) ###
+data/

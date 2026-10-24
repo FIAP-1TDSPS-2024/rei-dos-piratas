@@ -100,6 +100,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResult);
     }
 
+    @ExceptionHandler(PagamentoRecusadoException.class)
+    public ResponseEntity<ErrorResponse> handlePagamentoRecusadoException(PagamentoRecusadoException e) {
+        final ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
     @Getter
     public static class ErrorResponse {
 

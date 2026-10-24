@@ -87,10 +87,19 @@ Variaveis obrigatorias para API Melhor Envio:
 - `ME_REDIRECT_URI`
 - `ME_SERVICE_DEVOLUCAO` (id do servico de entrega usado no frete reverso das devolucoes)
 
-Variaveis de seguranca JWT (recomendado definir em producao):
+Variaveis de seguranca JWT:
 
-- `JWT_SECRET`
-- `JWT_EXPIRATION`
+- `JWT_SECRET` (**obrigatoria**: sem ela a aplicacao nao sobe; use um valor longo e aleatorio)
+- `JWT_EXPIRATION` (opcional, padrao 900000 ms)
+
+Variaveis de parcelamento no cartao (opcionais):
+
+- `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO` (padrao `100.00`: abaixo disso, so a vista)
+- `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` (padrao `3`)
+
+Variavel de log:
+
+- `JPA_SHOW_SQL` (opcional, padrao `false`; use `true` apenas para depuracao local)
 
 Exemplo de configuracao no PowerShell (sessao atual):
 
@@ -222,6 +231,16 @@ de geração de novas notas; a nota existente é reutilizada.
 
 Em caso de erro do provedor, os status não avançam. Devoluções já persistidas em
 `AGUARDANDO_POSTAGEM_RETORNO` não são reprocessadas por este endpoint.
+
+### Cartoes salvos
+
+| Metodo | Endpoint | Descricao |
+| ------ | -------- | --------- |
+| GET | /cartoes | Lista os cartoes ativos do cliente logado (bandeira e 4 ultimos digitos) |
+
+Somente clientes (role `ENDERECO_MANAGE`) acessam; funcionarios recebem `403`. O token do Asaas
+nunca e exposto: o app usa o `id` retornado como `cartao_id` ao fazer o pedido. Nao ha endpoint
+para cadastrar cartao: a tokenizacao acontece dentro do fluxo de pedido.
 
 ### Carrinho
 

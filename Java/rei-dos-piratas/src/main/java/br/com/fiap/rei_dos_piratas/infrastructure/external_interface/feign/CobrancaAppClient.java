@@ -17,6 +17,9 @@ public interface CobrancaAppClient {
     @PostMapping("/v3/payments/")
     PagamentoCobrancaResponseDto criarNovaCobranca(@RequestBody PagamentoCobrancaRequestDto request);
 
+    @PostMapping("/v3/creditCard/tokenizeCreditCard")
+    TokenizacaoCartaoResponseDto tokenizarCartao(@RequestBody TokenizacaoCartaoRequestDto request);
+
     @GetMapping("/v3/payments/{id}/pixQrCode")
     PixQrCodeResponseDto obterQrCodePix(@PathVariable("id") String id);
 

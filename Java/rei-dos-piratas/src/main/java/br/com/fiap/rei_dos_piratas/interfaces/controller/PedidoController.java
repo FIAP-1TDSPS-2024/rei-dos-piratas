@@ -14,7 +14,6 @@ public interface PedidoController {
     Page<PedidoOutDto> findAllByStatus(int pageNumber, int pageSize, StatusEnum status);
     PedidoOutDto findById(Long id);
     PedidoOutDto fazerPedido(PedidoInDto pedido);
-    PedidoOutDto pagarPedido(Long id);
     String organizarPedidosParaEnvio(List<Long> pedidos);
     Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos);
     String imprimirEtiquetasEnvio(List<Long> pedidos);

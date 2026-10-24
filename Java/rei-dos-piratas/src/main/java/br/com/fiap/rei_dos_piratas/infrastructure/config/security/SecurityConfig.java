@@ -82,6 +82,8 @@ public class SecurityConfig {
                         .requestMatchers("/carrinho/**").hasRole("ENDERECO_MANAGE")
                         // Gerenciamento de endereços
                         .requestMatchers("/enderecos/**").hasRole("ENDERECO_MANAGE")
+                        // Cartões salvos: só o cliente consulta os próprios (role exclusiva do perfil CLIENT)
+                        .requestMatchers("/cartoes/**").hasRole("ENDERECO_MANAGE")
                         // Criação e gestão de produtos (API e web)
                         .requestMatchers(HttpMethod.PUT, "/produtos/**").hasAnyRole("PRODUTO_WRITE")
                         .requestMatchers(HttpMethod.POST, "/produtos/**").hasAnyRole("PRODUTO_WRITE")

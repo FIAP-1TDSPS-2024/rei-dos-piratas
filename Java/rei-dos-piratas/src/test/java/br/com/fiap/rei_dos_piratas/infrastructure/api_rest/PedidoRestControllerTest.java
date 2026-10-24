@@ -7,7 +7,10 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Cidade;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.Estado;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CartaoPedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
@@ -37,6 +40,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -226,49 +231,6 @@ class PedidoRestControllerTest {
     }
 
     @Test
-    void pagarPedido() throws Exception {
-        ProdutoOutDto produtoOut = new ProdutoOutDto(
-                1L,
-                "Produto Teste Número 01",
-                "Descrição do produto teste número 01",
-                "Jonas Oliveira",
-                CategoriaEnum.AVENTURA,
-                "http://exemplo.com/imagem.jpg",
-                BigDecimal.valueOf(100),
-                BigDecimal.valueOf(100),
-                3,
-                BigDecimal.valueOf(20),
-                BigDecimal.valueOf(15),
-                BigDecimal.valueOf(0.2),
-                BigDecimal.valueOf(0.3),
-                CondicaoEnum.NOVO
-        );
-
-        List<ItemProdutoOutDto> produtos = new ArrayList<>();
-        produtos.add(new ItemProdutoOutDto(produtoOut, 2));
-
-        PedidoOutDto pedido = new PedidoOutDto(
-                1L,
-                LocalDate.now(),
-                null,
-                null,
-                null,
-                BigDecimal.valueOf(200),
-                BigDecimal.valueOf(20),
-                StatusEnum.PREPARANDO_ENVIO,
-                produtos,
-                null, null, null, null, null, null, null, null
-        );
-
-        when(this.pedidoController.pagarPedido(1L)).thenReturn(pedido);
-
-        this.mockMvc.perform(put("/pedidos/pagamento/{id}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.status", is("PREPARANDO_ENVIO")));
-    }
-
-    @Test
     void cancelarPedido() throws Exception {
         ProdutoOutDto produtoOut = new ProdutoOutDto(
                 1L,
@@ -311,5 +273,32 @@ class PedidoRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.status", is("CANCELADO")));
+    }
+
+    // ---- Pedido com cartão de crédito ----
+
+    private String jsonPedido(PedidoInDto pedido) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        return mapper.writeValueAsString(pedido);
+    }
+
+    private PedidoInDto pedidoComCartao(CartaoPedidoInDto cartao) {
+        return new PedidoInDto(FRETE_SERVICE_ID, 1L, List.of(new ItemProdutoInDto(1L, 2)), TipoPagamentoEnum.CREDIT_CARD, cartao);
+    }
+
+    private final CartaoPedidoInDto cartaoNovo = new CartaoPedidoInDto(null, "JOAO SILVA", "4111111111111234", "12", "2030", "987", 1);
+
+    @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
+    void fazerPedido_CartaoRecusadoDeveRetornar422ComMotivo() throws Exception {
+        when(this.pedidoController.fazerPedido(any(PedidoInDto.class)))
+                .thenThrow(new PagamentoRecusadoException("Transação não autorizada"));
+
+        this.mockMvc.perform(post("/pedidos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPedido(pedidoComCartao(cartaoNovo))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message", is("Transação não autorizada")));
     }
 }

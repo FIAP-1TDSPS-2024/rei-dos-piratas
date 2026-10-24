@@ -170,13 +170,22 @@ class PedidoControllerImplTest {
     }
 
     @Test
-    void pagarPedido() {
-        when(pedidoService.pagarPedido(1L)).thenReturn(criarPedido(StatusEnum.PREPARANDO_ENVIO));
+    void fazerPedido_CartaoSemDadosDoCartaoDeveLancarRegraDeNegocioSemChamarOServico() {
+        // Arrange
+        PedidoInDto inDto = new PedidoInDto(
+                FRETE_SERVICE_ID,
+                1L,
+                List.of(new ItemProdutoInDto(1L, 2)),
+                br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.CREDIT_CARD,
+                null);
+        when(clienteService.findById(1L)).thenReturn(criarCliente());
+        when(enderecoService.findById(1L)).thenReturn(criarEndereco());
+        when(produtoService.findById(1L)).thenReturn(criarProduto());
 
-        PedidoOutDto result = pedidoController.pagarPedido(1L);
-
-        verify(pedidoService, times(1)).pagarPedido(1L);
-        assertThat(result.status()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+        // Act & Assert
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> pedidoController.fazerPedido(inDto))
+                .isInstanceOf(br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException.class);
+        verifyNoInteractions(pedidoService);
     }
 
     @Test

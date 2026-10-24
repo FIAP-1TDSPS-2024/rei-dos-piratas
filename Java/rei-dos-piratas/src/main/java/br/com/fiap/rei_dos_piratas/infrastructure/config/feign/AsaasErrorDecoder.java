@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.feign;
 
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
@@ -36,8 +37,12 @@ public class AsaasErrorDecoder implements ErrorDecoder {
         log.error("[COBRANCA] Erro na chamada '{}' — HTTP {}: {}", methodKey, status, bodyMessage);
 
         return switch (status) {
-            case 400 -> new ApiExternaException(
-                    "Requisição inválida para a API de cobrança: " + bodyMessage);
+            case 400 -> {
+                if (bodyMessage.contains("Transação não autorizada")) {
+                    yield new PagamentoRecusadoException("Pagamento recusado: " + bodyMessage);
+                }
+                yield new ApiExternaException("Requisição inválida para a API de cobrança: " + bodyMessage);
+            }
             case 401 -> new ApiExternaException(
                     "API key da API de cobrança inválida ou ausente. Verifique a chave configurada.");
             case 403 -> new ApiExternaException(

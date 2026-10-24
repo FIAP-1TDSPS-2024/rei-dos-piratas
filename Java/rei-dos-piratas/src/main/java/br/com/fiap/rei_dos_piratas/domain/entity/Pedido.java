@@ -67,13 +67,9 @@ public class Pedido {
 
     private String trackingUrl;
 
-    private TipoPagamentoEnum tipoPagamento;
-
-    @Digits(fraction = 2, integer = 10, message = "O valor líquido do pedido deve ter até 12 digitos com 2 dígitos após a vírgula")
-    private BigDecimal valorLiquido;
-
-    /** ID da cobrança na API de pagamentos. */
-    private String idCobranca;
+    /** Pagamento do pedido (um por pedido). */
+    @jakarta.validation.Valid
+    private Pagamento pagamento;
 
     public Pedido(Long id, LocalDate dataPedido, LocalDate dataEntrega, LocalDate dataPrevisaoEntrega,
                   LocalDate dataCancelamento, BigDecimal valorTotal, BigDecimal valorFrete, StatusEnum status,
@@ -82,7 +78,7 @@ public class Pedido {
                   String statusEnvio, String tracking, String trackingUrl) {
         this(id, dataPedido, dataEntrega, dataPrevisaoEntrega, dataCancelamento, valorTotal, valorFrete, status,
                 cliente, produtosAdicionados, enderecoEntrega, servicoEntrega, notaFiscal, pedidoFrete,
-                protocoloEnvio, statusEnvio, tracking, trackingUrl, null, null, null);
+                protocoloEnvio, statusEnvio, tracking, trackingUrl, null);
     }
 
     public Pedido(Cliente cliente, Endereco enderecoEntrega, List<ItemProdutoPedido> produtosAdicionados, Long servicoEntrega) {
@@ -96,6 +92,11 @@ public class Pedido {
         this.enderecoEntrega = enderecoEntrega;
         this.produtosAdicionados = produtosAdicionados;
         this.servicoEntrega = servicoEntrega;
-        this.tipoPagamento = tipoPagamento;
+        this.pagamento = tipoPagamento == null ? null : Pagamento.pendente(tipoPagamento);
+    }
+
+    /** Tipo de pagamento escolhido no pedido (vem do pagamento). */
+    public TipoPagamentoEnum getTipoPagamento() {
+        return this.pagamento == null ? null : this.pagamento.getTipo();
     }
 }

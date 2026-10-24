@@ -237,4 +237,25 @@ class DevolucaoServiceImplTest {
 
         assertThat(criada.getServicoEntrega()).isEqualTo(SERVICO_DEVOLUCAO_CONFIGURADO);
     }
+
+    @Test
+    void rastreioDevolucaoWebhook_EntregaDepoisDas21hDeveUsarADataDoBrasil() {
+        // Arrange: 23:30 em Brasília = 02:30 do dia seguinte em UTC (como o Jackson entrega o OffsetDateTime)
+        Devolucao devolucao = new Devolucao();
+        devolucao.setId(1L);
+        devolucao.setStatus(StatusDevolucaoEnum.EM_RETORNO);
+        when(repository.update(any(Devolucao.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        var data = new br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto(
+                UUID.randomUUID().toString(), "PROTOCOLO", "delivered", "TRACK123", null,
+                null, null, null, null, java.time.OffsetDateTime.parse("2026-10-24T02:30:00Z"), null, null,
+                "https://example.com/tracking");
+
+        // Act
+        service.rastreioDevolucaoWebhook(devolucao,
+                new br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto("order.delivered", data));
+
+        // Assert
+        assertThat(devolucao.getStatus()).isEqualTo(StatusDevolucaoEnum.RETORNADO);
+        assertThat(devolucao.getDataConclusao()).isEqualTo(java.time.LocalDate.of(2026, 10, 23));
+    }
 }

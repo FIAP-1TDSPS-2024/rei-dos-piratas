@@ -32,9 +32,7 @@ public class JpaPedidoMapper {
                 jpaPedidoEntity.getStatusEnvio(),
                 jpaPedidoEntity.getTracking(),
                 jpaPedidoEntity.getTrackingUrl(),
-                jpaPedidoEntity.getTipoPagamento(),
-                jpaPedidoEntity.getValorLiquido(),
-                jpaPedidoEntity.getIdCobranca());
+                JpaPagamentoMapper.toEntity(jpaPedidoEntity.getPagamento()));
     }
 
     public static JpaPedidoEntity toJpaEntity(Pedido pedido) {
@@ -65,13 +63,13 @@ public class JpaPedidoMapper {
                 pedido.getStatusEnvio(),
                 pedido.getTracking(),
                 pedido.getTrackingUrl(),
-                pedido.getTipoPagamento(),
-                pedido.getValorLiquido(),
-                pedido.getIdCobranca());
+                null);
 
         jpaPedido
                 .getProdutosAdicionados()
                 .forEach(produtosPedido -> produtosPedido.setPedido(jpaPedido));
+
+        jpaPedido.setPagamento(JpaPagamentoMapper.toJpaEntity(pedido.getPagamento(), jpaPedido));
 
         return jpaPedido;
     }

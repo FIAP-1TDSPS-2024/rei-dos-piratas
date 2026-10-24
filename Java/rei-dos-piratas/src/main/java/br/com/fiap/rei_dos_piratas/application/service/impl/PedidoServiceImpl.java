@@ -1,15 +1,18 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import br.com.fiap.rei_dos_piratas.application.service.CartaoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
@@ -23,19 +26,22 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteRes
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.*;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.Enum.AsaasPaymentStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Slf4j
 public class PedidoServiceImpl implements PedidoService {
+
+    /** Datas de negócio (ex.: entrega) no fuso da loja; o Jackson entrega OffsetDateTime em UTC. */
+    private static final ZoneId FUSO_LOJA = ZoneId.of("America/Sao_Paulo");
 
     private final PedidoRepository repository;
 
@@ -52,7 +58,13 @@ public class PedidoServiceImpl implements PedidoService {
     private final CobrancaAppClient apiCobranca;
     private final UsuarioAtualService usuarioAtual;
 
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, CobrancaAppClient apiCobranca, UsuarioAtualService usuarioAtual) {
+    private final CartaoService cartaoService;
+    private final RegraParcelamento regraParcelamento;
+
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, CobrancaAppClient apiCobranca, UsuarioAtualService usuarioAtual,
+                             CartaoService cartaoService, RegraParcelamento regraParcelamento) {
+        this.cartaoService = cartaoService;
+        this.regraParcelamento = regraParcelamento;
         this.usuarioAtual = usuarioAtual;
         this.repository = repository;
         this.produtoRepository = produtoRepository;
@@ -119,6 +131,51 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     @Override
     public Pedido fazerPedido(Pedido pedido) {
+        Pedido pedidoCriado = this.criarPedido(pedido);
+        return this.criarCobrancaPedido(pedidoCriado);
+    }
+
+    /**
+     * Cartão: grava o pedido, tokeniza (o cliente Asaas já existe nesse ponto) e cobra.
+     * A recusa do Asaas grava pedido CANCELADO + pagamento RECUSADO e só então propaga o erro,
+     * por isso a transação não é desfeita para {@link PagamentoRecusadoException}.
+     */
+    @Transactional(noRollbackFor = PagamentoRecusadoException.class)
+    @Override
+    public Pedido fazerPedido(Pedido pedido, PagamentoCartao pagamentoCartao) {
+        if (!TipoPagamentoEnum.CREDIT_CARD.equals(pedido.getTipoPagamento())) {
+            return this.fazerPedido(pedido);
+        }
+
+        if (pagamentoCartao == null) {
+            log.warn("Pedido com pagamento por cartão sem dados do cartão — cliente ID={}", pedido.getCliente().getId());
+            throw new RegraDeNegocioException("Informe o cartão de crédito para pagamento com cartão");
+        }
+
+        pedido.getPagamento().setParcelas(pagamentoCartao.parcelas());
+        Pedido pedidoCriado = this.criarPedido(pedido);
+
+        try {
+            CartaoCliente cartao = this.cartaoService.obterOuTokenizar(
+                    pedidoCriado.getCliente(), pedidoCriado.getEnderecoEntrega(), pagamentoCartao);
+            pedidoCriado.getPagamento().setCartao(cartao);
+            return this.criarCobrancaPedido(pedidoCriado);
+        } catch (PagamentoRecusadoException e) {
+            this.registrarRecusa(pedidoCriado, e.getMessage());
+            throw e;
+        }
+    }
+
+    private void registrarRecusa(Pedido pedido, String motivo) {
+        log.warn("Pagamento com cartão recusado para pedido ID={} — cancelando pedido e devolvendo estoque", pedido.getId());
+        this.devolverEstoque(pedido);
+        pedido.setStatus(StatusEnum.CANCELADO);
+        pedido.getPagamento().setStatus(StatusPagamentoEnum.RECUSADO);
+        pedido.getPagamento().setMotivoRecusa(motivo);
+        this.repository.update(pedido);
+    }
+
+    private Pedido criarPedido(Pedido pedido) {
         log.info("Iniciando criação de pedido para cliente ID={}, endereço de entrega CEP={}, serviço de frete ID={}",
                 pedido.getCliente().getId(), pedido.getEnderecoEntrega().getCep(), pedido.getServicoEntrega());
 
@@ -144,7 +201,15 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setValorFrete(consultaFrete.get().price());
         pedido.setValorTotal(calcularValorTotalPedido(pedido));
 
+        if (pedido.getPagamento() != null) {
+            pedido.getPagamento().setValor(pedido.getValorTotal());
+        }
+
         log.debug("Valor do frete definido: R${}, valor total do pedido: R${}", pedido.getValorFrete(), pedido.getValorTotal());
+
+        if (TipoPagamentoEnum.CREDIT_CARD.equals(pedido.getTipoPagamento())) {
+            this.regraParcelamento.validar(pedido.getValorTotal(), pedido.getPagamento().getParcelas());
+        }
 
         this.verificaEAtualizaEstoqueparaPedido(pedido);
 
@@ -156,19 +221,35 @@ public class PedidoServiceImpl implements PedidoService {
         log.info("Pedido criado com sucesso: ID={}, status={}, valor total=R${}",
                 pedidoCriado.getId(), pedidoCriado.getStatus(), pedidoCriado.getValorTotal());
 
-        return this.criarCobrancaPedido(pedidoCriado);
+        return pedidoCriado;
     }
 
     private Pedido criarCobrancaPedido(Pedido pedido) {
+
         PagamentoCobrancaRequestDto request = definirPagamentoCobrancaRequest(pedido);
         PagamentoCobrancaResponseDto response = this.apiCobranca.criarNovaCobranca(request);
 
-        pedido.setIdCobranca(response.id());
-        pedido.setValorLiquido(response.netValue());
+        Pagamento pagamento = pedido.getPagamento();
+        pagamento.setIdCobranca(response.id());
+        pagamento.setValorLiquido(response.netValue());
 
-        log.info("Cobrança criada com sucesso: ID={}, valor líquido=R${}", response.id(), response.netValue());
+        // Cartão: o Asaas responde na hora; recusa vem como erro (PagamentoRecusadoException).
+        // Em análise de risco a cobrança fica pendente até o webhook.
+        if (TipoPagamentoEnum.CREDIT_CARD.equals(pagamento.getTipo()) && cobrancaAprovada(response)) {
+            pagamento.setStatus(StatusPagamentoEnum.CONFIRMADO);
+            pagamento.setDataConfirmacao(LocalDateTime.now());
+        }
+
+        log.info("Cobrança criada com sucesso: ID={}, valor líquido=R${}, status do pagamento={}",
+                response.id(), response.netValue(), pagamento.getStatus());
 
         return this.repository.update(pedido);
+    }
+
+    private boolean cobrancaAprovada(PagamentoCobrancaResponseDto response) {
+        return response.status() == null
+                || response.status() == AsaasPaymentStatus.CONFIRMED
+                || response.status() == AsaasPaymentStatus.RECEIVED;
     }
 
     private PagamentoCobrancaRequestDto definirPagamentoCobrancaRequest(Pedido pedido) {
@@ -184,48 +265,37 @@ public class PedidoServiceImpl implements PedidoService {
                         "cobrança do pedido " + pedido.getId(),
                         pedido.getId().toString(),
                         null,
-                        null
-                );
+                        null,
+                        null);
 
             case TipoPagamentoEnum.CREDIT_CARD:
+
+                CartaoCliente cartaoCliente = pedido.getPagamento().getCartao();
+                // Asaas: à vista usa "value"; parcelado usa "installmentCount" + "totalValue"
+                boolean parcelado = pedido.getPagamento().getParcelas() != null && pedido.getPagamento().getParcelas() > 1;
+
                 return new PagamentoCobrancaRequestDto(
                         pedido.getCliente().getIdCobranca(),
                         pedido.getTipoPagamento(),
-                        pedido.getValorTotal(),
+                        parcelado ? null : pedido.getValorTotal(),
                         LocalDate.now().plusDays(1),
                         "cobrança do pedido " + pedido.getId(),
                         pedido.getId().toString(),
-                        null,
-                        null
-                );
+                        parcelado ? pedido.getPagamento().getParcelas() : null,
+                        cartaoCliente.getToken(),
+                        parcelado ? pedido.getValorTotal() : null);
 
             case TipoPagamentoEnum.BOLETO:
-                return new PagamentoCobrancaRequestDto(
-                        pedido.getCliente().getIdCobranca(),
-                        pedido.getTipoPagamento(),
-                        pedido.getValorTotal(),
-                        LocalDate.now().plusDays(1),
-                        "cobrança do pedido " + pedido.getId(),
-                        pedido.getId().toString(),
-                        null,
-                        null
-                );
-        }
+                throw new UnsupportedOperationException("Pagamento por boleto não é suportado no momento");
 
-        return new PagamentoCobrancaRequestDto(
-                pedido.getCliente().getIdCobranca(),
-                pedido.getTipoPagamento(),
-                pedido.getValorTotal(),
-                LocalDate.now().plusDays(1),
-                "cobrança do pedido " + pedido.getId(),
-                pedido.getId().toString(),
-                null,
-                null);
+            default:
+                throw new RegraDeNegocioException("Tipo de pagamento não suportado: " + pedido.getTipoPagamento());
+        }
     }
 
     @Transactional
     @Override
-    public Pedido pagarPedido(Long id) {
+    public void pagarPedido(Long id) {
         log.info("Iniciando pagamento do pedido ID={}", id);
         Pedido pedido = this.findById(id);
 
@@ -243,13 +313,9 @@ public class PedidoServiceImpl implements PedidoService {
             pedido = this.enriquecerPedidoPorFrete(pedido, responsePedidoFrete);
             Pedido pedidoAtualizado = this.repository.update(pedido);
             log.info("Pedido ID={} pago e enriquecido com dados de frete com sucesso", id);
-            return pedidoAtualizado;
         } else {
             log.warn("Tentativa de pagamento rejeitada: pedido ID={} está no status={}, esperado={}",
                     id, pedido.getStatus(), StatusEnum.AGUARDANDO_PAGAMENTO);
-            throw new WrongStatusException(
-                    "O pedido deve estar no estado " + StatusEnum.AGUARDANDO_PAGAMENTO +
-                    "para ser pago, mas ele está no estado " + pedido.getStatus());
         }
     }
 
@@ -422,7 +488,7 @@ public class PedidoServiceImpl implements PedidoService {
                 // Encomenda entregue → status ENTREGUE + data de entrega vinda da API
                 pedido.setStatus(StatusEnum.ENTREGUE);
                 if (data.deliveredAt() != null) {
-                    pedido.setDataEntrega(data.deliveredAt().toLocalDate());
+                    pedido.setDataEntrega(data.deliveredAt().atZoneSameInstant(FUSO_LOJA).toLocalDate());
                 }
                 log.info("Encomenda entregue — pedido ID={} atualizado para ENTREGUE em {}", pedido.getId(), pedido.getDataEntrega());
                 break;
@@ -494,13 +560,7 @@ public class PedidoServiceImpl implements PedidoService {
             log.warn("Pedido ID={} já foi entregue, cancelamento não permitido", id);
             throw new WrongStatusException("O pedido já foi entregue");
         } else if ((pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO) || pedido.getStatus() == StatusEnum.PREPARANDO_ENVIO) {
-            log.debug("Revertendo estoque de {} produto(s) para cancelamento do pedido ID={}", pedido.getProdutosAdicionados().size(), id);
-            pedido.getProdutosAdicionados()
-                    .forEach(produto -> {
-                        produto.getProduto().setEstoque(produto.getProduto().getEstoque() + produto.getQuantidade());
-                        log.debug("Estoque do produto ID={} restaurado em {} unidade(s)", produto.getProduto().getId(), produto.getQuantidade());
-                        this.produtoRepository.update(produto.getProduto());
-                    });
+            this.devolverEstoque(pedido);
             pedido.setStatus(StatusEnum.CANCELADO);
             Pedido pedidoCancelado = this.repository.update(pedido);
             log.info("Pedido ID={} cancelado com sucesso", id);
@@ -521,22 +581,72 @@ public class PedidoServiceImpl implements PedidoService {
             throw new WrongStatusException("O pedido não está aguardando pagamento.");
         }
 
-        if (pedido.getIdCobranca() == null) {
+        if (pedido.getPagamento() == null || pedido.getPagamento().getIdCobranca() == null) {
             log.warn("Pedido ID={} não possui cobrança associada — não é possível gerar QR Code", id);
             throw new RegraDeNegocioException("O pedido não possui cobrança associada.");
         }
 
-        return this.apiCobranca.obterQrCodePix(pedido.getIdCobranca());
+        return this.apiCobranca.obterQrCodePix(pedido.getPagamento().getIdCobranca());
     }
 
+    private void devolverEstoque(Pedido pedido) {
+        log.debug("Revertendo estoque de {} produto(s) do pedido ID={}", pedido.getProdutosAdicionados().size(), pedido.getId());
+        pedido.getProdutosAdicionados()
+                .forEach(produto -> {
+                    produto.getProduto().setEstoque(produto.getProduto().getEstoque() + produto.getQuantidade());
+                    log.debug("Estoque do produto ID={} restaurado em {} unidade(s)", produto.getProduto().getId(), produto.getQuantidade());
+                    this.produtoRepository.update(produto.getProduto());
+                });
+    }
+
+    /** Marca o pagamento e libera o pedido para envio; idempotente (eventos podem repetir ou chegar fora de ordem). */
+    private void registrarPagamento(Long pedidoId, StatusPagamentoEnum status) {
+        Pedido pedido = this.findById(pedidoId);
+        Pagamento pagamento = pedido.getPagamento();
+        if (pagamento != null && pagamento.getStatus() != StatusPagamentoEnum.RECEBIDO) {
+            pagamento.setStatus(status);
+            if (pagamento.getDataConfirmacao() == null) {
+                pagamento.setDataConfirmacao(LocalDateTime.now());
+            }
+        }
+
+        // Grava antes: pagarPedido relê o pedido do repositório
+        this.repository.update(pedido);
+
+        if (pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO) {
+            this.pagarPedido(pedidoId);
+        }
+    }
+
+    /** Recusa do cartão pelo Asaas (captura ou análise de risco): cancela e devolve o estoque uma única vez. */
+    private void registrarRecusaPorEvento(Long pedidoId, EventoCobrancaDto evento) {
+        Pedido pedido = this.findById(pedidoId);
+        if (pedido.getStatus() != StatusEnum.AGUARDANDO_PAGAMENTO) {
+            log.info("Recusa ignorada para pedido ID={} — status atual={}", pedidoId, pedido.getStatus());
+            return;
+        }
+
+        String motivo = evento.additionalInfo() != null && evento.additionalInfo().denialReason() != null
+                ? evento.additionalInfo().denialReason()
+                : "Pagamento recusado pela operadora (" + evento.event() + ")";
+        this.registrarRecusa(pedido, motivo);
+    }
+
+    @Transactional
     @Override
     public void processarEventoCobranca(Long pedidoId, EventoCobrancaDto evento) {
         log.info("Processando evento de cobrança para pedido ID={} — evento={}", pedidoId, evento.event());
 
         switch (evento.event()) {
             case "PAYMENT_RECEIVED":
-                log.info("Pagamento recebido para pedido ID={} — atualizando status para PREPARANDO_ENVIO", pedidoId);
-                this.pagarPedido(pedidoId);
+                log.info("Pagamento recebido para pedido ID={}", pedidoId);
+                this.registrarPagamento(pedidoId, StatusPagamentoEnum.RECEBIDO);
+                break;
+
+            case "PAYMENT_CREDIT_CARD_CAPTURE_REFUSED":
+            case "PAYMENT_REPROVED_BY_RISK_ANALYSIS":
+                log.warn("Pagamento com cartão recusado para pedido ID={} — evento={}", pedidoId, evento.event());
+                this.registrarRecusaPorEvento(pedidoId, evento);
                 break;
 
             case "PAYMENT_OVERDUE":
@@ -552,7 +662,9 @@ public class PedidoServiceImpl implements PedidoService {
                 break;
 
             case "PAYMENT_CONFIRMED":
-                log.info("Pagamento confirmado, aguardando saldo ser disponibilizado para pedido ID={}", pedidoId);
+                // Cartão: confirmado já libera o envio; o RECEIVED só chega quando o valor é creditado (~30 dias)
+                log.info("Pagamento confirmado para pedido ID={} — liberando para envio", pedidoId);
+                this.registrarPagamento(pedidoId, StatusPagamentoEnum.CONFIRMADO);
                 break;
 
             case "PAYMENT_DELETED":

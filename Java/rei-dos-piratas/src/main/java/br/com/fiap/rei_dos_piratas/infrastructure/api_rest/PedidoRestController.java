@@ -90,17 +90,6 @@ public class PedidoRestController {
         return ResponseEntity.ok(novoPedido);
     }
 
-    @Operation(summary = "Registrar pagamento", description = "Marca pedido como pago")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pedido pago"),
-            @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
-    })
-    @PutMapping("/pagamento/{id}")
-    public ResponseEntity<PedidoOutDto> pagarPedido(@PathVariable Long id){
-        PedidoOutDto pedido = this.controller.pagarPedido(id);
-        return ResponseEntity.ok(pedido);
-    }
-
     @Operation(summary = "Organizar pedidos para entrega", description = "Organiza pedidos para entrega e atualiza status")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedidos organizados"),

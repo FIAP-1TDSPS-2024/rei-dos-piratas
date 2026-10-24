@@ -74,13 +74,7 @@ public class JpaPedidoEntity {
     @Column(length = 500)
     private String trackingUrl;
 
-    @Column(length = 50)
-    @Enumerated(EnumType.STRING)
-    private TipoPagamentoEnum tipoPagamento;
-
-    private BigDecimal valorLiquido;
-
-    @Column(length = 50)
-    private String idCobranca;
+    @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private JpaPagamentoEntity pagamento;
 
 }

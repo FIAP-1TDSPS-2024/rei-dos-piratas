@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Cliente;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
+import br.com.fiap.rei_dos_piratas.domain.entity.Pagamento;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 
@@ -18,6 +19,7 @@ public class PedidoDtoMapper {
     public static PedidoOutDto toDto(Pedido pedido) {
         String nomeCliente = pedido.getCliente() != null ? pedido.getCliente().getNomeCompleto() : null;
         String enderecoStr = pedido.getEnderecoEntrega() != null ? pedido.getEnderecoEntrega().toString() : null;
+        Pagamento pagamento = pedido.getPagamento();
 
         return new PedidoOutDto(
                 pedido.getId(),
@@ -41,8 +43,8 @@ public class PedidoDtoMapper {
                 pedido.getTracking(),
                 pedido.getTrackingUrl(),
                 pedido.getTipoPagamento(),
-                pedido.getValorLiquido(),
-                pedido.getIdCobranca()
+                pagamento != null ? pagamento.getValorLiquido() : null,
+                pagamento != null ? pagamento.getIdCobranca() : null
         );
     }
 

@@ -25,6 +25,9 @@ import java.util.*;
 @Slf4j
 public class DevolucaoServiceImpl implements DevolucaoService {
 
+    /** Datas de negócio (ex.: conclusão) no fuso da loja; o Jackson entrega OffsetDateTime em UTC. */
+    private static final java.time.ZoneId FUSO_LOJA = java.time.ZoneId.of("America/Sao_Paulo");
+
     private final DevolucaoRepository repository;
 
     private final FreteService freteService;
@@ -237,7 +240,7 @@ devolucao.setAprovada(true);
             case "order.delivered":
                 devolucao.setStatus(StatusDevolucaoEnum.RETORNADO);
                 if (data.deliveredAt() != null) {
-                    devolucao.setDataConclusao(data.deliveredAt().toLocalDate());
+                    devolucao.setDataConclusao(data.deliveredAt().atZoneSameInstant(FUSO_LOJA).toLocalDate());
                 }
                 log.info("[SERVICE-DEVOLUCAO] Devolução entregue - devolucaoId={} atualizada para RETORNADO em {}",
                         devolucao.getId(), devolucao.getDataConclusao());

@@ -87,6 +87,12 @@ class PedidoFluxoIntegrationTest {
         when(cobranca.criarNovoCliente(any())).thenReturn(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaResponseDto(
                 "customer","cus_000009601",LocalDate.now(),"Cliente Fluxo","52998224725","fluxo@example.com",null,
                 "11987654321","Rua Fluxo","100","Centro","01001000","9601",true));
+        // id_cobranca e unico em PAGAMENTOS: cada cobranca recebe um id novo, como no Asaas
+        var proximaCobranca = new java.util.concurrent.atomic.AtomicInteger(9601);
+        when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto(
+                null,"pay_00000"+proximaCobranca.getAndIncrement(),null,null,null,null,null,new BigDecimal("98.95"),
+                null,null,null,null,null,null,null,null,null,null,null,null,null,null,
+                null,null,null,null,null,null,null,null,null,null));
         when(fretes.calcularFreteProdutos(anyString(), anyList())).thenReturn(List.of(
                 new FreteServiceDto(1L,"Entrega",new BigDecimal("10.25"),null,null,"BRL",3,null)));
         when(fretes.criarPedidoFrete(any())).thenReturn(new PedidoFreteResponseDto(
@@ -105,6 +111,8 @@ class PedidoFluxoIntegrationTest {
     @AfterEach
     void limpar() {
         banco(() -> {
+            sql("DELETE FROM PAGAMENTOS WHERE pedido_id IN (SELECT id FROM PEDIDOS WHERE cliente_id=9601)");
+            sql("DELETE FROM CARTOES_CLIENTE WHERE cliente_id=9601");
             sql("DELETE FROM DEVOLUCAO_ITENS WHERE devolucao_id IN (SELECT id FROM DEVOLUCOES WHERE pedido_id IN (SELECT id FROM PEDIDOS WHERE cliente_id=9601))");
             sql("DELETE FROM DEVOLUCOES WHERE pedido_id IN (SELECT id FROM PEDIDOS WHERE cliente_id=9601)");
             sql("DELETE FROM PEDIDO_PRODUTO WHERE pedido_id IN (SELECT id FROM PEDIDOS WHERE cliente_id=9601)");
@@ -125,9 +133,13 @@ class PedidoFluxoIntegrationTest {
         var user = new CustomUserDetails(id,"test","test",roles.stream().map(SimpleGrantedAuthority::new).toList(),tipo,true);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities()));
     }
-    Pedido novoPedido() {
+    Pedido novoPedido() { return novoPedido(TipoPagamentoEnum.PIX); }
+    Pedido novoPedido(TipoPagamentoEnum tipoPagamento) {
         return banco(() -> new Pedido(clientes.findById(9601L),enderecos.findById(9601L),
-                List.of(new ItemProdutoPedido(produtos.findById(9601L),3)),1L));
+                List.of(new ItemProdutoPedido(produtos.findById(9601L),3)),1L,tipoPagamento));
+    }
+    PagamentoCartao cartaoNovo() {
+        return new PagamentoCartao(null,new DadosCartaoCredito("CLIENTE FLUXO","4111111111111234","12","2030","987"),1);
     }
     Pedido criar() { return pedidos.fazerPedido(novoPedido()); }
     Pedido entregue() throws Exception {
@@ -156,6 +168,9 @@ class PedidoFluxoIntegrationTest {
     void fluxoCompletoComItensFreteEtiquetasRastreioEDevolucao() throws Exception {
         Pedido criado = criar();
         assertThat(pedidos.findById(criado.getId()).getValorTotal()).isEqualByComparingTo("99.95");
+        assertThat(pedidos.findById(criado.getId()).getPagamento().getIdCobranca()).isEqualTo("pay_000009601");
+        assertThat(pedidos.findById(criado.getId()).getTipoPagamento()).isEqualTo(TipoPagamentoEnum.PIX);
+        assertThat(banco(() -> clientes.findById(9601L)).getIdCobranca()).isEqualTo("cus_000009601");
         assertThat(pedidos.findById(criado.getId()).getProdutosAdicionados()).hasSize(1);
         assertThat(((Number)valor("SELECT estoque FROM PRODUTOS WHERE id=9601")).intValue()).isEqualTo(97);
         Long itemId = pedidos.findById(criado.getId()).getProdutosAdicionados().getFirst().getId();
@@ -173,7 +188,7 @@ class PedidoFluxoIntegrationTest {
         evento(ida,"order.delivered");
         Pedido entregue = pedidos.findById(criado.getId());
         assertThat(entregue.getStatus()).isEqualTo(StatusEnum.ENTREGUE);
-        assertThat(entregue.getDataEntrega()).isEqualTo(LocalDate.now());
+        assertThat(entregue.getDataEntrega()).isEqualTo(LocalDate.now(ZoneId.of("America/Sao_Paulo")));
         assertThat(entregue.getTrackingUrl()).isEqualTo(trackingUrl);
         assertThat(entregue.getProdutosAdicionados().getFirst().getId()).isEqualTo(itemId);
         assertThat(entregue.getProdutosAdicionados().getFirst().getPrecoUnitario()).isEqualByComparingTo("29.90");
@@ -187,7 +202,7 @@ class PedidoFluxoIntegrationTest {
         evento(volta,"order.delivered");
         var finalizada = devolucoes.findById(devolucao.getId());
         assertThat(finalizada.getStatus()).isEqualTo(StatusDevolucaoEnum.RETORNADO);
-        assertThat(finalizada.getDataConclusao()).isEqualTo(LocalDate.now());
+        assertThat(finalizada.getDataConclusao()).isEqualTo(LocalDate.now(ZoneId.of("America/Sao_Paulo")));
         assertThat(finalizada.getTrackingUrl()).isEqualTo(trackingUrl);
         assertThat(finalizada.getItens().getFirst().getPrecoUnitario()).isEqualByComparingTo("29.90");
         assertThat(finalizada.getValorTotal()).isEqualByComparingTo("42.25");
@@ -277,6 +292,38 @@ class PedidoFluxoIntegrationTest {
         assertThat(salva.getStatus()).isEqualTo(StatusDevolucaoEnum.PREPARANDO_RETORNO);
         assertThat(salva.getPedidoFrete()).isEqualTo(volta);
         assertThat(salva.getAprovada()).isTrue();
+    }
+
+    @Test
+    void pedidoComCartaoAprovadoChegaAPreparandoEnvioPeloEventoDeConfirmacao() {
+        when(cobranca.tokenizarCartao(any())).thenReturn(
+                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+
+        Pedido criado = pedidos.fazerPedido(novoPedido(TipoPagamentoEnum.CREDIT_CARD), cartaoNovo());
+        assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
+        assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("CONFIRMADO");
+        assertThat(valor("SELECT ultimos_digitos FROM CARTOES_CLIENTE WHERE cliente_id=9601")).isEqualTo("1234");
+
+        pedidos.processarEventoCobranca(criado.getId(), new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto(
+                "evt_fluxo","PAYMENT_CONFIRMED",LocalDateTime.now(),
+                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto.Payment("pay_000009601",null,criado.getId().toString()),null));
+
+        assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+    }
+
+    @Test
+    void pedidoComCartaoRecusadoFicaCanceladoComEstoqueRestauradoEPagamentoRecusado() {
+        when(cobranca.tokenizarCartao(any())).thenReturn(
+                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+        when(cobranca.criarNovaCobranca(any())).thenThrow(
+                new br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException("Transacao nao autorizada"));
+
+        assertThatThrownBy(() -> pedidos.fazerPedido(novoPedido(TipoPagamentoEnum.CREDIT_CARD), cartaoNovo()))
+                .isInstanceOf(br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException.class);
+
+        assertThat(valor("SELECT status FROM PEDIDOS WHERE cliente_id=9601")).isEqualTo("CANCELADO");
+        assertThat(((Number)valor("SELECT estoque FROM PRODUTOS WHERE id=9601")).intValue()).isEqualTo(100);
+        assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id=(SELECT id FROM PEDIDOS WHERE cliente_id=9601)")).isEqualTo("RECUSADO");
     }
 
     @ParameterizedTest
