@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Pagamento com cartão solicitado junto do pedido: um cartão salvo ({@code idCartaoSalvo})
@@ -17,7 +18,8 @@ public record PagamentoCartao(
         DadosCartaoCredito novoCartao,
 
         @Min(value = 1, message = "O pagamento deve ter pelo menos uma parcela")
-        int parcelas
+        @NotNull(message = "O pagamento deve ter pelo menos uma parcela")
+        Integer parcelas
 
         //@NotBlank(message = "O IP de quem faz a compra é obrigatório para pagamento com cartão")
         //String ipRemoto
