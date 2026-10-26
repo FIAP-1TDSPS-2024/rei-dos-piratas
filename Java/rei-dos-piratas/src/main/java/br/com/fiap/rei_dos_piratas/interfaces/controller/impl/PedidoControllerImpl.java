@@ -78,7 +78,7 @@ public class PedidoControllerImpl implements PedidoController {
     }
 
     @Override
-    public PedidoOutDto fazerPedido(PedidoInDto pedido) {
+    public PedidoOutDto fazerPedido(PedidoInDto pedido, String ipRemoto) {
 
         Cliente cliente = clienteService.findById(this.usuarioAtual.identidade().id());
 
@@ -100,7 +100,7 @@ public class PedidoControllerImpl implements PedidoController {
                 throw new RegraDeNegocioException("Informe o cartão de crédito para pagamento com cartão");
             }
             else{
-                PagamentoCartao pagamentoCartao = PagamentoCartaoCreditoMapper.toEntity(pedido.cartao());
+                PagamentoCartao pagamentoCartao = PagamentoCartaoCreditoMapper.toEntity(pedido.cartao(), ipRemoto);
 
                 return PedidoDtoMapper.toDto(
                         this.service.fazerPedido(pedidoEntity, pagamentoCartao));

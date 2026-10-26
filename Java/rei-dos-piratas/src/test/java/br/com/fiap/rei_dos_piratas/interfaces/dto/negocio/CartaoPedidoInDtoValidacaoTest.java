@@ -36,7 +36,7 @@ class CartaoPedidoInDtoValidacaoTest {
 
         assertThat(validator.validate(dto)).isEmpty();
 
-        PagamentoCartao pagamento = PagamentoCartaoCreditoMapper.toEntity(dto);
+        PagamentoCartao pagamento = PagamentoCartaoCreditoMapper.toEntity(dto, "200.1.2.3");
         assertThat(pagamento.idCartaoSalvo()).isEqualTo(5L);
         assertThat(pagamento.novoCartao()).isNull();
     }
@@ -60,8 +60,17 @@ class CartaoPedidoInDtoValidacaoTest {
 
         assertThat(validator.validate(dto)).isEmpty();
 
-        PagamentoCartao pagamento = PagamentoCartaoCreditoMapper.toEntity(dto);
+        PagamentoCartao pagamento = PagamentoCartaoCreditoMapper.toEntity(dto, "200.1.2.3");
         assertThat(pagamento.idCartaoSalvo()).isNull();
         assertThat(pagamento.novoCartao().numero()).isEqualTo("4111111111111234");
+    }
+
+    @Test
+    void mapeamentoLevaOIpDoCompradorParaOPagamento() {
+        CartaoPedidoInDto dto = new CartaoPedidoInDto(5L, null, null, null, null, null, 1);
+
+        PagamentoCartao pagamento = PagamentoCartaoCreditoMapper.toEntity(dto, "200.1.2.3");
+
+        assertThat(pagamento.ipRemoto()).isEqualTo("200.1.2.3");
     }
 }

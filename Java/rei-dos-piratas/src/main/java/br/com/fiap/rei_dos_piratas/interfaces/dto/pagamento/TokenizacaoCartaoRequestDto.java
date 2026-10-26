@@ -7,5 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public record TokenizacaoCartaoRequestDto(
         String customer,
         CartaoCreditoRequestDto creditCard,
-        TitularCartaoRequestDto creditCardHolderInfo
+        TitularCartaoRequestDto creditCardHolderInfo,
+        String remoteIp
 ) {}

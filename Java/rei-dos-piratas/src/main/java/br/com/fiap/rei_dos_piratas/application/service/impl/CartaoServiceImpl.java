@@ -43,16 +43,24 @@ public class CartaoServiceImpl implements CartaoService {
             TokenizacaoCartaoRequestDto request = this.definirRequisicaoTokenizacao(
                     cliente,
                     endereco,
-                    pagamentoCartao.novoCartao());
+                    pagamentoCartao.novoCartao(),
+                    pagamentoCartao.ipRemoto());
 
             TokenizacaoCartaoResponseDto response = this.apiCobranca.tokenizarCartao(request);
+
+            //Verificar se o token já existe para o cliente, caso exista, não criar um novo registro
+            Optional<CartaoCliente> cartaoExistente = this.repository.findByClienteIdAndToken(cliente.getId(), response.creditCardToken());
+
+            if (cartaoExistente.isPresent()) {
+                log.info("[CARTAO] Cartão já tokenizado para o cliente ID={}, retornando cartão existente", cliente.getId());
+                return cartaoExistente.get();
+            }
 
             return this.repository.create(new CartaoCliente(
                     cliente,
                     response.creditCardToken(),
                     response.creditCardNumber(),
                     response.creditCardBrand()));
-
         }
         else {
             throw new RegraDeNegocioException("Pagamento com cartão inválido: nem cartão salvo nem novo cartão informado");
@@ -78,7 +86,7 @@ public class CartaoServiceImpl implements CartaoService {
         return cartao;
     }
 
-    private TokenizacaoCartaoRequestDto definirRequisicaoTokenizacao(Cliente cliente, Endereco endereco, DadosCartaoCredito dadosCartao) {
+    private TokenizacaoCartaoRequestDto definirRequisicaoTokenizacao(Cliente cliente, Endereco endereco, DadosCartaoCredito dadosCartao, String ipRemoto) {
 
         CartaoCreditoRequestDto cartaoCredito = new CartaoCreditoRequestDto(
                 dadosCartao.titular(),
@@ -98,7 +106,8 @@ public class CartaoServiceImpl implements CartaoService {
         return new TokenizacaoCartaoRequestDto(
                 cliente.getIdCobranca(),
                 cartaoCredito,
-                titular);
+                titular,
+                ipRemoto);
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface CartaoClienteRepository {
     CartaoCliente findById(Long id);
     Optional<CartaoCliente> findByIdOptional(Long id);
+    Optional<CartaoCliente> findByClienteIdAndToken(Long clienteId, String token);
     CartaoCliente create(CartaoCliente cartao);
     List<CartaoCliente> findAllByClienteId(Long clienteId);
 }

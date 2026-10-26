@@ -212,7 +212,7 @@ class PedidoRestControllerTest {
                 null, null, null, null, null, null, null, null
         );
 
-        when(this.pedidoController.fazerPedido(any(PedidoInDto.class))).thenReturn(pedidoOut);
+        when(this.pedidoController.fazerPedido(any(PedidoInDto.class), any())).thenReturn(pedidoOut);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -292,7 +292,7 @@ class PedidoRestControllerTest {
     @Test
     @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void fazerPedido_CartaoRecusadoDeveRetornar422ComMotivo() throws Exception {
-        when(this.pedidoController.fazerPedido(any(PedidoInDto.class)))
+        when(this.pedidoController.fazerPedido(any(PedidoInDto.class), any()))
                 .thenThrow(new PagamentoRecusadoException("Transação não autorizada"));
 
         this.mockMvc.perform(post("/pedidos")
@@ -300,5 +300,31 @@ class PedidoRestControllerTest {
                         .content(jsonPedido(pedidoComCartao(cartaoNovo))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message", is("Transação não autorizada")));
+    }
+
+    @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
+    void fazerPedido_DeveRepassarOPrimeiroIpDoXForwardedFor() throws Exception {
+        // Atrás do load balancer, o IP do comprador é o primeiro da lista
+        this.mockMvc.perform(post("/pedidos")
+                .header("X-Forwarded-For", "200.1.2.3, 10.0.0.1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonPedido(pedidoComCartao(cartaoNovo))));
+
+        verify(this.pedidoController).fazerPedido(any(PedidoInDto.class), eq("200.1.2.3"));
+    }
+
+    @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
+    void fazerPedido_SemXForwardedForDeveRepassarOIpDaConexao() throws Exception {
+        this.mockMvc.perform(post("/pedidos")
+                .with(request -> {
+                    request.setRemoteAddr("200.9.9.9");
+                    return request;
+                })
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonPedido(pedidoComCartao(cartaoNovo))));
+
+        verify(this.pedidoController).fazerPedido(any(PedidoInDto.class), eq("200.9.9.9"));
     }
 }

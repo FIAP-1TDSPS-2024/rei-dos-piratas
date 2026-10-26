@@ -155,6 +155,15 @@ Aplicacao disponivel em `http://localhost:8080`.
 
 ---
 
+## Observacoes sobre pagamento com cartao (Asaas)
+
+- O Asaas exige o IP do comprador (`remoteIp`) na tokenizacao e na cobranca com cartao. A API usa o
+  primeiro IP do header `X-Forwarded-For` (quando ha load balancer/proxy na frente) ou, sem ele, o IP
+  da conexao. O proxy precisa repassar esse header.
+- Timeout de leitura do cliente Asaas: 60s (o cartao e processado na propria requisicao).
+- Sandbox: `4444 4444 4444 4444` (validade futura, CCV `123`) aprova; `5184019740373151` e
+  `4916561358240741` sao recusados de proposito (HTTP 422 "Pagamento recusado").
+
 ## Observacao importante sobre etiquetas (Melhor Envio)
 
 Para gerar e **imprimir etiquetas de envio**, e necessario que exista login/autorizacao valida no Melhor Envio (token/refresh token validos para a conta usada na integracao).

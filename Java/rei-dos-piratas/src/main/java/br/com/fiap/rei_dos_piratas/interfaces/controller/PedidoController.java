@@ -13,7 +13,8 @@ public interface PedidoController {
     Page<PedidoOutDto> findAllByCliente(int pageNumber, int pageSize);
     Page<PedidoOutDto> findAllByStatus(int pageNumber, int pageSize, StatusEnum status);
     PedidoOutDto findById(Long id);
-    PedidoOutDto fazerPedido(PedidoInDto pedido);
+    /** {@code ipRemoto}: IP do comprador, exigido pelo Asaas nos pagamentos com cartão. */
+    PedidoOutDto fazerPedido(PedidoInDto pedido, String ipRemoto);
     String organizarPedidosParaEnvio(List<Long> pedidos);
     Map<Long, String> gerarEtiquetasParaEnvio(List<Long> pedidos);
     String imprimirEtiquetasEnvio(List<Long> pedidos);

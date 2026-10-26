@@ -19,10 +19,11 @@ public record PagamentoCartao(
 
         @Min(value = 1, message = "O pagamento deve ter pelo menos uma parcela")
         @NotNull(message = "O pagamento deve ter pelo menos uma parcela")
-        Integer parcelas
+        Integer parcelas,
 
-        //@NotBlank(message = "O IP de quem faz a compra é obrigatório para pagamento com cartão")
-        //String ipRemoto
+        /** IP do comprador (exigido pelo Asaas na cobrança e na tokenização; nunca o IP do servidor). */
+        @NotBlank(message = "O IP de quem faz a compra é obrigatório para pagamento com cartão")
+        String ipRemoto
 ) {
     public PagamentoCartao {
         if ((idCartaoSalvo == null) == (novoCartao == null)) {

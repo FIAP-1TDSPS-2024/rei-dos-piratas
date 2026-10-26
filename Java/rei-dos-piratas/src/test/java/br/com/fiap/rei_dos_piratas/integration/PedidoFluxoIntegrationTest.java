@@ -139,7 +139,7 @@ class PedidoFluxoIntegrationTest {
                 List.of(new ItemProdutoPedido(produtos.findById(9601L),3)),1L,tipoPagamento));
     }
     PagamentoCartao cartaoNovo() {
-        return new PagamentoCartao(null,new DadosCartaoCredito("CLIENTE FLUXO","4111111111111234","12","2030","987"),1);
+        return new PagamentoCartao(null,new DadosCartaoCredito("CLIENTE FLUXO","4111111111111234","12","2030","987"),1,"200.1.2.3");
     }
     Pedido criar() { return pedidos.fazerPedido(novoPedido()); }
     Pedido entregue() throws Exception {

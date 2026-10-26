@@ -5,10 +5,11 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CartaoPedidoInDto;
 
 public class PagamentoCartaoCreditoMapper {
 
-    public static PagamentoCartao toEntity(CartaoPedidoInDto cartaoDto){
+    public static PagamentoCartao toEntity(CartaoPedidoInDto cartaoDto, String ipRemoto){
         return new PagamentoCartao(
                 cartaoDto.cartaoId(),
                 cartaoDto.getDadosCartaoCredito(),
-                cartaoDto.parcelas());
+                cartaoDto.parcelas(),
+                ipRemoto);
     }
 }

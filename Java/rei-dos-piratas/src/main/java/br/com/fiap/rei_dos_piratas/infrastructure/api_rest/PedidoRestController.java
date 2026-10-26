@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -85,8 +86,8 @@ public class PedidoRestController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @PostMapping()
-    public ResponseEntity<PedidoOutDto> fazerPedido(@Valid @RequestBody PedidoInDto pedido) {
-        PedidoOutDto novoPedido = this.controller.fazerPedido(pedido);
+    public ResponseEntity<PedidoOutDto> fazerPedido(@Valid @RequestBody PedidoInDto pedido, HttpServletRequest request) {
+        PedidoOutDto novoPedido = this.controller.fazerPedido(pedido, ipDoComprador(request));
         return ResponseEntity.ok(novoPedido);
     }
 
@@ -138,5 +139,17 @@ public class PedidoRestController {
     public ResponseEntity<PedidoOutDto> cancelarPedido(@PathVariable Long id){
         PedidoOutDto pedido = this.controller.cancelarPedido(id);
         return ResponseEntity.ok(pedido);
+    }
+
+    /**
+     * IP do comprador, exigido pelo Asaas no pagamento com cartão. Atrás do load balancer,
+     * o endereço da conexão é o do balanceador: o IP original é o primeiro do X-Forwarded-For.
+     */
+    private String ipDoComprador(HttpServletRequest request) {
+        String encaminhado = request.getHeader("X-Forwarded-For");
+        if (encaminhado != null && !encaminhado.isBlank()) {
+            return encaminhado.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

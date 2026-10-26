@@ -17,5 +17,6 @@ public record PagamentoCobrancaRequestDto(
         String externalReference,
         Integer installmentCount,
         String creditCardToken,
-        BigDecimal totalValue
+        BigDecimal totalValue,
+        String remoteIp
 ) {}

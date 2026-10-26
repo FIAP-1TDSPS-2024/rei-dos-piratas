@@ -132,7 +132,8 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public Pedido fazerPedido(Pedido pedido) {
         Pedido pedidoCriado = this.criarPedido(pedido);
-        return this.criarCobrancaPedido(pedidoCriado);
+        // PIX/boleto: o Asaas não exige o IP do comprador
+        return this.criarCobrancaPedido(pedidoCriado, null);
     }
 
     /**
@@ -159,7 +160,7 @@ public class PedidoServiceImpl implements PedidoService {
             CartaoCliente cartao = this.cartaoService.obterOuTokenizar(
                     pedidoCriado.getCliente(), pedidoCriado.getEnderecoEntrega(), pagamentoCartao);
             pedidoCriado.getPagamento().setCartao(cartao);
-            return this.criarCobrancaPedido(pedidoCriado);
+            return this.criarCobrancaPedido(pedidoCriado, pagamentoCartao.ipRemoto());
         } catch (PagamentoRecusadoException e) {
             this.registrarRecusa(pedidoCriado, e.getMessage());
             throw e;
@@ -224,9 +225,9 @@ public class PedidoServiceImpl implements PedidoService {
         return pedidoCriado;
     }
 
-    private Pedido criarCobrancaPedido(Pedido pedido) {
+    private Pedido criarCobrancaPedido(Pedido pedido, String ipRemoto) {
 
-        PagamentoCobrancaRequestDto request = definirPagamentoCobrancaRequest(pedido);
+        PagamentoCobrancaRequestDto request = definirPagamentoCobrancaRequest(pedido, ipRemoto);
         PagamentoCobrancaResponseDto response = this.apiCobranca.criarNovaCobranca(request);
 
         Pagamento pagamento = pedido.getPagamento();
@@ -252,7 +253,7 @@ public class PedidoServiceImpl implements PedidoService {
                 || response.status() == AsaasPaymentStatus.RECEIVED;
     }
 
-    private PagamentoCobrancaRequestDto definirPagamentoCobrancaRequest(Pedido pedido) {
+    private PagamentoCobrancaRequestDto definirPagamentoCobrancaRequest(Pedido pedido, String ipRemoto) {
 
         switch (pedido.getTipoPagamento()){
 
@@ -264,6 +265,7 @@ public class PedidoServiceImpl implements PedidoService {
                         LocalDate.now().plusDays(1),
                         "cobrança do pedido " + pedido.getId(),
                         pedido.getId().toString(),
+                        null,
                         null,
                         null,
                         null);
@@ -283,7 +285,8 @@ public class PedidoServiceImpl implements PedidoService {
                         pedido.getId().toString(),
                         parcelado ? pedido.getPagamento().getParcelas() : null,
                         cartaoCliente.getToken(),
-                        parcelado ? pedido.getValorTotal() : null);
+                        parcelado ? pedido.getValorTotal() : null,
+                        ipRemoto);
 
             case TipoPagamentoEnum.BOLETO:
                 throw new UnsupportedOperationException("Pagamento por boleto não é suportado no momento");

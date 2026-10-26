@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Decodificador de erros customizado para a API de cobrança Asaas.
@@ -29,16 +31,25 @@ public class AsaasErrorDecoder implements ErrorDecoder {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    /** Código do Asaas para cartão não autorizado (a descrição é genérica e pode mudar). */
+    private static final String CODIGO_CARTAO_RECUSADO = "invalid_creditCard";
+
+    /** Corpo de erro do Asaas: descrições para a mensagem e códigos para log e decisão. */
+    private record CorpoErro(String mensagem, List<String> codigos) {}
+
     @Override
     public Exception decode(String methodKey, Response response) {
         int status = response.status();
-        String bodyMessage = extractBodyMessage(response);
+        CorpoErro corpo = extrairCorpo(response);
+        String bodyMessage = corpo.mensagem();
 
-        log.error("[COBRANCA] Erro na chamada '{}' — HTTP {}: {}", methodKey, status, bodyMessage);
+        // Só código e descrição do Asaas: o corpo da requisição (com dados do cartão) nunca é logado
+        log.error("[COBRANCA] Erro na chamada '{}' — HTTP {}: código(s)={} descrição={}",
+                methodKey, status, corpo.codigos(), bodyMessage);
 
         return switch (status) {
             case 400 -> {
-                if (bodyMessage.contains("Transação não autorizada")) {
+                if (chamadaDeCartao(methodKey) && corpo.codigos().contains(CODIGO_CARTAO_RECUSADO)) {
                     yield new PagamentoRecusadoException("Pagamento recusado: " + bodyMessage);
                 }
                 yield new ApiExternaException("Requisição inválida para a API de cobrança: " + bodyMessage);
@@ -62,20 +73,25 @@ public class AsaasErrorDecoder implements ErrorDecoder {
         };
     }
 
+    /** Recusa de cartão só faz sentido na tokenização e na criação da cobrança. */
+    private boolean chamadaDeCartao(String methodKey) {
+        return methodKey.contains("#criarNovaCobranca(") || methodKey.contains("#tokenizarCartao(");
+    }
+
     /**
-     * Extrai a mensagem de erro do corpo JSON.
+     * Extrai descrições e códigos do corpo JSON.
      * A API Asaas retorna erros no formato {"errors": [{"code": "...", "description": "..."}]}.
-     * Caso o parsing falhe, retorna o corpo bruto limitado.
+     * Caso o parsing falhe, a mensagem é o corpo bruto limitado e não há códigos.
      */
-    private String extractBodyMessage(Response response) {
+    private CorpoErro extrairCorpo(Response response) {
         if (response.body() == null) {
-            return "sem corpo na resposta";
+            return new CorpoErro("sem corpo na resposta", List.of());
         }
 
         try (InputStream bodyStream = response.body().asInputStream()) {
             byte[] bodyBytes = bodyStream.readAllBytes();
             if (bodyBytes.length == 0) {
-                return "sem corpo na resposta";
+                return new CorpoErro("sem corpo na resposta", List.of());
             }
 
             String rawBody = new String(bodyBytes, StandardCharsets.UTF_8);
@@ -84,23 +100,28 @@ public class AsaasErrorDecoder implements ErrorDecoder {
                 JsonNode errors = OBJECT_MAPPER.readTree(rawBody).get("errors");
                 if (errors != null && errors.isArray() && !errors.isEmpty()) {
                     StringBuilder sb = new StringBuilder();
+                    List<String> codigos = new ArrayList<>();
                     errors.forEach(error -> {
+                        if (error.hasNonNull("code")) {
+                            codigos.add(error.get("code").asText());
+                        }
                         String description = error.hasNonNull("description")
                                 ? error.get("description").asText()
                                 : error.toString();
                         sb.append(description).append("; ");
                     });
-                    return sb.toString().trim();
+                    return new CorpoErro(sb.toString().trim(), codigos);
                 }
             } catch (Exception jsonEx) {
                 // Não é JSON — retorna o texto bruto
             }
 
-            return rawBody.length() > 300 ? rawBody.substring(0, 300) + "..." : rawBody;
+            String mensagem = rawBody.length() > 300 ? rawBody.substring(0, 300) + "..." : rawBody;
+            return new CorpoErro(mensagem, List.of());
 
         } catch (IOException e) {
             log.warn("[COBRANCA] Não foi possível ler o corpo da resposta de erro.", e);
-            return "não foi possível ler o corpo da resposta";
+            return new CorpoErro("não foi possível ler o corpo da resposta", List.of());
         }
     }
 }

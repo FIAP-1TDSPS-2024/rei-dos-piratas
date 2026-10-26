@@ -748,11 +748,27 @@ class PedidoServiceImplTest {
         prepararCriacaoDoPedido(pedido);
 
         // Act & Assert
-        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 4)))
+        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 4, "200.1.2.3")))
                 .isInstanceOf(RegraDeNegocioException.class);
         verify(pedidoRepository, never()).create(any());
         verify(apiCobranca, never()).criarNovaCobranca(any());
         assertThat(produto.getEstoque()).isEqualTo(10);
+    }
+
+    @Test
+    void fazerPedido_CartaoDeveEnviarOIpDoCompradorNaCobranca() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        prepararCartaoTokenizado();
+
+        // Act
+        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+
+        // Assert
+        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
+        verify(apiCobranca).criarNovaCobranca(captor.capture());
+        assertThat(captor.getValue().remoteIp()).isEqualTo("200.1.2.3");
     }
 
     @Test
@@ -763,7 +779,7 @@ class PedidoServiceImplTest {
         prepararCartaoTokenizado();
 
         // Act
-        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1));
+        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
         ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
@@ -786,7 +802,7 @@ class PedidoServiceImplTest {
         prepararCartaoTokenizado();
 
         // Act
-        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 3));
+        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 3, "200.1.2.3"));
 
         // Assert
         ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
@@ -804,7 +820,7 @@ class PedidoServiceImplTest {
         CartaoCliente cartao = prepararCartaoTokenizado();
 
         // Act
-        Pedido resultado = pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 2));
+        Pedido resultado = pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 2, "200.1.2.3"));
 
         // Assert
         Pagamento pagamento = ultimoPedidoGravado().getPagamento();
@@ -830,7 +846,7 @@ class PedidoServiceImplTest {
         when(apiCobranca.criarNovaCobranca(any())).thenThrow(new PagamentoRecusadoException("Transação não autorizada"));
 
         // Act & Assert
-        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1)))
+        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3")))
                 .isInstanceOf(PagamentoRecusadoException.class)
                 .hasMessageContaining("Transação não autorizada");
 
@@ -977,7 +993,7 @@ class PedidoServiceImplTest {
                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null));
 
         // Act
-        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1));
+        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
         Pagamento pagamento = ultimoPedidoGravado().getPagamento();

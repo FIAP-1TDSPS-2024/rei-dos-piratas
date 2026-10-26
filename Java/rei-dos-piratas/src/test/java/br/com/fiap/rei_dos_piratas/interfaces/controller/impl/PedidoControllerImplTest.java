@@ -160,7 +160,7 @@ class PedidoControllerImplTest {
         when(produtoService.findById(1L)).thenReturn(produto);
         when(pedidoService.fazerPedido(any(Pedido.class))).thenReturn(pedidoCriado);
 
-        PedidoOutDto result = pedidoController.fazerPedido(inDto);
+        PedidoOutDto result = pedidoController.fazerPedido(inDto, "200.1.2.3");
 
         verify(clienteService, times(1)).findById(1L);
         verify(enderecoService, times(1)).findById(1L);
@@ -183,7 +183,7 @@ class PedidoControllerImplTest {
         when(produtoService.findById(1L)).thenReturn(criarProduto());
 
         // Act & Assert
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> pedidoController.fazerPedido(inDto))
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> pedidoController.fazerPedido(inDto, "200.1.2.3"))
                 .isInstanceOf(br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException.class);
         verifyNoInteractions(pedidoService);
     }
@@ -198,5 +198,28 @@ class PedidoControllerImplTest {
 
         verify(pedidoService, times(1)).cancelarPedido(1L);
         assertThat(result.status()).isEqualTo(StatusEnum.CANCELADO);
+    }
+
+    @Test
+    void fazerPedido_CartaoDeveRepassarOIpDoCompradorAoServico() {
+        // Arrange
+        PedidoInDto inDto = new PedidoInDto(
+                FRETE_SERVICE_ID,
+                1L,
+                List.of(new ItemProdutoInDto(1L, 2)),
+                br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.CREDIT_CARD,
+                new br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.CartaoPedidoInDto(5L, null, null, null, null, null, 1));
+        when(clienteService.findById(1L)).thenReturn(criarCliente());
+        when(enderecoService.findById(1L)).thenReturn(criarEndereco());
+        when(produtoService.findById(1L)).thenReturn(criarProduto());
+        when(pedidoService.fazerPedido(any(Pedido.class), any(PagamentoCartao.class))).thenReturn(criarPedido(StatusEnum.AGUARDANDO_PAGAMENTO));
+
+        // Act
+        pedidoController.fazerPedido(inDto, "200.1.2.3");
+
+        // Assert
+        org.mockito.ArgumentCaptor<PagamentoCartao> captor = org.mockito.ArgumentCaptor.forClass(PagamentoCartao.class);
+        verify(pedidoService).fazerPedido(any(Pedido.class), captor.capture());
+        assertThat(captor.getValue().ipRemoto()).isEqualTo("200.1.2.3");
     }
 }

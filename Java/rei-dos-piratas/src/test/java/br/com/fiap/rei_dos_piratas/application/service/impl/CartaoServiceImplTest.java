@@ -69,12 +69,26 @@ class CartaoServiceImplTest {
     }
 
     @Test
+    void cartaoNovo_DeveEnviarOIpDoCompradorNaTokenizacao() {
+        // Arrange
+        Cliente cliente = criarCliente(1L);
+
+        // Act
+        service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+
+        // Assert
+        ArgumentCaptor<TokenizacaoCartaoRequestDto> captor = ArgumentCaptor.forClass(TokenizacaoCartaoRequestDto.class);
+        verify(apiCobranca).tokenizarCartao(captor.capture());
+        assertThat(captor.getValue().remoteIp()).isEqualTo("200.1.2.3");
+    }
+
+    @Test
     void cartaoNovo_DeveTokenizarComClienteDeCobrancaEDadosDoClienteComoTitular() {
         // Arrange
         Cliente cliente = criarCliente(1L);
 
         // Act
-        service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(null, cartaoNovo, 1));
+        service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
         ArgumentCaptor<TokenizacaoCartaoRequestDto> captor = ArgumentCaptor.forClass(TokenizacaoCartaoRequestDto.class);
@@ -100,7 +114,7 @@ class CartaoServiceImplTest {
         Cliente cliente = criarCliente(1L);
 
         // Act
-        CartaoCliente resultado = service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(null, cartaoNovo, 1));
+        CartaoCliente resultado = service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
         ArgumentCaptor<CartaoCliente> captor = ArgumentCaptor.forClass(CartaoCliente.class);
@@ -123,7 +137,7 @@ class CartaoServiceImplTest {
         when(repository.findById(5L)).thenReturn(salvo);
 
         // Act
-        CartaoCliente resultado = service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1));
+        CartaoCliente resultado = service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1, "200.1.2.3"));
 
         // Assert
         assertThat(resultado).isSameAs(salvo);
@@ -138,7 +152,7 @@ class CartaoServiceImplTest {
         when(repository.findById(5L)).thenReturn(cartaoSalvo(5L, criarCliente(99L), true));
 
         // Act & Assert
-        assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1)))
+        assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1, "200.1.2.3")))
                 .isInstanceOf(ResourceNotFoundException.class);
         verify(apiCobranca, never()).tokenizarCartao(any());
     }
@@ -150,7 +164,7 @@ class CartaoServiceImplTest {
         when(repository.findById(99L)).thenThrow(new java.util.NoSuchElementException());
 
         // Act & Assert
-        assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(99L, null, 1)))
+        assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(99L, null, 1, "200.1.2.3")))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
@@ -161,7 +175,7 @@ class CartaoServiceImplTest {
         when(repository.findById(5L)).thenReturn(cartaoSalvo(5L, cliente, false));
 
         // Act & Assert
-        assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1)))
+        assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1, "200.1.2.3")))
                 .isInstanceOf(RegraDeNegocioException.class);
         verify(apiCobranca, never()).tokenizarCartao(any());
     }

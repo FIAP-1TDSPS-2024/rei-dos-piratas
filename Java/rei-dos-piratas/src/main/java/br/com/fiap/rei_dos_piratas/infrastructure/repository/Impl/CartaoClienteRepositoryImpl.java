@@ -37,6 +37,12 @@ public class CartaoClienteRepositoryImpl implements CartaoClienteRepository {
     }
 
     @Override
+    public Optional<CartaoCliente> findByClienteIdAndToken(Long clienteId, String token) {
+        log.debug("[REPO-CARTAO] findByClienteIdAndToken - ClienteID={}", clienteId);
+        return this.repository.findByCliente_IdAndToken(clienteId, token).map(JpaCartaoClienteMapper::toEntity);
+    }
+
+    @Override
     @Transactional
     public CartaoCliente create(CartaoCliente cartao) {
         // Sem dados do cartão no log (token, dígitos ou bandeira)

@@ -31,20 +31,27 @@ class PagamentoCartaoValidacaoTest {
 
     @Test
     void pagamentoComCartaoNovoValidoNaoTemViolacoes() {
-        assertThat(validator.validate(new PagamentoCartao(null, cartaoNovo, 2))).isEmpty();
+        assertThat(validator.validate(new PagamentoCartao(null, cartaoNovo, 2, "200.1.2.3"))).isEmpty();
     }
 
     @ParameterizedTest
     @ValueSource(ints = {0, -1})
     void parcelasDevemSerPeloMenosUma(int parcelas) {
-        assertThat(validator.validateProperty(new PagamentoCartao(null, cartaoNovo, parcelas), "parcelas")).isNotEmpty();
+        assertThat(validator.validateProperty(new PagamentoCartao(null, cartaoNovo, parcelas, "200.1.2.3"), "parcelas")).isNotEmpty();
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    void ipRemotoDoCompradorEhObrigatorio(String ip) {
+        assertThat(validator.validateProperty(new PagamentoCartao(null, cartaoNovo, 1, ip), "ipRemoto")).isNotEmpty();
     }
 
     @Test
     void validaTambemOsDadosDoCartaoNovo() {
         DadosCartaoCredito cartaoInvalido = new DadosCartaoCredito("JOAO SILVA", "4111111111111234", "12", "2030", "1");
 
-        assertThat(validator.validate(new PagamentoCartao(null, cartaoInvalido, 1)))
+        assertThat(validator.validate(new PagamentoCartao(null, cartaoInvalido, 1, "200.1.2.3")))
                 .anyMatch(violacao -> violacao.getPropertyPath().toString().equals("novoCartao.cvv"));
     }
 }
