@@ -182,6 +182,18 @@ Aplicacao disponivel em `http://localhost:8080`.
   Respostas: 200 (processado, ou ignorado quando o corpo nao identifica um envio), 401 (assinatura
   ausente ou invalida) e 500 (falha ao processar; o evento nao e descartado em silencio).
 
+## Telas web (Thymeleaf)
+
+- Cliente (`/web/conta/**`, so perfil CLIENT): carrinho, checkout (endereco, frete, PIX/boleto/cartao),
+  pagamento (QR Code PIX, linha digitavel do boleto, status do cartao), meus pedidos, cancelamento,
+  estornos (com o link de dados bancarios do boleto) e pedido de devolucao.
+- Funcionario: `/web/pedidos` (painel de envio; o detalhe mostra pagamento, estornos e cancelamento) e
+  `/web/devolucoes` (aprovar, recusar, pagar frete de retorno, concluir com estorno).
+- Simulador de eventos (`APP_SIMULADOR_EVENTOS=true`, so funcionario): no detalhe do pedido e da devolucao,
+  simula pagamento confirmado/recebido/vencido, cartao recusado, estorno concluido/negado e rastreio
+  postado/entregue/cancelado, pelo mesmo caminho dos webhooks reais. Util sem SQS/webhook local.
+  **Nunca ligar em producao.**
+
 ## Observacoes sobre estornos (Asaas)
 
 - Cancelamento (`PUT /pedidos/cancelamento/{id}`) de pedido ja pago estorna o valor total, frete incluido;

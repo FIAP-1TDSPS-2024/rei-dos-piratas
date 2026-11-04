@@ -132,7 +132,7 @@ Tudo vem de variáveis de ambiente referenciadas em `application.properties` (lo
 - Parcelamento no cartão: `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO` (padrão `100.00`), `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` (padrão `3`)
 - Boleto: `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` (padrão `3`, dias corridos)
 - AWS SQS: `SQS_ENABLED` (listener só existe se `true`), `SQS_QUEUE_NAME`, `AWS_REGION` (padrão `sa-east-1`), credenciais pela cadeia padrão da AWS (IAM role em produção)
-- Web: `AUTH_COOKIE_SECURE` (`false` só em HTTP local), `APP_ALLOWED_ORIGINS`
+- Web: `AUTH_COOKIE_SECURE` (`false` só em HTTP local), `APP_ALLOWED_ORIGINS`, `APP_SIMULADOR_EVENTOS` (padrão `false`; liga o simulador de eventos do Asaas/Melhor Envio no painel — **nunca** em produção)
 - Datadog RUM: `DD_RUM_*`
 
 Ao adicionar configuração nova: use `${VARIAVEL:padrao-seguro}` no properties, documente aqui e no README, e nunca coloque valores reais.

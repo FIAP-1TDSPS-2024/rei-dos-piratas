@@ -50,6 +50,18 @@
         <p class="text-xs text-gray-500 mt-1">FALHOU ou NEGADO precisam de ação manual no painel do Asaas.</p>
     </section>
 
+    <section th:if="${@environment.getProperty('app.simulador-eventos.enabled') == 'true'} and ${devolucao.pedidoFrete != null}"
+             class="bg-amber-50 border border-amber-300 rounded-xl p-4 text-sm">
+        <h2 class="font-bold text-amber-800">Simulador de eventos (teste)</h2>
+        <form th:action="@{/web/simulador/devolucoes/{id}/rastreio(id=${devolucao.id})}" method="post" class="flex gap-2 mt-2">
+            <select name="evento" class="flex-1 border rounded px-2 py-1">
+                <option value="order.posted">Retorno postado</option>
+                <option value="order.delivered">Retorno entregue na loja</option>
+            </select>
+            <button type="submit" class="px-3 py-1 bg-amber-600 text-white rounded">Simular</button>
+        </form>
+    </section>
+
     <section class="bg-white rounded-xl shadow p-4 flex flex-wrap gap-2">
         <th:block th:if="${devolucao.status.name() == 'EM_ANALISE'}">
             <form th:action="@{/web/devolucoes/{id}/aprovar(id=${devolucao.id})}" method="post">

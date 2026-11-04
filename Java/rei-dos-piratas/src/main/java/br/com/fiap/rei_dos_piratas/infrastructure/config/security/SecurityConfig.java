@@ -107,6 +107,8 @@ public class SecurityConfig {
                         .requestMatchers("/web/conta/**").hasRole("ENDERECO_MANAGE")
                         // Painel web de devoluções para funcionários
                         .requestMatchers("/web/devolucoes/**").hasRole("PEDIDO_WRITE")
+                        // Simulador de eventos (só existe com APP_SIMULADOR_EVENTOS=true)
+                        .requestMatchers("/web/simulador/**").hasRole("PEDIDO_WRITE")
                         // Operações de devoluções
                         .requestMatchers(HttpMethod.POST, "/devolucoes/**").hasRole("PEDIDO_READ")
                         .requestMatchers(HttpMethod.GET, "/devolucoes/**").hasAnyRole("PEDIDO_READ", "PEDIDO_WRITE")

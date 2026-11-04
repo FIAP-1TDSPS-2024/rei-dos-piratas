@@ -183,6 +183,31 @@
                 </div>
             </div>
 
+            <!-- Simulador de eventos (só com APP_SIMULADOR_EVENTOS=true) -->
+            <div th:if="${@environment.getProperty('app.simulador-eventos.enabled') == 'true'}" class="bg-amber-50 border border-amber-300 rounded-2xl p-6 text-sm space-y-2">
+                <h2 class="font-bold text-amber-800">Simulador de eventos (teste)</h2>
+                <p class="text-xs text-amber-700">Entra pelo mesmo caminho dos webhooks reais. Não usar em produção.</p>
+                <form th:action="@{/web/simulador/pedidos/{id}/pagamento(id=${pedido.id})}" method="post" class="flex gap-2">
+                    <select name="evento" class="flex-1 border rounded px-2 py-1">
+                        <option value="PAYMENT_CONFIRMED">Pagamento confirmado</option>
+                        <option value="PAYMENT_RECEIVED">Pagamento recebido</option>
+                        <option value="PAYMENT_OVERDUE">Cobrança vencida</option>
+                        <option value="PAYMENT_CREDIT_CARD_CAPTURE_REFUSED">Cartão recusado</option>
+                        <option value="PAYMENT_REFUNDED">Estorno concluído</option>
+                        <option value="PAYMENT_REFUND_DENIED">Estorno negado</option>
+                    </select>
+                    <button type="submit" class="px-3 py-1 bg-amber-600 text-white rounded">Simular</button>
+                </form>
+                <form th:if="${pedido.pedidoFrete != null}" th:action="@{/web/simulador/pedidos/{id}/rastreio(id=${pedido.id})}" method="post" class="flex gap-2">
+                    <select name="evento" class="flex-1 border rounded px-2 py-1">
+                        <option value="order.posted">Envio postado</option>
+                        <option value="order.delivered">Envio entregue</option>
+                        <option value="order.canceled">Etiqueta cancelada</option>
+                    </select>
+                    <button type="submit" class="px-3 py-1 bg-amber-600 text-white rounded">Simular</button>
+                </form>
+            </div>
+
             <!-- Delivery address -->
             <div th:if="${pedido.enderecoEntrega != null}" class="bg-white rounded-2xl shadow-sm p-6">
                 <h2 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
