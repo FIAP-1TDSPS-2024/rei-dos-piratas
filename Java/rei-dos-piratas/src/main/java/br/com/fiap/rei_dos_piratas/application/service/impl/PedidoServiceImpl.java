@@ -279,8 +279,8 @@ public class PedidoServiceImpl implements PedidoService {
 
         Optional<FreteServiceDto> consultaFrete = fretes
                 .stream()
-                .findFirst()
-                .filter(frete -> frete.id().equals(pedido.getServicoEntrega()));
+                .filter(frete -> frete.id().equals(pedido.getServicoEntrega()))
+                .findFirst();
 
         if (consultaFrete.isEmpty()) {
             log.warn("Serviço de frete ID={} não encontrado entre as opções retornadas pela API", pedido.getServicoEntrega());

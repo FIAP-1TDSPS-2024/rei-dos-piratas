@@ -1481,4 +1481,37 @@ class PedidoServiceImplTest {
         // Assert
         assertThat(pedido.getPagamento().getIdCobranca()).isEqualTo("pay_000001");
     }
+
+    // ---- Escolha do serviço de frete ----
+
+    @Test
+    void fazerPedido_ServicoDeFreteQueNaoEhOPrimeiroDaListaDeveSerAceitoComOPrecoDele() {
+        // Arrange: bug — só a primeira opção retornada pelo Melhor Envio era considerada
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.PIX);
+        pedido.setServicoEntrega(2L);
+        prepararCriacaoDoPedido(pedido);
+        FreteCompanyDto correios = new FreteCompanyDto(1L, "Correios", "https://example.com/correios.png");
+        when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(List.of(
+                new FreteServiceDto(1L, "PAC", BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, correios),
+                new FreteServiceDto(2L, "SEDEX", BigDecimal.valueOf(35.50), BigDecimal.valueOf(35.50), BigDecimal.ZERO, "R$", 2, correios)));
+
+        // Act
+        Pedido resultado = pedidoService.fazerPedido(pedido);
+
+        // Assert
+        assertThat(resultado.getValorFrete()).isEqualByComparingTo("35.50");
+        assertThat(resultado.getValorTotal()).isEqualByComparingTo("235.50");
+    }
+
+    @Test
+    void fazerPedido_ServicoDeFreteForaDaListaDeveLancarNaoEncontradoSemGravar() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.PIX);
+        pedido.setServicoEntrega(99L);
+        prepararCriacaoDoPedido(pedido);
+
+        // Act & Assert
+        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido)).isInstanceOf(ResourceNotFoundException.class);
+        verify(pedidoRepository, never()).create(any());
+    }
 }
