@@ -7,7 +7,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
+import br.com.fiap.rei_dos_piratas.domain.gateway.QrCodePix;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ public interface PedidoService {
     void rastreioPedidoWebhook(Pedido pedido, RastreioWebhookDto rastreio);
     Optional<Pedido> findByPedidoFrete(UUID pedidoFrete);
     Pedido cancelarPedido(Long id);
-    PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id);
+    QrCodePix obterQrCodeCobrancaPix(Long id);
     /** Linha digitável, código de barras, URL e vencimento do boleto do pedido. */
     DadosBoleto obterBoleto(Long id);
     void processarEventoCobranca(Long pedidoId, EventoCobrancaDto evento);

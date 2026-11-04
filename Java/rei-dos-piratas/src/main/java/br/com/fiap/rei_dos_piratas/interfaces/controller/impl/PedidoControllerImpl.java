@@ -15,7 +15,8 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.PixQrCodeDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.BoletoDtoMapper;
 
 import java.util.List;
@@ -136,8 +137,8 @@ public class PedidoControllerImpl implements PedidoController {
     }
 
     @Override
-    public PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id) {
-        return this.service.obterQrCodeCobrancaPix(id);
+    public PixQrCodeOutDto obterQrCodeCobrancaPix(Long id) {
+        return PixQrCodeDtoMapper.toDto(this.service.obterQrCodeCobrancaPix(id));
     }
 
     @Override

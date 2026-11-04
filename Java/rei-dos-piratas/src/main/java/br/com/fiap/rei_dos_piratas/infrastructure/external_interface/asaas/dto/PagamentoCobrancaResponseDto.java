@@ -1,6 +1,6 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento;
+package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto;
 
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.Enum.AsaasPaymentStatus;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.AsaasPaymentStatus;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

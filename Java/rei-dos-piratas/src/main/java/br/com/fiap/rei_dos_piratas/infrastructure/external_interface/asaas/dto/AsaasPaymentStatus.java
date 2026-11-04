@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.Enum;
+package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto;
 
 public enum AsaasPaymentStatus {
     PENDING,

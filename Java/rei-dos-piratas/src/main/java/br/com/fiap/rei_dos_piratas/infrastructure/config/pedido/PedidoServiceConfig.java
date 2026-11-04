@@ -12,7 +12,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.RegraParcelamento;
 import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,12 +26,12 @@ public class PedidoServiceConfig {
                                        DadosEmpresaRepository dadosEmpresaRepository,
                                        FreteService freteService,
                                        ClienteService clienteService,
-                                       CobrancaAppClient apiCobranca,
+                                       GatewayPagamento gatewayPagamento,
                                        UsuarioAtualService usuarioAtual,
                                        CartaoService cartaoService,
                                        RegraParcelamento regraParcelamento,
                                        RegraBoleto regraBoleto) {
-        return new PedidoServiceImpl(repository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, apiCobranca, usuarioAtual,
+        return new PedidoServiceImpl(repository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, gatewayPagamento, usuarioAtual,
                 cartaoService, regraParcelamento, regraBoleto);
     }
 

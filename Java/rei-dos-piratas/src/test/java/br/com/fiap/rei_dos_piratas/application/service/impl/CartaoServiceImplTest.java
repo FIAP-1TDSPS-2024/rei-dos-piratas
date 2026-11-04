@@ -8,9 +8,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.CartaoClienteRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.TokenizacaoCartaoRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.TokenizacaoCartaoResponseDto;
+import br.com.fiap.rei_dos_piratas.domain.gateway.CartaoTokenizado;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -29,7 +28,7 @@ import static org.mockito.Mockito.*;
 class CartaoServiceImplTest {
 
     private CartaoClienteRepository repository;
-    private CobrancaAppClient apiCobranca;
+    private GatewayPagamento gatewayPagamento;
     private UsuarioAtualService usuarioAtual;
     private CartaoService service;
 
@@ -38,12 +37,12 @@ class CartaoServiceImplTest {
     @BeforeEach
     void setUp() {
         this.repository = mock(CartaoClienteRepository.class);
-        this.apiCobranca = mock(CobrancaAppClient.class);
+        this.gatewayPagamento = mock(GatewayPagamento.class);
         this.usuarioAtual = mock(UsuarioAtualService.class);
         when(usuarioAtual.identidade()).thenReturn(new IdentidadeConta(TipoConta.CLIENTE, 1L));
-        this.service = new CartaoServiceImpl(repository, apiCobranca, usuarioAtual);
+        this.service = new CartaoServiceImpl(repository, gatewayPagamento, usuarioAtual);
 
-        when(apiCobranca.tokenizarCartao(any())).thenReturn(new TokenizacaoCartaoResponseDto("1234", "VISA", "tok_abc123"));
+        when(gatewayPagamento.tokenizarCartao(any(), any(), any(), any())).thenReturn(new CartaoTokenizado("tok_abc123", "1234", "VISA"));
         when(repository.create(any(CartaoCliente.class))).thenAnswer(invocation -> {
             CartaoCliente salvo = invocation.getArgument(0);
             salvo.setId(50L);
@@ -77,35 +76,20 @@ class CartaoServiceImplTest {
         service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
-        ArgumentCaptor<TokenizacaoCartaoRequestDto> captor = ArgumentCaptor.forClass(TokenizacaoCartaoRequestDto.class);
-        verify(apiCobranca).tokenizarCartao(captor.capture());
-        assertThat(captor.getValue().remoteIp()).isEqualTo("200.1.2.3");
+        verify(gatewayPagamento).tokenizarCartao(any(), any(), any(), eq("200.1.2.3"));
     }
 
     @Test
-    void cartaoNovo_DeveTokenizarComClienteDeCobrancaEDadosDoClienteComoTitular() {
-        // Arrange
+    void cartaoNovo_DeveTokenizarComOClienteOEnderecoEOsDadosDoCartao() {
+        // Arrange (o formato enviado ao Asaas é coberto em GatewayPagamentoAsaasTest)
         Cliente cliente = criarCliente(1L);
+        Endereco endereco = criarEndereco(cliente);
 
         // Act
-        service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+        service.obterOuTokenizar(cliente, endereco, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
-        ArgumentCaptor<TokenizacaoCartaoRequestDto> captor = ArgumentCaptor.forClass(TokenizacaoCartaoRequestDto.class);
-        verify(apiCobranca).tokenizarCartao(captor.capture());
-        TokenizacaoCartaoRequestDto request = captor.getValue();
-        assertThat(request.customer()).isEqualTo("cus_000001");
-        assertThat(request.creditCard().holderName()).isEqualTo("JOAO SILVA");
-        assertThat(request.creditCard().number()).isEqualTo("4111111111111234");
-        assertThat(request.creditCard().expiryMonth()).isEqualTo("12");
-        assertThat(request.creditCard().expiryYear()).isEqualTo("2030");
-        assertThat(request.creditCard().ccv()).isEqualTo("987");
-        assertThat(request.creditCardHolderInfo().name()).isEqualTo("João Silva");
-        assertThat(request.creditCardHolderInfo().email()).isEqualTo("joao@gmail.com");
-        assertThat(request.creditCardHolderInfo().cpfCnpj()).isEqualTo("52998224725");
-        assertThat(request.creditCardHolderInfo().mobilePhone()).isEqualTo("11992131234");
-        assertThat(request.creditCardHolderInfo().postalCode()).isEqualTo("01001000");
-        assertThat(request.creditCardHolderInfo().addressNumber()).isEqualTo("123");
+        verify(gatewayPagamento).tokenizarCartao(same(cliente), same(endereco), eq(cartaoNovo), any());
     }
 
     @Test
@@ -141,7 +125,7 @@ class CartaoServiceImplTest {
 
         // Assert
         assertThat(resultado).isSameAs(salvo);
-        verify(apiCobranca, never()).tokenizarCartao(any());
+        verify(gatewayPagamento, never()).tokenizarCartao(any(), any(), any(), any());
         verify(repository, never()).create(any());
     }
 
@@ -154,7 +138,7 @@ class CartaoServiceImplTest {
         // Act & Assert
         assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1, "200.1.2.3")))
                 .isInstanceOf(ResourceNotFoundException.class);
-        verify(apiCobranca, never()).tokenizarCartao(any());
+        verify(gatewayPagamento, never()).tokenizarCartao(any(), any(), any(), any());
     }
 
     @Test
@@ -177,7 +161,7 @@ class CartaoServiceImplTest {
         // Act & Assert
         assertThatThrownBy(() -> service.obterOuTokenizar(cliente, criarEndereco(cliente), new PagamentoCartao(5L, null, 1, "200.1.2.3")))
                 .isInstanceOf(RegraDeNegocioException.class);
-        verify(apiCobranca, never()).tokenizarCartao(any());
+        verify(gatewayPagamento, never()).tokenizarCartao(any(), any(), any(), any());
     }
 
     // ---- Consulta dos cartões salvos ----

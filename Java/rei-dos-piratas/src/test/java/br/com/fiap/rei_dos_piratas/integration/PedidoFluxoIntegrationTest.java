@@ -50,7 +50,7 @@ class PedidoFluxoIntegrationTest {
     @Autowired PedidoRepository pedidoRepo;
     @Autowired DevolucaoRepository devolucaoRepo;
     @MockBean FreteService fretes;
-    @MockBean br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient cobranca;
+    @MockBean br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.CobrancaAppClient cobranca;
     TransactionTemplate tx;
     final UUID ida = UUID.fromString("123e4567-e89b-12d3-a456-426614174010");
     final UUID volta = UUID.fromString("123e4567-e89b-12d3-a456-426614174011");
@@ -84,15 +84,16 @@ class PedidoFluxoIntegrationTest {
             return null;
         });
         clienteLogado();
-        when(cobranca.criarNovoCliente(any())).thenReturn(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaResponseDto(
+        when(cobranca.criarNovoCliente(any())).thenReturn(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.ClienteCobrancaResponseDto(
                 "customer","cus_000009601",LocalDate.now(),"Cliente Fluxo","52998224725","fluxo@example.com",null,
                 "11987654321","Rua Fluxo","100","Centro","01001000","9601",true));
         // id_cobranca e unico em PAGAMENTOS: cada cobranca recebe um id novo, como no Asaas
         var proximaCobranca = new java.util.concurrent.atomic.AtomicInteger(9601);
         // Como no Asaas, a resposta traz o PDF do boleto (bankSlipUrl); só é usado quando o pedido é boleto
-        when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto(
+        // Como no Asaas, a resposta sempre traz o status: cartão aprovado na criação (CONFIRMED), PIX/boleto pendentes
+        when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.PagamentoCobrancaResponseDto(
                 null,"pay_00000"+proximaCobranca.get(),null,null,null,null,null,new BigDecimal("98.95"),
-                null,null,null,null,null,null,null,null,null,null,null,null,null,null,
+                null,null,null,null,null,statusAsaas(inv.getArgument(0)),null,null,null,null,null,null,null,null,
                 null,null,null,null,null,null,null,"https://sandbox.asaas.com/b/pdf/pay_00000"+proximaCobranca.getAndIncrement(),null,null));
         when(fretes.calcularFreteProdutos(anyString(), anyList())).thenReturn(List.of(
                 new FreteServiceDto(1L,"Entrega",new BigDecimal("10.25"),null,null,"BRL",3,null)));
@@ -295,10 +296,18 @@ class PedidoFluxoIntegrationTest {
         assertThat(salva.getAprovada()).isTrue();
     }
 
+    private static br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.AsaasPaymentStatus statusAsaas(
+            br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.PagamentoCobrancaRequestDto request) {
+        // request nulo: chamada feita pelo próprio when(...) ao trocar o stub em outro teste
+        return request != null && request.billingType() == TipoPagamentoEnum.CREDIT_CARD
+                ? br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.AsaasPaymentStatus.CONFIRMED
+                : br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.AsaasPaymentStatus.PENDING;
+    }
+
     @Test
     void pedidoComCartaoAprovadoChegaAPreparandoEnvioPeloEventoDeConfirmacao() {
         when(cobranca.tokenizarCartao(any())).thenReturn(
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
 
         Pedido criado = pedidos.fazerPedido(novoPedido(TipoPagamentoEnum.CREDIT_CARD), cartaoNovo());
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
@@ -349,7 +358,7 @@ class PedidoFluxoIntegrationTest {
     @Test
     void pedidoComCartaoRecusadoFicaCanceladoComEstoqueRestauradoEPagamentoRecusado() {
         when(cobranca.tokenizarCartao(any())).thenReturn(
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
         when(cobranca.criarNovaCobranca(any())).thenThrow(
                 new br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException("Transacao nao autorizada"));
 

@@ -1,0 +1,3 @@
+#
+#Tue Nov 03 23:25:43 BRT 2026
+no\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ '..application..']\ should\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..infrastructure..',\ '..interfaces..'],\ because\ a\ regra\ de\ depend\u00EAncia\ \u00E9\ infrastructure\ ->\ interfaces\ ->\ application\ ->\ domain=af6f5892-72dd-4708-a1a1-39cc8ba20a41

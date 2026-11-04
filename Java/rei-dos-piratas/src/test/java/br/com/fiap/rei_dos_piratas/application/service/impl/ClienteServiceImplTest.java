@@ -47,7 +47,50 @@ class ClienteServiceImplTest {
         when(perfilRepository.findByNome("CLIENT")).thenReturn(perfilCliente);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository, validator, mock(ContaRepository.class), new br.com.fiap.rei_dos_piratas.infrastructure.security.SpringUsuarioAtual(), mock(br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient.class));
+        this.gatewayPagamento = mock(br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento.class);
+        this.clienteService = new ClienteServiceImpl(clienteRepository, passwordEncoder, perfilRepository, validator, mock(ContaRepository.class), new br.com.fiap.rei_dos_piratas.infrastructure.security.SpringUsuarioAtual(), gatewayPagamento);
+    }
+
+    private br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento gatewayPagamento;
+
+    private Cliente clienteParaCobranca(String idCobranca) {
+        Cliente cliente = new Cliente(1L, "jonasdasneves", "Jonas da Silva Campos Melo", "jonas@gmail.com", "SenhaSegura123",
+                true, LocalDate.now(), perfilCliente, LocalDate.of(2000, 3, 16), SexoEnum.M, "52998224725", "11991231234", new Carrinho());
+        cliente.setIdCobranca(idCobranca);
+        return cliente;
+    }
+
+    private Endereco enderecoParaCobranca() {
+        return new Endereco(1L, 123, "01001000", "Avenida Paulista", "Bela Vista", true,
+                new Cidade(1L, "São Paulo", new Estado(1L, "São Paulo", "SP")), "Brasil", "BR", null);
+    }
+
+    @Test
+    void obterOuCriarClienteCobranca_ClienteJaCadastradoNoFornecedorNaoCadastraDeNovo() {
+        Cliente cliente = clienteParaCobranca("cus_existente");
+
+        Cliente resultado = clienteService.obterOuCriarClienteCobranca(cliente, enderecoParaCobranca());
+
+        assertThat(resultado.getIdCobranca()).isEqualTo("cus_existente");
+        verifyNoInteractions(gatewayPagamento);
+        verify(clienteRepository, never()).update(any());
+    }
+
+    @Test
+    void obterOuCriarClienteCobranca_ClienteNovoCadastraNoFornecedorEGravaOIdExterno() {
+        // Arrange
+        mockSecurityContext(1L);
+        Cliente cliente = clienteParaCobranca(null);
+        when(clienteRepository.findById(1L)).thenReturn(clienteParaCobranca(null));
+        when(clienteRepository.update(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(gatewayPagamento.registrarCliente(any(), any())).thenReturn("cus_novo");
+
+        // Act
+        Cliente resultado = clienteService.obterOuCriarClienteCobranca(cliente, enderecoParaCobranca());
+
+        // Assert
+        assertThat(resultado.getIdCobranca()).isEqualTo("cus_novo");
+        verify(clienteRepository).update(any(Cliente.class));
     }
 
     @AfterEach

@@ -1,7 +1,7 @@
-package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign;
+package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas;
 
 import br.com.fiap.rei_dos_piratas.infrastructure.config.feign.CobrancaFeignConfig;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.*;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

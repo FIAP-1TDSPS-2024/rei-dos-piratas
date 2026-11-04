@@ -153,6 +153,22 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Regras de arquitetura (dependência entre camadas) -->
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>1.3.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Testes de contrato dos adaptadores de API externa (Asaas, Melhor Envio) -->
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock-standalone</artifactId>
+			<version>3.9.1</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- Chamadas HTTP e manipulação de Json-->
 
 		<dependency>

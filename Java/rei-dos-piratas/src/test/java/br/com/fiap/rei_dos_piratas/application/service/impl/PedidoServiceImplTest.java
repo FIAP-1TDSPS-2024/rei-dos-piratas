@@ -18,12 +18,9 @@ import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.domain.gateway.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
 import org.mockito.ArgumentCaptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +51,7 @@ class PedidoServiceImplTest {
     private FreteService freteService;
     private DadosEmpresaRepository dadosEmpresaRepository;
     private UsuarioAtualService usuarioAtual;
-    private CobrancaAppClient apiCobranca;
+    private GatewayPagamento gatewayPagamento;
     private CartaoService cartaoService;
 
     @BeforeEach
@@ -72,29 +69,31 @@ class PedidoServiceImplTest {
         ObjectMapper objectMapper = new ObjectMapper();
         this.clienteService = mock(br.com.fiap.rei_dos_piratas.application.service.ClienteService.class);
         when(clienteService.obterOuCriarClienteCobranca(any(), any())).thenAnswer(inv -> inv.getArgument(0));
-        this.apiCobranca = mock(CobrancaAppClient.class);
-        when(apiCobranca.criarNovaCobranca(any())).thenReturn(cobrancaCriada("pay_000001", new BigDecimal("219.20")));
+        this.gatewayPagamento = mock(GatewayPagamento.class);
+        when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaCriada("pay_000001", new BigDecimal("219.20")));
         this.cartaoService = mock(CartaoService.class);
         this.pedidoService = servicoComBoletoVencendoEm(3);
     }
 
     private PedidoService servicoComBoletoVencendoEm(int diasVencimento) {
         RegraParcelamento regraParcelamento = new RegraParcelamento(new BigDecimal("100.00"), 3);
-        return new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, apiCobranca, usuarioAtual,
+        return new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, gatewayPagamento, usuarioAtual,
                 cartaoService, regraParcelamento, new RegraBoleto(diasVencimento));
     }
 
-    /** Resposta do Asaas para boleto: id da cobrança, valor líquido e URL do PDF (bankSlipUrl). */
-    private PagamentoCobrancaResponseDto cobrancaDeBoleto(String id, String urlBoleto) {
-        return new PagamentoCobrancaResponseDto(null, id, null, null, null, null, null, new BigDecimal("218.20"),
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, urlBoleto, null, null);
+    /** Cobrança de boleto criada: id, valor líquido e URL do PDF. */
+    private CobrancaCriada cobrancaDeBoleto(String id, String urlBoleto) {
+        return new CobrancaCriada(id, new BigDecimal("218.20"), false, urlBoleto);
     }
 
-    private PagamentoCobrancaResponseDto cobrancaCriada(String id, BigDecimal valorLiquido) {
-        return new PagamentoCobrancaResponseDto(null, id, null, null, null, null, null, valorLiquido,
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null);
+    /** Cobrança criada ainda pendente (PIX/boleto ou cartão em análise de risco). */
+    private CobrancaCriada cobrancaCriada(String id, BigDecimal valorLiquido) {
+        return new CobrancaCriada(id, valorLiquido, false, null);
+    }
+
+    /** Cartão aprovado na própria criação da cobrança. */
+    private CobrancaCriada cobrancaAprovada(String id, BigDecimal valorLiquido) {
+        return new CobrancaCriada(id, valorLiquido, true, null);
     }
 
     private void autenticarComo(TipoConta tipo, Long id, String... permissoes) {
@@ -425,13 +424,13 @@ class PedidoServiceImplTest {
         Pedido resultado = pedidoService.fazerPedido(pedido);
 
         // Assert
-        ArgumentCaptor<PagamentoCobrancaRequestDto> cobranca = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
-        verify(apiCobranca).criarNovaCobranca(cobranca.capture());
-        assertThat(cobranca.getValue().customer()).isEqualTo("cus_000001");
-        assertThat(cobranca.getValue().billingType()).isEqualTo(TipoPagamentoEnum.PIX);
-        assertThat(cobranca.getValue().value()).isEqualByComparingTo("221.19");
-        assertThat(cobranca.getValue().externalReference()).isEqualTo("10");
-        assertThat(cobranca.getValue().creditCardToken()).isNull();
+        ArgumentCaptor<SolicitacaoCobranca> cobranca = ArgumentCaptor.forClass(SolicitacaoCobranca.class);
+        verify(gatewayPagamento).criarCobranca(cobranca.capture());
+        assertThat(cobranca.getValue().idClienteExterno()).isEqualTo("cus_000001");
+        assertThat(cobranca.getValue().tipo()).isEqualTo(TipoPagamentoEnum.PIX);
+        assertThat(cobranca.getValue().valor()).isEqualByComparingTo("221.19");
+        assertThat(cobranca.getValue().referenciaPedido()).isEqualTo("10");
+        assertThat(cobranca.getValue().tokenCartao()).isNull();
         assertThat(resultado.getPagamento().getIdCobranca()).isEqualTo("pay_000001");
         assertThat(resultado.getPagamento().getValorLiquido()).isEqualByComparingTo("219.20");
         assertThat(resultado.getPagamento().getValor()).isEqualByComparingTo("221.19");
@@ -748,7 +747,7 @@ class PedidoServiceImplTest {
         assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, null))
                 .isInstanceOf(RegraDeNegocioException.class);
         verify(pedidoRepository, never()).create(any());
-        verify(apiCobranca, never()).criarNovaCobranca(any());
+        verify(gatewayPagamento, never()).criarCobranca(any());
     }
 
     @Test
@@ -762,7 +761,7 @@ class PedidoServiceImplTest {
         assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 4, "200.1.2.3")))
                 .isInstanceOf(RegraDeNegocioException.class);
         verify(pedidoRepository, never()).create(any());
-        verify(apiCobranca, never()).criarNovaCobranca(any());
+        verify(gatewayPagamento, never()).criarCobranca(any());
         assertThat(produto.getEstoque()).isEqualTo(10);
     }
 
@@ -777,9 +776,9 @@ class PedidoServiceImplTest {
         pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
-        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
-        verify(apiCobranca).criarNovaCobranca(captor.capture());
-        assertThat(captor.getValue().remoteIp()).isEqualTo("200.1.2.3");
+        ArgumentCaptor<SolicitacaoCobranca> captor = ArgumentCaptor.forClass(SolicitacaoCobranca.class);
+        verify(gatewayPagamento).criarCobranca(captor.capture());
+        assertThat(captor.getValue().ipRemoto()).isEqualTo("200.1.2.3");
     }
 
     @Test
@@ -793,16 +792,15 @@ class PedidoServiceImplTest {
         pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
 
         // Assert
-        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
-        verify(apiCobranca).criarNovaCobranca(captor.capture());
-        PagamentoCobrancaRequestDto request = captor.getValue();
-        assertThat(request.customer()).isEqualTo("cus_000001");
-        assertThat(request.billingType()).isEqualTo(TipoPagamentoEnum.CREDIT_CARD);
-        assertThat(request.creditCardToken()).isEqualTo("tok_abc123");
-        assertThat(request.value()).isEqualByComparingTo("221.19");
-        assertThat(request.installmentCount()).isNull();
-        assertThat(request.totalValue()).isNull();
-        assertThat(request.externalReference()).isEqualTo("10");
+        ArgumentCaptor<SolicitacaoCobranca> captor = ArgumentCaptor.forClass(SolicitacaoCobranca.class);
+        verify(gatewayPagamento).criarCobranca(captor.capture());
+        SolicitacaoCobranca request = captor.getValue();
+        assertThat(request.idClienteExterno()).isEqualTo("cus_000001");
+        assertThat(request.tipo()).isEqualTo(TipoPagamentoEnum.CREDIT_CARD);
+        assertThat(request.tokenCartao()).isEqualTo("tok_abc123");
+        assertThat(request.valor()).isEqualByComparingTo("221.19");
+        assertThat(request.parcelas()).isEqualTo(1);
+        assertThat(request.referenciaPedido()).isEqualTo("10");
     }
 
     @Test
@@ -816,11 +814,10 @@ class PedidoServiceImplTest {
         pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 3, "200.1.2.3"));
 
         // Assert
-        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
-        verify(apiCobranca).criarNovaCobranca(captor.capture());
-        assertThat(captor.getValue().installmentCount()).isEqualTo(3);
-        assertThat(captor.getValue().totalValue()).isEqualByComparingTo("221.19");
-        assertThat(captor.getValue().value()).isNull();
+        ArgumentCaptor<SolicitacaoCobranca> captor = ArgumentCaptor.forClass(SolicitacaoCobranca.class);
+        verify(gatewayPagamento).criarCobranca(captor.capture());
+        assertThat(captor.getValue().parcelas()).isEqualTo(3);
+        assertThat(captor.getValue().valor()).isEqualByComparingTo("221.19");
     }
 
     @Test
@@ -829,6 +826,7 @@ class PedidoServiceImplTest {
         Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
         prepararCriacaoDoPedido(pedido);
         CartaoCliente cartao = prepararCartaoTokenizado();
+        when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaAprovada("pay_000001", new BigDecimal("219.20")));
 
         // Act
         Pedido resultado = pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 2, "200.1.2.3"));
@@ -854,7 +852,7 @@ class PedidoServiceImplTest {
         Pedido pedido = novoPedido(produto, TipoPagamentoEnum.CREDIT_CARD);
         prepararCriacaoDoPedido(pedido);
         prepararCartaoTokenizado();
-        when(apiCobranca.criarNovaCobranca(any())).thenThrow(new PagamentoRecusadoException("Transação não autorizada"));
+        when(gatewayPagamento.criarCobranca(any())).thenThrow(new PagamentoRecusadoException("Transação não autorizada"));
 
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3")))
@@ -880,10 +878,10 @@ class PedidoServiceImplTest {
         Pedido resultado = pedidoService.fazerPedido(pedido, null);
 
         // Assert
-        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
-        verify(apiCobranca).criarNovaCobranca(captor.capture());
-        assertThat(captor.getValue().billingType()).isEqualTo(TipoPagamentoEnum.PIX);
-        assertThat(captor.getValue().creditCardToken()).isNull();
+        ArgumentCaptor<SolicitacaoCobranca> captor = ArgumentCaptor.forClass(SolicitacaoCobranca.class);
+        verify(gatewayPagamento).criarCobranca(captor.capture());
+        assertThat(captor.getValue().tipo()).isEqualTo(TipoPagamentoEnum.PIX);
+        assertThat(captor.getValue().tokenCartao()).isNull();
         verify(cartaoService, never()).obterOuTokenizar(any(), any(), any());
         assertThat(resultado.getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
     }
@@ -897,11 +895,11 @@ class PedidoServiceImplTest {
         pedido.setPagamento(Pagamento.pendente(TipoPagamentoEnum.PIX));
         pedido.getPagamento().setIdCobranca("pay_qr");
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
-        PixQrCodeResponseDto qrCode = new PixQrCodeResponseDto(true, "base64", "copia-e-cola", LocalDateTime.now(), null);
-        when(apiCobranca.obterQrCodePix("pay_qr")).thenReturn(qrCode);
+        QrCodePix qrCode = new QrCodePix(true, "base64", "copia-e-cola", LocalDateTime.now(), null);
+        when(gatewayPagamento.obterQrCodePix("pay_qr")).thenReturn(qrCode);
 
         // Act
-        PixQrCodeResponseDto resultado = pedidoService.obterQrCodeCobrancaPix(1L);
+        QrCodePix resultado = pedidoService.obterQrCodeCobrancaPix(1L);
 
         // Assert
         assertThat(resultado).isSameAs(qrCode);
@@ -917,7 +915,7 @@ class PedidoServiceImplTest {
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.obterQrCodeCobrancaPix(1L))
                 .isInstanceOf(RegraDeNegocioException.class);
-        verify(apiCobranca, never()).obterQrCodePix(any());
+        verify(gatewayPagamento, never()).obterQrCodePix(any());
     }
 
     // ---- Status do pagamento nos eventos do Asaas ----
@@ -998,10 +996,7 @@ class PedidoServiceImplTest {
         Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
         prepararCriacaoDoPedido(pedido);
         prepararCartaoTokenizado();
-        when(apiCobranca.criarNovaCobranca(any())).thenReturn(new PagamentoCobrancaResponseDto(null, "pay_000001", null,
-                null, null, null, null, new BigDecimal("219.20"), null, null, null, null, null,
-                br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.Enum.AsaasPaymentStatus.AWAITING_RISK_ANALYSIS,
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null));
+        when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaCriada("pay_000001", new BigDecimal("219.20")));
 
         // Act
         pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
@@ -1048,17 +1043,16 @@ class PedidoServiceImplTest {
         pedidoService.fazerPedido(pedido);
 
         // Assert
-        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
-        verify(apiCobranca).criarNovaCobranca(captor.capture());
-        PagamentoCobrancaRequestDto request = captor.getValue();
-        assertThat(request.billingType()).isEqualTo(TipoPagamentoEnum.BOLETO);
-        assertThat(request.value()).isEqualByComparingTo("221.19");
-        assertThat(request.dueDate()).isEqualTo(LocalDate.now(FUSO_LOJA).plusDays(3));
-        assertThat(request.daysAfterDueDateToRegistrationCancellation()).isEqualTo(1);
-        assertThat(request.remoteIp()).isNull();
-        assertThat(request.installmentCount()).isNull();
-        assertThat(request.creditCardToken()).isNull();
-        assertThat(request.externalReference()).isEqualTo("10");
+        ArgumentCaptor<SolicitacaoCobranca> captor = ArgumentCaptor.forClass(SolicitacaoCobranca.class);
+        verify(gatewayPagamento).criarCobranca(captor.capture());
+        SolicitacaoCobranca request = captor.getValue();
+        assertThat(request.tipo()).isEqualTo(TipoPagamentoEnum.BOLETO);
+        assertThat(request.valor()).isEqualByComparingTo("221.19");
+        assertThat(request.vencimento()).isEqualTo(LocalDate.now(FUSO_LOJA).plusDays(3));
+        assertThat(request.diasCancelamentoRegistro()).isEqualTo(1);
+        assertThat(request.ipRemoto()).isNull();
+        assertThat(request.tokenCartao()).isNull();
+        assertThat(request.referenciaPedido()).isEqualTo("10");
     }
 
     @Test
@@ -1066,7 +1060,7 @@ class PedidoServiceImplTest {
         // Arrange
         Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.BOLETO);
         prepararCriacaoDoPedido(pedido);
-        when(apiCobranca.criarNovaCobranca(any())).thenReturn(cobrancaDeBoleto("pay_boleto", "https://sandbox.asaas.com/b/pdf/pay_boleto"));
+        when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaDeBoleto("pay_boleto", "https://sandbox.asaas.com/b/pdf/pay_boleto"));
 
         // Act
         Pedido resultado = pedidoService.fazerPedido(pedido);
@@ -1091,9 +1085,9 @@ class PedidoServiceImplTest {
         servico.fazerPedido(pedido);
 
         // Assert
-        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
-        verify(apiCobranca).criarNovaCobranca(captor.capture());
-        assertThat(captor.getValue().dueDate()).isEqualTo(LocalDate.now(FUSO_LOJA).plusDays(5));
+        ArgumentCaptor<SolicitacaoCobranca> captor = ArgumentCaptor.forClass(SolicitacaoCobranca.class);
+        verify(gatewayPagamento).criarCobranca(captor.capture());
+        assertThat(captor.getValue().vencimento()).isEqualTo(LocalDate.now(FUSO_LOJA).plusDays(5));
     }
 
     private Pedido pedidoDeBoletoComCobranca() {
@@ -1109,9 +1103,8 @@ class PedidoServiceImplTest {
     void obterBoleto_DeveRetornarLinhaDigitavelCodigoDeBarrasUrlEVencimento() {
         // Arrange
         when(pedidoRepository.findById(1L)).thenReturn(pedidoDeBoletoComCobranca());
-        when(apiCobranca.obterLinhaDigitavelBoleto("pay_boleto")).thenReturn(
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.LinhaDigitavelBoletoResponseDto(
-                        "00190000090123456789012345678901234567890123", "6543", "00191234500000221190000001234567890123456789"));
+        when(gatewayPagamento.obterLinhaDigitavel("pay_boleto")).thenReturn(
+                new LinhaDigitavel("00190000090123456789012345678901234567890123", "00191234500000221190000001234567890123456789"));
 
         // Act
         DadosBoleto boleto = pedidoService.obterBoleto(1L);
@@ -1133,7 +1126,7 @@ class PedidoServiceImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.obterBoleto(1L)).isInstanceOf(RegraDeNegocioException.class);
-        verify(apiCobranca, never()).obterLinhaDigitavelBoleto(any());
+        verify(gatewayPagamento, never()).obterLinhaDigitavel(any());
     }
 
     @Test
@@ -1145,7 +1138,7 @@ class PedidoServiceImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.obterBoleto(1L)).isInstanceOf(RegraDeNegocioException.class);
-        verify(apiCobranca, never()).obterLinhaDigitavelBoleto(any());
+        verify(gatewayPagamento, never()).obterLinhaDigitavel(any());
     }
 
     // ---- Cobrança vencida (boleto e PIX) ----

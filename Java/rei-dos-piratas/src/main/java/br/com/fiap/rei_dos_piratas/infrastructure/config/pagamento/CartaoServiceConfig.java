@@ -5,7 +5,7 @@ import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.application.service.impl.CartaoServiceImpl;
 import br.com.fiap.rei_dos_piratas.domain.entity.RegraParcelamento;
 import br.com.fiap.rei_dos_piratas.domain.repository.CartaoClienteRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +16,8 @@ import java.math.BigDecimal;
 public class CartaoServiceConfig {
 
     @Bean
-    public CartaoService cartaoService(CartaoClienteRepository cartaoClienteRepository, CobrancaAppClient apiCobranca, UsuarioAtualService usuarioAtual) {
-        return new CartaoServiceImpl(cartaoClienteRepository, apiCobranca, usuarioAtual);
+    public CartaoService cartaoService(CartaoClienteRepository cartaoClienteRepository, GatewayPagamento gatewayPagamento, UsuarioAtualService usuarioAtual) {
+        return new CartaoServiceImpl(cartaoClienteRepository, gatewayPagamento, usuarioAtual);
     }
 
     @Bean

@@ -2,10 +2,10 @@ package br.com.fiap.rei_dos_piratas.infrastructure.config.feign;
 
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.TokenizacaoCartaoRequestDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.ClienteCobrancaRequestDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.PagamentoCobrancaRequestDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.TokenizacaoCartaoRequestDto;
 import feign.Feign;
 import feign.Request;
 import feign.Response;

@@ -304,6 +304,22 @@ class PedidoRestControllerTest {
 
     @Test
     @WithMockUser(username = "jonas", roles = {"CLIENT"})
+    @org.junit.jupiter.api.DisplayName("Contrato com o app mobile: JSON do QR Code PIX")
+    void obterQrCodePix_DeveManterOContratoJsonDoApp() throws Exception {
+        when(this.pedidoController.obterQrCodeCobrancaPix(1L)).thenReturn(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeOutDto(
+                true, "iVBORw0KGgo=", "00020126580014br.gov.bcb.pix", java.time.LocalDateTime.of(2026, 11, 4, 10, 30, 0), "Pedido 1"));
+
+        this.mockMvc.perform(get("/pedidos/{id}/pix-qrcode", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.encoded_image", is("iVBORw0KGgo=")))
+                .andExpect(jsonPath("$.payload", is("00020126580014br.gov.bcb.pix")))
+                .andExpect(jsonPath("$.expiration_date", is("2026-11-04 10:30:00")))
+                .andExpect(jsonPath("$.description", is("Pedido 1")));
+    }
+
+    @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void obterBoleto_DeveRetornar200ComOsDadosEmSnakeCase() throws Exception {
         when(this.pedidoController.obterBoleto(1L)).thenReturn(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto(
                 "00190000090123456789012345678901234567890123", "00191234500000221190000001234567890123456789",

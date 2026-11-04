@@ -5,7 +5,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeResponseDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -77,7 +77,7 @@ public class PedidoRestController {
             @ApiResponse(responseCode = "400", description = "Pedido não está aguardando pagamento")
     })
     @GetMapping("/{id}/pix-qrcode")
-    public ResponseEntity<PixQrCodeResponseDto> obterQrCodePix(@PathVariable("id") Long id) {
+    public ResponseEntity<PixQrCodeOutDto> obterQrCodePix(@PathVariable("id") Long id) {
         return ResponseEntity.ok(this.controller.obterQrCodeCobrancaPix(id));
     }
 

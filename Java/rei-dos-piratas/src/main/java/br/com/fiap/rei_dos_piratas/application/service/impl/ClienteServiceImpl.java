@@ -9,9 +9,7 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.ValidacaoException;
 import br.com.fiap.rei_dos_piratas.domain.repository.ClienteRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PerfilRepository;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.ClienteCobrancaResponseDto;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
@@ -36,16 +34,16 @@ public class ClienteServiceImpl implements ClienteService {
     private final Validator validator;
     private final ContaRepository contas;
     private final UsuarioAtualService usuarioAtual;
-    private final CobrancaAppClient apiCobranca;
+    private final GatewayPagamento gatewayPagamento;
 
-    public ClienteServiceImpl(ClienteRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas, UsuarioAtualService usuarioAtual, CobrancaAppClient apiCobranca) {
+    public ClienteServiceImpl(ClienteRepository repository, SenhaService passwordEncoder, PerfilRepository perfilRepository, Validator validator, ContaRepository contas, UsuarioAtualService usuarioAtual, GatewayPagamento gatewayPagamento) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.perfilRepository = perfilRepository;
         this.validator = validator;
         this.contas = contas;
         this.usuarioAtual = usuarioAtual;
-        this.apiCobranca = apiCobranca;
+        this.gatewayPagamento = gatewayPagamento;
     }
 
     @Override
@@ -172,28 +170,12 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         log.info("[COBRANCA - CLIENTE] Criando cliente de cobrança para o cliente ID={}", cliente.getId());
-        ClienteCobrancaRequestDto request = definirClienteCobrancaRequest(cliente, endereco);
-        ClienteCobrancaResponseDto response = this.apiCobranca.criarNovoCliente(request);
+        String idCobranca = this.gatewayPagamento.registrarCliente(cliente, endereco);
 
-        log.info("[COBRANCA - CLIENTE] Criado cliente de cobrança com ID {} para o cliente ID={}", response.id(), cliente.getId());
-        cliente.setIdCobranca(response.id());
+        log.info("[COBRANCA - CLIENTE] Criado cliente de cobrança com ID {} para o cliente ID={}", idCobranca, cliente.getId());
+        cliente.setIdCobranca(idCobranca);
 
         return this.update(cliente);
-    }
-
-    private ClienteCobrancaRequestDto definirClienteCobrancaRequest(Cliente cliente, Endereco endereco) {
-        return new ClienteCobrancaRequestDto(
-                cliente.getNomeCompleto(),
-                cliente.getCpf(),
-                cliente.getEmail(),
-                cliente.getCelular(),
-                endereco.getLogradouro(),
-                String.valueOf(endereco.getNumero()),
-                endereco.getBairro(),
-                endereco.getCep(),
-                cliente.getId().toString(),
-                true
-        );
     }
 
     private void validar(Cliente cliente) {

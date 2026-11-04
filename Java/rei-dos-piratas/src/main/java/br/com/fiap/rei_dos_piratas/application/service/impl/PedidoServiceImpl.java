@@ -19,7 +19,7 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
 import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.domain.gateway.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
@@ -27,7 +27,6 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.*;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.Enum.AsaasPaymentStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,14 +54,14 @@ public class PedidoServiceImpl implements PedidoService {
 
     private final ClienteService clienteService;
 
-    private final CobrancaAppClient apiCobranca;
+    private final GatewayPagamento gatewayPagamento;
     private final UsuarioAtualService usuarioAtual;
 
     private final CartaoService cartaoService;
     private final RegraParcelamento regraParcelamento;
     private final RegraBoleto regraBoleto;
 
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, CobrancaAppClient apiCobranca, UsuarioAtualService usuarioAtual,
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, GatewayPagamento gatewayPagamento, UsuarioAtualService usuarioAtual,
                              CartaoService cartaoService, RegraParcelamento regraParcelamento, RegraBoleto regraBoleto) {
         this.cartaoService = cartaoService;
         this.regraParcelamento = regraParcelamento;
@@ -74,7 +73,7 @@ public class PedidoServiceImpl implements PedidoService {
         this.dadosEmpresaRepository = dadosEmpresaRepository;
         this.freteService = freteService;
         this.clienteService = clienteService;
-        this.apiCobranca = apiCobranca;
+        this.gatewayPagamento = gatewayPagamento;
     }
 
     @Override
@@ -229,92 +228,29 @@ public class PedidoServiceImpl implements PedidoService {
 
     private Pedido criarCobrancaPedido(Pedido pedido, String ipRemoto) {
 
-        PagamentoCobrancaRequestDto request = definirPagamentoCobrancaRequest(pedido, ipRemoto);
-        PagamentoCobrancaResponseDto response = this.apiCobranca.criarNovaCobranca(request);
+        SolicitacaoCobranca solicitacao = SolicitacaoCobranca.para(pedido, this.regraBoleto, LocalDate.now(FUSO_LOJA), ipRemoto);
+        CobrancaCriada cobranca = this.gatewayPagamento.criarCobranca(solicitacao);
 
         Pagamento pagamento = pedido.getPagamento();
-        pagamento.setIdCobranca(response.id());
-        pagamento.setValorLiquido(response.netValue());
+        pagamento.setIdCobranca(cobranca.idCobranca());
+        pagamento.setValorLiquido(cobranca.valorLiquido());
 
         if (TipoPagamentoEnum.BOLETO.equals(pagamento.getTipo())) {
-            pagamento.setUrlBoleto(response.bankSlipUrl());
-            pagamento.setDataVencimento(request.dueDate());
+            pagamento.setUrlBoleto(cobranca.urlBoleto());
+            pagamento.setDataVencimento(solicitacao.vencimento());
         }
 
-        // Cartão: o Asaas responde na hora; recusa vem como erro (PagamentoRecusadoException).
-        // Em análise de risco a cobrança fica pendente até o webhook.
-        if (TipoPagamentoEnum.CREDIT_CARD.equals(pagamento.getTipo()) && cobrancaAprovada(response)) {
+        // Cartão: o fornecedor responde na hora; recusa vem como erro (PagamentoRecusadoException).
+        // Em análise de risco a cobrança fica pendente até o evento de pagamento.
+        if (TipoPagamentoEnum.CREDIT_CARD.equals(pagamento.getTipo()) && cobranca.confirmada()) {
             pagamento.setStatus(StatusPagamentoEnum.CONFIRMADO);
             pagamento.setDataConfirmacao(LocalDateTime.now());
         }
 
         log.info("Cobrança criada com sucesso: ID={}, valor líquido=R${}, status do pagamento={}",
-                response.id(), response.netValue(), pagamento.getStatus());
+                cobranca.idCobranca(), cobranca.valorLiquido(), pagamento.getStatus());
 
         return this.repository.update(pedido);
-    }
-
-    private boolean cobrancaAprovada(PagamentoCobrancaResponseDto response) {
-        return response.status() == null
-                || response.status() == AsaasPaymentStatus.CONFIRMED
-                || response.status() == AsaasPaymentStatus.RECEIVED;
-    }
-
-    private PagamentoCobrancaRequestDto definirPagamentoCobrancaRequest(Pedido pedido, String ipRemoto) {
-
-        switch (pedido.getTipoPagamento()){
-
-            case TipoPagamentoEnum.PIX:
-                return new PagamentoCobrancaRequestDto(
-                        pedido.getCliente().getIdCobranca(),
-                        pedido.getTipoPagamento(),
-                        pedido.getValorTotal(),
-                        LocalDate.now().plusDays(1),
-                        "cobrança do pedido " + pedido.getId(),
-                        pedido.getId().toString(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        null);
-
-            case TipoPagamentoEnum.CREDIT_CARD:
-
-                CartaoCliente cartaoCliente = pedido.getPagamento().getCartao();
-                // Asaas: à vista usa "value"; parcelado usa "installmentCount" + "totalValue"
-                boolean parcelado = pedido.getPagamento().getParcelas() != null && pedido.getPagamento().getParcelas() > 1;
-
-                return new PagamentoCobrancaRequestDto(
-                        pedido.getCliente().getIdCobranca(),
-                        pedido.getTipoPagamento(),
-                        parcelado ? null : pedido.getValorTotal(),
-                        LocalDate.now().plusDays(1),
-                        "cobrança do pedido " + pedido.getId(),
-                        pedido.getId().toString(),
-                        parcelado ? pedido.getPagamento().getParcelas() : null,
-                        cartaoCliente.getToken(),
-                        parcelado ? pedido.getValorTotal() : null,
-                        ipRemoto,
-                        null);
-
-            case TipoPagamentoEnum.BOLETO:
-                // Registro cancelado logo após o vencimento: boleto vencido deixa de ser pagável
-                return new PagamentoCobrancaRequestDto(
-                        pedido.getCliente().getIdCobranca(),
-                        pedido.getTipoPagamento(),
-                        pedido.getValorTotal(),
-                        this.regraBoleto.vencimentoAPartirDe(LocalDate.now(FUSO_LOJA)),
-                        "cobrança do pedido " + pedido.getId(),
-                        pedido.getId().toString(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        RegraBoleto.DIAS_CANCELAMENTO_REGISTRO);
-
-            default:
-                throw new RegraDeNegocioException("Tipo de pagamento não suportado: " + pedido.getTipoPagamento());
-        }
     }
 
     @Transactional
@@ -610,12 +546,12 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         // Linha digitável consultada na hora: o Asaas recomenda buscar de novo se valor/vencimento mudarem
-        LinhaDigitavelBoletoResponseDto linha = this.apiCobranca.obterLinhaDigitavelBoleto(pagamento.getIdCobranca());
-        return new DadosBoleto(linha.identificationField(), linha.barCode(), pagamento.getUrlBoleto(), pagamento.getDataVencimento());
+        LinhaDigitavel linha = this.gatewayPagamento.obterLinhaDigitavel(pagamento.getIdCobranca());
+        return new DadosBoleto(linha.linhaDigitavel(), linha.codigoBarras(), pagamento.getUrlBoleto(), pagamento.getDataVencimento());
     }
 
     @Override
-    public PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id) {
+    public QrCodePix obterQrCodeCobrancaPix(Long id) {
         log.info("Iniciando consulta de QR Code de cobrança do pedido ID={}", id);
         Pedido pedido = this.findById(id);
 
@@ -629,7 +565,7 @@ public class PedidoServiceImpl implements PedidoService {
             throw new RegraDeNegocioException("O pedido não possui cobrança associada.");
         }
 
-        return this.apiCobranca.obterQrCodePix(pedido.getPagamento().getIdCobranca());
+        return this.gatewayPagamento.obterQrCodePix(pedido.getPagamento().getIdCobranca());
     }
 
     private void devolverEstoque(Pedido pedido) {
