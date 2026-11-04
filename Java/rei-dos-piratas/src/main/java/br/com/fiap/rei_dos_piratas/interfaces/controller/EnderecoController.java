@@ -9,4 +9,5 @@ public interface EnderecoController {
     EnderecoOutDto findById(Long id);
     EnderecoOutDto save(EnderecoInDto endereco);
     void deactivate(Long id);
+    br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.CepOutDto consultarCep(String cep);
 }

@@ -405,4 +405,74 @@ class ContaClienteMvcControllerTest {
     private static org.hamcrest.Matcher<java.util.Collection<?>> hasSize(int tamanho) {
         return org.hamcrest.Matchers.hasSize(tamanho);
     }
+
+    // ---- Consulta de CEP do formulário de endereço ----
+
+    @Test
+    void consultaDeCepDevolveOEnderecoOficialEmJson() throws Exception {
+        when(enderecos.consultarCep("01001000")).thenReturn(new br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.CepOutDto(
+                "01001000", "Praça da Sé", "Sé", "São Paulo", "São Paulo", "SP", false));
+
+        mvc.perform(get("/web/conta/cep/01001000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.logradouro").value("Praça da Sé"))
+                .andExpect(jsonPath("$.estado_sigla").value("SP"))
+                .andExpect(jsonPath("$.geral").value(false));
+    }
+
+    @Test
+    void consultaDeCepInexistenteResponde400ComAMensagem() throws Exception {
+        when(enderecos.consultarCep("99999999")).thenThrow(
+                new br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException("CEP não encontrado. Confira os números informados."));
+
+        mvc.perform(get("/web/conta/cep/99999999"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("CEP não encontrado. Confira os números informados."));
+    }
+
+    // ---- Formulários do checkout: CEP, cartão e bandeira ----
+
+    private String paginaDoCheckoutComFrete() throws Exception {
+        when(enderecos.findById(3L)).thenReturn(casa);
+        when(frete.calcularFreteProdutos(any())).thenReturn(List.of(new OpcaoFreteOutDto(2L, "SEDEX", new BigDecimal("21.20"),
+                new BigDecimal("21.20"), BigDecimal.ZERO, "R$", 3, new OpcaoFreteOutDto.Company(1L, "Correios", null))));
+        return mvc.perform(get("/web/conta/checkout").param("enderecoId", "3"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    }
+
+    @Test
+    void checkoutCarregaOScriptDoCheckout() throws Exception {
+        assertThat(paginaDoCheckoutComFrete()).contains("/assets/checkout.js");
+    }
+
+    @Test
+    void formularioDeEnderecoUsaAConsultaDeCepComCamposOficiaisSomenteLeitura() throws Exception {
+        String pagina = paginaDoCheckoutComFrete();
+
+        assertThat(pagina).contains("data-cep-form", "data-cep-mensagem");
+        assertThat(pagina).containsPattern("<input[^>]*name=\"logradouro\"[^>]*readonly");
+        assertThat(pagina).containsPattern("<input[^>]*name=\"estadoSigla\"[^>]*readonly");
+    }
+
+    @Test
+    void blocoDoCartaoComecaOcultoEDesabilitadoAteEscolherCartao() throws Exception {
+        String pagina = paginaDoCheckoutComFrete();
+
+        assertThat(pagina).contains("data-pagamento-form");
+        assertThat(pagina).containsPattern("<fieldset[^>]*data-cartao[^>]*hidden[^>]*disabled|<fieldset[^>]*data-cartao[^>]*disabled[^>]*hidden");
+    }
+
+    @Test
+    void cartaoSalvoMostraAImagemDaBandeira() throws Exception {
+        String pagina = paginaDoCheckoutComFrete();
+
+        assertThat(pagina).contains("src=\"/assets/bandeiras/visa.svg\"", "final 1234");
+    }
+
+    @Test
+    void cartaoSalvoDeBandeiraSemImagemUsaAImagemGenerica() throws Exception {
+        when(cartoes.listarCartoesDoClienteAtual()).thenReturn(List.of(new CartaoClienteOutDto(6L, "DISCOVER", "9876", LocalDateTime.now())));
+
+        assertThat(paginaDoCheckoutComFrete()).contains("src=\"/assets/bandeiras/desconhecida.svg\"");
+    }
 }

@@ -53,6 +53,7 @@ As variáveis de ambiente podem ficar num arquivo `.env`. O `compose.yaml` já o
 | Banco | `DB_URL`, `DB_USER`, `DB_PASSWORD`, `FLYWAY_ENABLED` | `FLYWAY_ENABLED=true` aplica as migrations na subida |
 | JWT | `JWT_SECRET`, `JWT_EXPIRATION` | `JWT_SECRET` é obrigatória: use um valor longo e aleatório. Expiração padrão: 900000 ms |
 | Asaas | `COBRANCA_URL`, `COBRANCA_API_KEY` | Sandbox: `https://api-sandbox.asaas.com` |
+| ViaCEP | `CEP_URL` | Padrão: `https://viacep.com.br`. Consulta de CEP no cadastro de endereço |
 | Melhor Envio | `ME_URL`, `ME_CLIENT_ID`, `ME_SECRET`, `ME_REDIRECT_URI`, `ME_SERVICE_DEVOLUCAO` | `ME_SERVICE_DEVOLUCAO` é o id do serviço de entrega usado no frete reverso |
 | Parcelamento | `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO`, `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` | Padrões: `100.00` (abaixo disso, só à vista) e `3` parcelas |
 | Boleto | `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` | Padrão: `3` dias corridos |
@@ -78,7 +79,7 @@ As variáveis de ambiente podem ficar num arquivo `.env`. O `compose.yaml` já o
 ```bash
 ./mvnw test                                  # suíte completa (H2; Asaas, Melhor Envio e SQS mockados)
 ./mvnw clean verify                          # build + testes + relatório JaCoCo em target/site/jacoco
-node --test src/test/js/web-auth.test.cjs    # testes do web-auth.js
+node --test src/test/js/                    # testes do web-auth.js e do checkout.js
 ```
 
 ### Docker
@@ -151,7 +152,7 @@ Todas as rotas exigem `ENDERECO_MANAGE`.
 |---|---|---|
 | GET | `/enderecos` | Lista os endereços ativos do cliente logado |
 | GET | `/enderecos/{id}` | Busca um endereço do cliente |
-| POST | `/enderecos` | Cria um endereço |
+| POST | `/enderecos` | Cria um endereço: rua, bairro, cidade e estado vêm do CEP (ViaCEP) e substituem os enviados; no CEP geral valem rua e bairro informados. CEP inexistente: `400` |
 | PUT | `/enderecos/{id}` | Atualiza um endereço |
 | GET | `/cartoes` | Lista os cartões salvos: id, bandeira e 4 últimos dígitos |
 
@@ -287,7 +288,10 @@ Respostas do `POST /pedidos` com cartão:
   Ainda não há recuperação de senha.
 - **Cliente** (`/web/conta/**`):
   - carrinho;
-  - checkout: endereço, frete e PIX, boleto ou cartão;
+  - checkout:
+    - novo endereço pelo CEP: a página consulta `GET /web/conta/cep/{cep}`, e rua, bairro, cidade e estado ficam somente leitura (no CEP geral, rua e bairro ficam livres);
+    - frete e PIX, boleto ou cartão;
+    - o bloco de cartão (salvos e novo) só aparece com "Cartão de crédito", com a imagem da bandeira (`static/assets/bandeiras/`);
   - pagamento: QR Code do PIX, linha digitável do boleto e status do cartão;
   - meus pedidos e cancelamento;
   - estornos, com o link de dados bancários do boleto;

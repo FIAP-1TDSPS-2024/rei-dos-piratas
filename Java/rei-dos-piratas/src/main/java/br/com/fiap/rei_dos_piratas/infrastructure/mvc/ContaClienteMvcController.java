@@ -104,6 +104,13 @@ public class ContaClienteMvcController {
         return "conta/checkout";
     }
 
+    /** Endereço oficial do CEP para o formulário de endereço (JSON; erros pelo GlobalExceptionHandler). */
+    @GetMapping(value = "/cep/{cep}", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    @org.springframework.web.bind.annotation.ResponseBody
+    public br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.CepOutDto consultarCep(@org.springframework.web.bind.annotation.PathVariable String cep) {
+        return this.enderecos.consultarCep(cep);
+    }
+
     @PostMapping("/enderecos")
     public String novoEndereco(@ModelAttribute EnderecoInDto endereco, RedirectAttributes redirect) {
         try {

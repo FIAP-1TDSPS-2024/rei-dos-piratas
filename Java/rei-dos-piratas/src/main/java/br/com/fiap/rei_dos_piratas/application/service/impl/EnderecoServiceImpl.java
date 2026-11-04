@@ -1,5 +1,9 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
+import br.com.fiap.rei_dos_piratas.domain.gateway.EnderecoCep;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayCep;
+
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
@@ -33,9 +37,11 @@ public class EnderecoServiceImpl implements EnderecoService {
     private final EstadoRepository estadoRepository;
     private final Validator validator;
     private final UsuarioAtualService usuarioAtual;
+    private final GatewayCep gatewayCep;
 
-    public EnderecoServiceImpl(EnderecoRepository repository, ClienteService clienteService, CidadeRepository cidadeRepository, EstadoRepository estadoRepository, Validator validator, UsuarioAtualService usuarioAtual) {
+    public EnderecoServiceImpl(EnderecoRepository repository, ClienteService clienteService, CidadeRepository cidadeRepository, EstadoRepository estadoRepository, Validator validator, UsuarioAtualService usuarioAtual, GatewayCep gatewayCep) {
         this.usuarioAtual = usuarioAtual;
+        this.gatewayCep = gatewayCep;
         this.repository = repository;
         this.clienteService = clienteService;
         this.cidadeRepository = cidadeRepository;
@@ -86,6 +92,9 @@ public class EnderecoServiceImpl implements EnderecoService {
 
         endereco.setCliente(clienteService.findById(usuario.id()));
         validar(endereco);
+        // Rua, bairro, cidade e estado vêm do CEP, não do formulário (no CEP geral, rua e bairro são do cliente).
+        endereco.aplicarCep(consultarCep(endereco.getCep()));
+        validar(endereco);
 
         Endereco enderecoDuplicado = this.repository.VerificaEnderecoDuplicado(endereco.getCep(), endereco.getNumero(), endereco.getCliente().getId());
         if (enderecoDuplicado != null) {
@@ -130,6 +139,18 @@ public class EnderecoServiceImpl implements EnderecoService {
         endereco.setEnderecoAtivo(false);
         this.repository.save(endereco);
         log.info("[ENDERECO] Endereço ID={} desativado com sucesso", id);
+    }
+
+    @Override
+    public EnderecoCep consultarCep(String cep) {
+        Set<ConstraintViolation<Endereco>> violacoes = validator.validateValue(Endereco.class, "cep", cep);
+        if (!violacoes.isEmpty()) {
+            throw new ValidacaoException(Map.of("cep", violacoes.iterator().next().getMessage()));
+        }
+        return gatewayCep.consultar(cep).orElseThrow(() -> {
+            log.info("[ENDERECO] CEP consultado não existe");
+            return new RegraDeNegocioException("CEP não encontrado. Confira os números informados.");
+        });
     }
 
     private void validar(Endereco endereco) {

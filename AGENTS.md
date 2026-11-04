@@ -10,7 +10,7 @@ Leia inteiro antes de alterar código. Em caso de conflito com o `README.md`, **
 E-commerce de mangás (foco em One Piece, novos e usados), migrando a loja "Rei dos Piratas" da Shopee para infraestrutura própria. Origem acadêmica (Challenge FIAP), agora evoluindo para produção real com **deploy na AWS** (abordagem ainda em definição).
 
 - Idioma do domínio, código, commits e documentação: **português** (sem acentos em identificadores Java).
-- Integrações externas: **Melhor Envio** (frete/etiquetas/logística reversa) e **Asaas** (cobrança PIX e cartão de crédito tokenizado, webhooks de pagamento e estorno). PagBank não é mais usado.
+- Integrações externas: **ViaCEP** (endereço pelo CEP, porta `GatewayCep`), **Melhor Envio** (frete/etiquetas/logística reversa) e **Asaas** (cobrança PIX e cartão de crédito tokenizado, webhooks de pagamento e estorno). PagBank não é mais usado.
 - Front web server-side com **Thymeleaf** (painel de funcionários) + API REST consumida pelo app mobile (repo separado: `FIAP-1TDSPS-2024/rei-dos-piratas-mobile`).
 
 ## Stack
@@ -108,7 +108,7 @@ Ambiente local: o `JAVA_HOME` padrão da máquina pode não ser o 21 (ex.: sdkma
 ./mvnw test -Dtest=ProdutoServiceImplTest          # uma classe
 ./mvnw test -Dtest=ProdutoServiceImplTest#metodo   # um método
 ./mvnw spring-boot:run                   # sobe a app (precisa das variáveis de ambiente)
-node --test src/test/js/web-auth.test.cjs           # teste JS do web-auth.js
+node --test src/test/js/                            # testes JS (web-auth.js, checkout.js)
 docker compose up -d postgres            # Postgres local na porta 5432
 ```
 
@@ -127,6 +127,7 @@ Tudo vem de variáveis de ambiente referenciadas em `application.properties` (lo
 - Banco: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `FLYWAY_ENABLED`
 - JWT: `JWT_SECRET` (obrigatória, sem padrão), `JWT_EXPIRATION`
 - Logs de SQL: `JPA_SHOW_SQL` (padrão `false`)
+- ViaCEP: `CEP_URL` (padrão `https://viacep.com.br`)
 - Melhor Envio: `ME_URL`, `ME_CLIENT_ID`, `ME_SECRET`, `ME_REDIRECT_URI`, `ME_SERVICE_DEVOLUCAO` (serviço usado no frete reverso)
 - Asaas: `COBRANCA_URL` + token de acesso
 - Parcelamento no cartão: `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO` (padrão `100.00`), `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` (padrão `3`)
@@ -268,7 +269,9 @@ Antes de corrigir, escreva um teste que **reproduz o bug e falha**. Só então c
 ## Front-end web (Thymeleaf)
 
 - Controllers MVC em `infrastructure/mvc` (só delegam aos controllers de `interfaces`), templates em `src/main/resources/templates` (área do cliente em `conta/`). Rotas: `/web/login` e `/web/cadastro` públicas (cadastro de cliente via `webAuth.cadastrar`); `/web/conta/**` só cliente (`ENDERECO_MANAGE`); `/web/pedidos/**` e `/web/devolucoes/**` funcionário (`PEDIDO_WRITE`); `/web/simulador/**` só com `APP_SIMULADOR_EVENTOS=true`.
-- Testes com `@WebMvcTest` renderizando o template real; permissões no `PermissoesIntegrationTest`.
+- Testes com `@WebMvcTest` renderizando o template real; permissões no `PermissoesIntegrationTest`. Comportamento de página em JS fica em `static/assets/*.js` com teste `node --test` em `src/test/js/` (ex.: `checkout.js`).
+- Endereço: rua, bairro, cidade e estado vêm do CEP (`EnderecoService` consulta o `GatewayCep` ao salvar e sobrescreve o que veio do formulário; no CEP geral valem rua e bairro do cliente). No checkout esses campos são somente leitura e preenchidos por `GET /web/conta/cep/{cep}`.
+- Checkout: o bloco de cartão (`fieldset[data-cartao]`) só aparece e só é enviado com pagamento por cartão; bandeiras em `static/assets/bandeiras/` (marcas simples próprias, não os logos oficiais).
 - Login web fora de HTTPS/`localhost` (ex.: VM de teste em `http://<IP>`): defina `AUTH_COOKIE_SECURE=false` (o navegador descarta cookie `Secure` em HTTP). Sem contexto seguro não há `navigator.locks`; o `web-auth.js` usa então um lease no `localStorage` (só id da aba e prazo, nunca tokens) para uma aba renovar por vez. Produção sempre em HTTPS com `AUTH_COOKIE_SECURE=true`.
 - Detalhes nos agentes `frontend-analista` e `frontend-desenvolvedor`.
 

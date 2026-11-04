@@ -44,15 +44,19 @@
 
         <details class="mt-3">
             <summary class="cursor-pointer text-sm text-blue-700">Cadastrar novo endereço</summary>
-            <form th:action="@{/web/conta/enderecos}" method="post" class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 text-sm">
-                <input name="cep" placeholder="CEP (só números)" required class="border rounded px-2 py-1">
-                <input name="logradouro" placeholder="Logradouro" required class="border rounded px-2 py-1 sm:col-span-2">
+            <!-- Rua, bairro, cidade e estado vêm do CEP (ViaCEP, consultado pela loja) e são conferidos de novo ao salvar -->
+            <form th:action="@{/web/conta/enderecos}" method="post" data-cep-form
+                  class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 text-sm">
+                <input name="cep" placeholder="CEP" required inputmode="numeric" maxlength="9" autocomplete="postal-code"
+                       class="border rounded px-2 py-1">
+                <input name="logradouro" placeholder="Logradouro" required readonly class="border rounded px-2 py-1 sm:col-span-2 read-only:bg-gray-100">
                 <input name="numero" type="number" placeholder="Número" required class="border rounded px-2 py-1">
-                <input name="bairro" placeholder="Bairro" required class="border rounded px-2 py-1">
-                <input name="cidade" placeholder="Cidade" required class="border rounded px-2 py-1">
-                <input name="estadoNome" placeholder="Estado" required class="border rounded px-2 py-1">
-                <input name="estadoSigla" placeholder="UF" maxlength="2" required class="border rounded px-2 py-1">
-                <button type="submit" class="px-3 py-1 bg-gray-800 text-white rounded">Salvar endereço</button>
+                <input name="bairro" placeholder="Bairro" required readonly class="border rounded px-2 py-1 read-only:bg-gray-100">
+                <input name="cidade" placeholder="Cidade" required readonly class="border rounded px-2 py-1 read-only:bg-gray-100">
+                <input name="estadoNome" placeholder="Estado" required readonly class="border rounded px-2 py-1 read-only:bg-gray-100">
+                <input name="estadoSigla" placeholder="UF" maxlength="2" required readonly class="border rounded px-2 py-1 read-only:bg-gray-100">
+                <p data-cep-mensagem hidden class="sm:col-span-3 text-xs text-gray-600" aria-live="polite"></p>
+                <button type="submit" class="px-3 py-1 bg-gray-800 text-white rounded disabled:opacity-50">Salvar endereço</button>
             </form>
         </details>
     </section>
@@ -63,7 +67,7 @@
         <p th:if="${#lists.isEmpty(opcoesFrete)}" class="text-sm text-gray-500">Nenhuma opção de frete disponível para este endereço.</p>
 
         <form th:unless="${#lists.isEmpty(opcoesFrete)}" th:action="@{/web/conta/checkout}" method="post"
-              class="space-y-4" autocomplete="off">
+              class="space-y-4" autocomplete="off" data-pagamento-form>
             <input type="hidden" name="enderecoId" th:value="${enderecoId}">
 
             <fieldset class="space-y-1">
@@ -84,18 +88,27 @@
             </fieldset>
 
             <!-- Dados de cartão: não são gravados nem logados; ocultos no replay do Datadog -->
-            <fieldset class="space-y-2 border rounded-lg p-3" data-dd-privacy="hidden">
-                <legend class="text-sm font-semibold px-1">Cartão (só para pagamento com cartão)</legend>
+            <!-- Só aparece com "Cartão de crédito"; desabilitado, o fieldset não envia os campos -->
+            <fieldset class="space-y-2 border rounded-lg p-3" data-dd-privacy="hidden" data-cartao hidden disabled>
+                <legend class="text-sm font-semibold px-1">Cartão de crédito</legend>
                 <div th:unless="${#lists.isEmpty(cartoes)}" class="space-y-1">
-                    <label th:each="cartao : ${cartoes}" class="flex items-center gap-2 text-sm">
+                    <label th:each="cartao : ${cartoes}" class="flex items-center gap-2 text-sm"
+                           th:with="marca=${cartao.bandeira != null ? #strings.toLowerCase(cartao.bandeira) : ''}">
                         <input type="radio" name="cartaoId" th:value="${cartao.id}">
+                        <img th:src="@{'/assets/bandeiras/' + (${ {'visa','mastercard','amex','elo','hipercard'}.contains(marca) } ? ${marca} : 'desconhecida') + '.svg'}"
+                             th:alt="${cartao.bandeira}" width="38" height="24" class="rounded border">
                         <span th:text="${cartao.bandeira + ' final ' + cartao.ultimosDigitos}">VISA final 1234</span>
                     </label>
                     <p class="text-xs text-gray-500">Ou preencha um cartão novo abaixo (deixe os cartões salvos desmarcados).</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-sm">
                     <input name="titular" placeholder="Nome impresso no cartão" autocomplete="off" class="border rounded px-2 py-1 sm:col-span-2">
-                    <input name="numero" placeholder="Número" inputmode="numeric" autocomplete="off" class="border rounded px-2 py-1 sm:col-span-2">
+                    <div class="relative sm:col-span-2">
+                        <input name="numero" placeholder="Número" inputmode="numeric" autocomplete="off" data-cartao-numero
+                               class="border rounded px-2 py-1 w-full pr-12">
+                        <img data-bandeira-novo hidden alt="" width="38" height="24"
+                             class="absolute right-1 top-1/2 -translate-y-1/2 rounded border">
+                    </div>
                     <input name="mesValidade" placeholder="Mês (MM)" maxlength="2" autocomplete="off" class="border rounded px-2 py-1">
                     <input name="anoValidade" placeholder="Ano (AAAA)" maxlength="4" autocomplete="off" class="border rounded px-2 py-1">
                     <input name="cvv" placeholder="CVV" maxlength="4" inputmode="numeric" autocomplete="off" class="border rounded px-2 py-1">
@@ -115,5 +128,6 @@
 </main>
 
 <div th:replace="~{fragments.html :: footer}"></div>
+<script th:src="@{/assets/checkout.js}" src="/assets/checkout.js" defer></script>
 </body>
 </html>

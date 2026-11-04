@@ -142,6 +142,12 @@ class PermissoesIntegrationTest {
     }
 
     @Test
+    void consultaDeCepDaAreaDoClienteNaoEhAbertaAAnonimoNemAFuncionario() throws Exception {
+        mvc.perform(get("/web/conta/cep/01001000").accept(MediaType.TEXT_HTML)).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/web/conta/cep/01001000").cookie(new Cookie("jwt_token", token))).andExpect(status().isForbidden());
+    }
+
+    @Test
     void adminCriaProdutoEConsultaPedidosNaApi() throws Exception {
         mvc.perform(post("/produtos").header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON).content("""

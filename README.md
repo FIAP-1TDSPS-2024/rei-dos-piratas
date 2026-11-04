@@ -48,7 +48,7 @@ Leitores e colecionadores de mangás, principalmente jovens e adultos que consom
 
 - Cadastro e login: JWT com refresh token e sessões persistidas, com cookies na web.
 - Catálogo de produtos e carrinho.
-- Endereços de entrega e cartões salvos (o cartão fica tokenizado no Asaas; o número e o CVV nunca são guardados).
+- Endereços de entrega preenchidos pelo CEP (ViaCEP) e cartões salvos (o cartão fica tokenizado no Asaas; o número e o CVV nunca são guardados).
 - Checkout com cotação de frete e três formas de pagamento:
   - **PIX**, com QR Code;
   - **boleto**, com vencimento configurável;
@@ -120,6 +120,7 @@ flowchart LR
     ASAAS["💳 Asaas<br/>PIX · boleto · cartão · estornos"]
     ME["📦 Melhor Envio<br/>frete · etiquetas · reversa"]
     DD["📈 Datadog<br/>logs JSON · RUM"]
+    CEP["📮 ViaCEP<br/>endereço pelo CEP"]
 
     APP -- "REST + JWT" --> INFRA
     WEB -- "HTML + cookies/CSRF" --> INFRA
@@ -128,6 +129,7 @@ flowchart LR
     ASAAS -- "webhooks" --> SQS -- "listener" --> INFRA
     INFRA -- "cotação/envio" --> ME
     ME -- "webhook de rastreio (HMAC)" --> INFRA
+    INFRA -- "consulta de CEP" --> CEP
     INFRA -.-> DD
 
     GH["GitHub"] -- "CodeBuild<br/>(buildspec.yml)" --> ECR -. "deploy" .-> API
@@ -164,6 +166,7 @@ Quando a chamada move dinheiro, ela roda **fora da transação de banco**. Os de
 | Build e entrega | Maven Wrapper · Docker (multi-stage, JRE 21) · AWS CodeBuild → ECR |
 | Pagamentos | [Asaas](https://docs.asaas.com/) |
 | Frete | [Melhor Envio](https://docs.melhorenvio.com.br/) |
+| CEP | [ViaCEP](https://viacep.com.br/) |
 | Mobile | App em repositório separado: [rei-dos-piratas-mobile](https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas-mobile) |
 
 ---

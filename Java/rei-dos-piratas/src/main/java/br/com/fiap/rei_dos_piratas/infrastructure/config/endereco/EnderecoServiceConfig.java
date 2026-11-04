@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class EnderecoServiceConfig {
     @Bean
-    public EnderecoService enderecoService(EnderecoRepository repository, ClienteService clienteService, CidadeRepository cidadeRepository, EstadoRepository estadoRepository, Validator validator, UsuarioAtualService usuarioAtual) {
-        return new EnderecoServiceImpl(repository, clienteService, cidadeRepository, estadoRepository, validator, usuarioAtual);
+    public EnderecoService enderecoService(EnderecoRepository repository, ClienteService clienteService, CidadeRepository cidadeRepository, EstadoRepository estadoRepository, Validator validator, UsuarioAtualService usuarioAtual, br.com.fiap.rei_dos_piratas.domain.gateway.GatewayCep gatewayCep) {
+        return new EnderecoServiceImpl(repository, clienteService, cidadeRepository, estadoRepository, validator, usuarioAtual, gatewayCep);
     }
 }

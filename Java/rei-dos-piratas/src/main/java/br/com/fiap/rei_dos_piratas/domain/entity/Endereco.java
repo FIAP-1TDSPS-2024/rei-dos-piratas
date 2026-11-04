@@ -28,6 +28,16 @@ public class Endereco {
     private String paisSigla;
     private Cliente cliente;
 
+    /** Substitui pelos dados oficiais do CEP; no CEP geral, rua e bairro continuam os do cliente. */
+    public void aplicarCep(br.com.fiap.rei_dos_piratas.domain.gateway.EnderecoCep dados) {
+        this.cep = dados.cep();
+        if (!dados.geral()) {
+            this.logradouro = dados.logradouro();
+            this.bairro = dados.bairro();
+        }
+        this.cidade = new Cidade(null, dados.cidade(), new Estado(null, dados.estadoNome(), dados.estadoSigla()));
+    }
+
     @Override
     public String toString() {
         return logradouro + ","

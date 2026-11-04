@@ -8,5 +8,7 @@ public interface EnderecoService {
     Endereco findById(Long id);
     Endereco save(Endereco endereco);
     Endereco getEnderecoEmpresa();
-    void deactivate(Long id);;
+    void deactivate(Long id);
+    /** Endereço oficial do CEP, para preencher o formulário. */
+    br.com.fiap.rei_dos_piratas.domain.gateway.EnderecoCep consultarCep(String cep);
 }

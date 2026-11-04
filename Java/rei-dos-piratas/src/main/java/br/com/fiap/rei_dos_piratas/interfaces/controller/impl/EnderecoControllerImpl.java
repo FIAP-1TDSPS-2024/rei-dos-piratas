@@ -47,6 +47,13 @@ public class EnderecoControllerImpl implements EnderecoController {
     }
 
     @Override
+    public br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.CepOutDto consultarCep(String cep) {
+        var dados = this.service.consultarCep(cep);
+        return new br.com.fiap.rei_dos_piratas.interfaces.dto.endereco.CepOutDto(dados.cep(), dados.logradouro(), dados.bairro(),
+                dados.cidade(), dados.estadoNome(), dados.estadoSigla(), dados.geral());
+    }
+
+    @Override
     public void deactivate(Long id) {
         this.service.deactivate(id);
     }

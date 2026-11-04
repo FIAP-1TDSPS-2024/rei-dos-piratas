@@ -32,6 +32,8 @@ Você é o analista de front-end web (Thymeleaf) do e-commerce **Rei dos Piratas
 - **VM/servidor via HTTP**: navegadores só aceitam cookie `Secure` e só expõem `navigator.locks` (Web Locks) em **contexto seguro** — HTTPS ou `http://localhost`. Em `http://<IP>` é preciso `AUTH_COOKIE_SECURE=false` (só em teste); a renovação usa então o lease no `localStorage` do `web-auth.js` (id da aba + prazo, nunca tokens), para uma aba renovar por vez. Sem `localStorage`, pede novo login. Produção: HTTPS e `AUTH_COOKIE_SECURE=true`.
 - `APP_ALLOWED_ORIGINS` (CORS) só importa para cliente de outra origem; `allowedTracingUrls` do Datadog RUM em `fragments.html` está fixo em `http://localhost:8080`.
 
+**Checkout** — endereço pelo CEP (ViaCEP via `GatewayCep`; campos oficiais `readonly` na tela e sobrescritos no serviço ao salvar); bloco de cartão só com pagamento por cartão (`checkout.js`, testado com `node --test`).
+
 **Dados sensíveis em tela** — formulário de cartão: dados só seguem para a tokenização; nunca no modelo, no flash nem em log; `autocomplete="off"` e `data-dd-privacy="hidden"` (o Datadog RUM grava sessão com replay). Mensagens de erro na tela só de exceções de domínio (`MensagemWeb.de`); o resto vira mensagem genérica. Motivo de falha de estorno não é mostrado ao cliente.
 
 **Padrões de tela** — POST → redirect (PRG) com `successMessage`/`errorMessage` em flash; IP do comprador por `IpDoComprador.de(request)`; links externos com `target="_blank" rel="noopener"`.
