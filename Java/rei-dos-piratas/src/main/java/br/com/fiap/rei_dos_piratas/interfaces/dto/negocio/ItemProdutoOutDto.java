@@ -9,8 +9,14 @@ public record ItemProdutoOutDto(
         @NotNull(message = "O produto não pode ser nulo")
         ProdutoOutDto produto,
         @Min(value = 1, message = "A quantidade deve ser pelo menos 1")
-        int quantidade, BigDecimal precoUnitario
+        int quantidade, BigDecimal precoUnitario,
+        // Id do item do pedido (usado para pedir devolução); nulo em itens do carrinho
+        Long itemPedidoId
 ) {
+    public ItemProdutoOutDto(ProdutoOutDto produto, int quantidade, BigDecimal precoUnitario) {
+        this(produto, quantidade, precoUnitario, null);
+    }
+
     public ItemProdutoOutDto(ProdutoOutDto produto, int quantidade) {
         this(produto, quantidade, produto.preco());
     }

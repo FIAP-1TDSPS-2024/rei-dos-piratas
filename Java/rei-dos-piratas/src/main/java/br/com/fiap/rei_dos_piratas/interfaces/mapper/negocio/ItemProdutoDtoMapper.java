@@ -9,7 +9,8 @@ public class ItemProdutoDtoMapper {
     public static ItemProdutoOutDto toDto(ItemProdutoPedido itemProdutoPedido) {
         return new ItemProdutoOutDto(
                 ProdutoDtoMapper.toDto(itemProdutoPedido.getProduto()),
-                itemProdutoPedido.getQuantidade(), itemProdutoPedido.getPrecoUnitario()
+                itemProdutoPedido.getQuantidade(), itemProdutoPedido.getPrecoUnitario(),
+                itemProdutoPedido.getId()
         );
     }
 

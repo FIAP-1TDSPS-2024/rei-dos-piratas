@@ -103,6 +103,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/pedidos/**").hasAnyRole("PEDIDO_READ")
                         // Painel web de pedidos para funcionários
                         .requestMatchers("/web/pedidos/**").hasRole("PEDIDO_WRITE")
+                        // Área do cliente na web (carrinho, checkout, pedidos e devoluções próprios): só o perfil CLIENT
+                        .requestMatchers("/web/conta/**").hasRole("ENDERECO_MANAGE")
                         // Operações de devoluções
                         .requestMatchers(HttpMethod.POST, "/devolucoes/**").hasRole("PEDIDO_READ")
                         .requestMatchers(HttpMethod.GET, "/devolucoes/**").hasAnyRole("PEDIDO_READ", "PEDIDO_WRITE")

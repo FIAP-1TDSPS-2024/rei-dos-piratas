@@ -107,6 +107,30 @@ class PermissoesIntegrationTest {
     }
 
     @Test
+    void areaDoClienteNaWebEhSoDoClienteENaoDoFuncionario() throws Exception {
+        mvc.perform(post("/auth/cadastro").contentType(MediaType.APPLICATION_JSON).content("""
+                {"user_name":"cliente_web", "nome_completo":"Cliente Web", "email":"cliente-web@example.com",
+                 "senha":"SenhaSegura123", "data_nascimento":"1990-01-01", "sexo":"M",
+                 "cpf":"52998224725", "celular":"11987654321"}
+                """))
+                .andExpect(status().isCreated());
+        em.flush();
+        em.clear();
+        var resposta = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"cliente-web@example.com\",\"password\":\"SenhaSegura123\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String clienteToken = mapper.readTree(resposta).get("token").asText();
+
+        mvc.perform(get("/web/conta/carrinho").cookie(new Cookie("jwt_token", clienteToken)))
+                .andExpect(status().isOk());
+        // Funcionário não tem carrinho nem pedidos próprios: bloqueado pela permissão
+        mvc.perform(get("/web/conta/carrinho").cookie(new Cookie("jwt_token", token)))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/web/conta/carrinho").accept(MediaType.TEXT_HTML))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     void adminCriaProdutoEConsultaPedidosNaApi() throws Exception {
         mvc.perform(post("/produtos").header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON).content("""

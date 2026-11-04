@@ -145,6 +145,15 @@
 
                 <!-- Actions -->
                 <div class="space-y-2 mt-auto">
+                    <form sec:authorize="hasRole('ENDERECO_MANAGE')" th:if="${produto.estoque > 0}"
+                          th:action="@{/web/conta/carrinho/adicionar}" method="post" class="flex gap-2">
+                        <input type="hidden" name="produtoId" th:value="${produto.id}">
+                        <input type="number" name="quantidade" value="1" min="1" th:max="${produto.estoque}"
+                               class="w-20 border rounded-xl px-2 py-2.5 text-sm">
+                        <button type="submit"
+                                class="flex-1 px-4 py-2.5 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition">
+                            Adicionar ao carrinho</button>
+                    </form>
                     <sec:authorize access="hasRole('PRODUTO_WRITE')">
                         <a th:href="@{/web/produtos/{id}/editar(id=${produto.id})}"
                            class="block w-full text-center px-4 py-2.5 bg-yellow-400 text-gray-900 font-bold rounded-xl hover:bg-yellow-500 transition"

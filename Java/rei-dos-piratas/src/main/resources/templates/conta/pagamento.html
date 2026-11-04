@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Pagamento do pedido ' + pedido.id}">Pagamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<main class="max-w-screen-md w-full mx-auto px-4 py-8 flex-1">
+    <h1 class="text-2xl font-black" th:text="${'Pedido #' + pedido.id}">Pedido</h1>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
+
+    <section class="mt-4 bg-white rounded-xl shadow p-4 text-sm space-y-1">
+        <p>Status do pedido: <span class="font-semibold" th:text="${pedido.status}">AGUARDANDO_PAGAMENTO</span></p>
+        <p>Forma de pagamento: <span class="font-semibold" th:text="${pedido.tipoPagamento}">PIX</span></p>
+        <p>Status do pagamento: <span class="font-semibold" th:text="${pedido.statusPagamento}">PENDENTE</span></p>
+        <p>Total: <span class="font-bold" th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span></p>
+    </section>
+
+    <!-- PIX -->
+    <section th:if="${qrCode != null}" class="mt-4 bg-white rounded-xl shadow p-4 text-center">
+        <h2 class="font-bold mb-2">Pague com PIX</h2>
+        <img th:src="${'data:image/png;base64,' + qrCode.encodedImage}" alt="QR Code PIX" class="mx-auto w-56 h-56">
+        <p class="text-xs text-gray-500 mt-2">PIX copia e cola:</p>
+        <textarea readonly class="w-full border rounded p-2 text-xs" rows="3" th:text="${qrCode.payload}"></textarea>
+        <p th:if="${qrCode.expirationDate != null}" class="text-xs text-gray-500"
+           th:text="${'Válido até ' + #temporals.format(qrCode.expirationDate, 'dd/MM/yyyy HH:mm')}"></p>
+    </section>
+
+    <!-- Boleto -->
+    <section th:if="${boleto != null}" class="mt-4 bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">Pague com boleto</h2>
+        <p class="text-xs text-gray-500">Linha digitável:</p>
+        <textarea readonly class="w-full border rounded p-2 text-sm font-mono" rows="2" th:text="${boleto.linhaDigitavel}"></textarea>
+        <p class="text-sm mt-2" th:if="${boleto.dataVencimento != null}"
+           th:text="${'Vencimento: ' + #temporals.format(boleto.dataVencimento, 'dd/MM/yyyy')}"></p>
+        <a th:if="${boleto.urlBoleto != null}" th:href="${boleto.urlBoleto}" target="_blank" rel="noopener"
+           class="inline-block mt-2 px-4 py-2 bg-gray-800 text-white rounded-xl text-sm">Abrir boleto (PDF)</a>
+    </section>
+
+    <!-- Cartão -->
+    <section th:if="${pedido.tipoPagamento != null and pedido.tipoPagamento.name() == 'CREDIT_CARD'}" class="mt-4 bg-white rounded-xl shadow p-4 text-sm">
+        <h2 class="font-bold mb-2">Cartão de crédito</h2>
+        <p th:if="${pedido.statusPagamento != null and pedido.statusPagamento.name() == 'CONFIRMADO'}">Pagamento aprovado. O pedido é liberado para envio quando a confirmação do Asaas chegar.</p>
+        <p th:if="${pedido.statusPagamento != null and pedido.statusPagamento.name() == 'PENDENTE'}">Pagamento em análise. A confirmação chega pelo Asaas.</p>
+    </section>
+
+    <div class="mt-6 flex gap-3">
+        <a th:href="@{/web/produtos}" class="px-4 py-2 bg-white border rounded-xl text-sm">Continuar comprando</a>
+    </div>
+</main>
+
+<div th:replace="~{fragments.html :: footer}"></div>
+</body>
+</html>

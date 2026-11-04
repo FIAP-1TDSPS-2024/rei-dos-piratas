@@ -45,7 +45,8 @@ public class PedidoDtoMapper {
                 pedido.getTipoPagamento(),
                 pagamento != null ? pagamento.getValorLiquido() : null,
                 pagamento != null ? pagamento.getIdCobranca() : null,
-                pagamento != null ? pagamento.getUrlBoleto() : null
+                pagamento != null ? pagamento.getUrlBoleto() : null,
+                pagamento != null ? pagamento.getStatus() : null
         );
     }
 

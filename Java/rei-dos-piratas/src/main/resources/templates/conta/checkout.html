@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar compra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<main class="max-w-screen-lg w-full mx-auto px-4 py-8 flex-1 space-y-6">
+    <h1 class="text-2xl font-black">Finalizar compra</h1>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
+
+    <!-- 1. Itens -->
+    <section class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">1. Itens</h2>
+        <ul class="text-sm divide-y">
+            <li th:each="item : ${carrinho.produtosAdicionados}" class="py-1 flex justify-between">
+                <span th:text="${item.quantidade + ' x ' + item.produto.nome}">1 x Produto</span>
+                <span th:text="${'R$ ' + #numbers.formatDecimal(item.subtotal(), 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+            </li>
+        </ul>
+        <p class="mt-2 text-right font-bold"
+           th:text="${'Itens: R$ ' + #numbers.formatDecimal(total, 1, 'POINT', 2, 'COMMA')}">Itens: R$ 0,00</p>
+    </section>
+
+    <!-- 2. Endereço -->
+    <section class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">2. Endereço de entrega</h2>
+        <form th:action="@{/web/conta/checkout}" method="get" class="space-y-2">
+            <label th:each="endereco : ${enderecos}" class="flex items-center gap-2 text-sm">
+                <input type="radio" name="enderecoId" th:value="${endereco.id}"
+                       th:checked="${enderecoId != null and enderecoId == endereco.id}" onchange="this.form.submit()">
+                <span th:text="${endereco.logradouro + ', ' + endereco.numero + ' - ' + endereco.bairro + ', '
+                        + endereco.cidade + '/' + endereco.estadoSigla + ' - CEP ' + endereco.cep}">Endereço</span>
+            </label>
+            <p th:if="${#lists.isEmpty(enderecos)}" class="text-sm text-gray-500">Nenhum endereço cadastrado.</p>
+        </form>
+
+        <details class="mt-3">
+            <summary class="cursor-pointer text-sm text-blue-700">Cadastrar novo endereço</summary>
+            <form th:action="@{/web/conta/enderecos}" method="post" class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 text-sm">
+                <input name="cep" placeholder="CEP (só números)" required class="border rounded px-2 py-1">
+                <input name="logradouro" placeholder="Logradouro" required class="border rounded px-2 py-1 sm:col-span-2">
+                <input name="numero" type="number" placeholder="Número" required class="border rounded px-2 py-1">
+                <input name="bairro" placeholder="Bairro" required class="border rounded px-2 py-1">
+                <input name="cidade" placeholder="Cidade" required class="border rounded px-2 py-1">
+                <input name="estadoNome" placeholder="Estado" required class="border rounded px-2 py-1">
+                <input name="estadoSigla" placeholder="UF" maxlength="2" required class="border rounded px-2 py-1">
+                <button type="submit" class="px-3 py-1 bg-gray-800 text-white rounded">Salvar endereço</button>
+            </form>
+        </details>
+    </section>
+
+    <!-- 3. Frete e pagamento -->
+    <section th:if="${enderecoId != null}" class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">3. Frete e pagamento</h2>
+        <p th:if="${#lists.isEmpty(opcoesFrete)}" class="text-sm text-gray-500">Nenhuma opção de frete disponível para este endereço.</p>
+
+        <form th:unless="${#lists.isEmpty(opcoesFrete)}" th:action="@{/web/conta/checkout}" method="post"
+              class="space-y-4" autocomplete="off">
+            <input type="hidden" name="enderecoId" th:value="${enderecoId}">
+
+            <fieldset class="space-y-1">
+                <legend class="text-sm font-semibold">Frete</legend>
+                <label th:each="opcao, i : ${opcoesFrete}" th:if="${opcao.price != null}" class="flex items-center gap-2 text-sm">
+                    <input type="radio" name="freteServiceId" th:value="${opcao.id}" th:checked="${i.first}" required>
+                    <span th:text="${(opcao.company != null ? opcao.company.name + ' ' : '') + opcao.name
+                            + ' - R$ ' + #numbers.formatDecimal(opcao.price, 1, 'POINT', 2, 'COMMA')
+                            + ' - até ' + opcao.deliveryTime + ' dia(s)'}">Correios SEDEX</span>
+                </label>
+            </fieldset>
+
+            <fieldset class="space-y-1">
+                <legend class="text-sm font-semibold">Pagamento</legend>
+                <label class="flex items-center gap-2 text-sm"><input type="radio" name="tipoPagamento" value="PIX" checked> PIX</label>
+                <label class="flex items-center gap-2 text-sm"><input type="radio" name="tipoPagamento" value="BOLETO"> Boleto</label>
+                <label class="flex items-center gap-2 text-sm"><input type="radio" name="tipoPagamento" value="CREDIT_CARD"> Cartão de crédito</label>
+            </fieldset>
+
+            <!-- Dados de cartão: não são gravados nem logados; ocultos no replay do Datadog -->
+            <fieldset class="space-y-2 border rounded-lg p-3" data-dd-privacy="hidden">
+                <legend class="text-sm font-semibold px-1">Cartão (só para pagamento com cartão)</legend>
+                <div th:unless="${#lists.isEmpty(cartoes)}" class="space-y-1">
+                    <label th:each="cartao : ${cartoes}" class="flex items-center gap-2 text-sm">
+                        <input type="radio" name="cartaoId" th:value="${cartao.id}">
+                        <span th:text="${cartao.bandeira + ' final ' + cartao.ultimosDigitos}">VISA final 1234</span>
+                    </label>
+                    <p class="text-xs text-gray-500">Ou preencha um cartão novo abaixo (deixe os cartões salvos desmarcados).</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-sm">
+                    <input name="titular" placeholder="Nome impresso no cartão" autocomplete="off" class="border rounded px-2 py-1 sm:col-span-2">
+                    <input name="numero" placeholder="Número" inputmode="numeric" autocomplete="off" class="border rounded px-2 py-1 sm:col-span-2">
+                    <input name="mesValidade" placeholder="Mês (MM)" maxlength="2" autocomplete="off" class="border rounded px-2 py-1">
+                    <input name="anoValidade" placeholder="Ano (AAAA)" maxlength="4" autocomplete="off" class="border rounded px-2 py-1">
+                    <input name="cvv" placeholder="CVV" maxlength="4" inputmode="numeric" autocomplete="off" class="border rounded px-2 py-1">
+                    <select name="parcelas" class="border rounded px-2 py-1">
+                        <option value="1">1x</option>
+                        <option value="2">2x</option>
+                        <option value="3">3x</option>
+                    </select>
+                </div>
+                <p class="text-xs text-gray-500">Parcelamento conforme a regra da loja (valor mínimo e máximo de parcelas).
+                    Sandbox: 4444 4444 4444 4444 aprova; 5184 0197 4037 3151 é recusado.</p>
+            </fieldset>
+
+            <button type="submit" class="px-5 py-2 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700">Confirmar pedido</button>
+        </form>
+    </section>
+</main>
+
+<div th:replace="~{fragments.html :: footer}"></div>
+</body>
+</html>

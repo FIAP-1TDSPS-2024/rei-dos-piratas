@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.web.IpDoComprador;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EstornoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeOutDto;
@@ -110,7 +111,7 @@ public class PedidoRestController {
     })
     @PostMapping()
     public ResponseEntity<PedidoOutDto> fazerPedido(@Valid @RequestBody PedidoInDto pedido, HttpServletRequest request) {
-        PedidoOutDto novoPedido = this.controller.fazerPedido(pedido, ipDoComprador(request));
+        PedidoOutDto novoPedido = this.controller.fazerPedido(pedido, IpDoComprador.de(request));
         return ResponseEntity.ok(novoPedido);
     }
 
@@ -162,17 +163,5 @@ public class PedidoRestController {
     public ResponseEntity<PedidoOutDto> cancelarPedido(@PathVariable Long id){
         PedidoOutDto pedido = this.controller.cancelarPedido(id);
         return ResponseEntity.ok(pedido);
-    }
-
-    /**
-     * IP do comprador, exigido pelo Asaas no pagamento com cartão. Atrás do load balancer,
-     * o endereço da conexão é o do balanceador: o IP original é o primeiro do X-Forwarded-For.
-     */
-    private String ipDoComprador(HttpServletRequest request) {
-        String encaminhado = request.getHeader("X-Forwarded-For");
-        if (encaminhado != null && !encaminhado.isBlank()) {
-            return encaminhado.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 }
