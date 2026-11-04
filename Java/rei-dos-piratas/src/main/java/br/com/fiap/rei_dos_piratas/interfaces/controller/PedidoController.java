@@ -5,6 +5,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EstornoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeOutDto;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface PedidoController {
     PedidoOutDto cancelarPedido(Long id);
     PixQrCodeOutDto obterQrCodeCobrancaPix(Long id);
     BoletoOutDto obterBoleto(Long id);
+
+    List<EstornoOutDto> listarEstornos(Long id);
 }

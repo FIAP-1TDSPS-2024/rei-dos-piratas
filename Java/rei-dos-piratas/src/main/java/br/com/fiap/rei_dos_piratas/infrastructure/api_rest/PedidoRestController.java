@@ -5,6 +5,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EstornoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -90,6 +91,16 @@ public class PedidoRestController {
     @GetMapping("/{id}/boleto")
     public ResponseEntity<BoletoOutDto> obterBoleto(@PathVariable("id") Long id) {
         return ResponseEntity.ok(this.controller.obterBoleto(id));
+    }
+
+    @Operation(summary = "Consultar estornos do pedido", description = "Lista os estornos do pagamento do pedido, com o link de dados bancários no estorno de boleto (só o dono do pedido ou funcionário)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estornos retornados (lista vazia se não houver)"),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
+    })
+    @GetMapping("/{id}/estornos")
+    public ResponseEntity<List<EstornoOutDto>> listarEstornos(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(this.controller.listarEstornos(id));
     }
 
     @Operation(summary = "Fazer pedido", description = "Finaliza itens e cria um novo pedido")

@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.application.service;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.DadosBoleto;
+import br.com.fiap.rei_dos_piratas.domain.entity.Estorno;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.PagamentoCartao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
@@ -31,5 +32,8 @@ public interface PedidoService {
     QrCodePix obterQrCodeCobrancaPix(Long id);
     /** Linha digitável, código de barras, URL e vencimento do boleto do pedido. */
     DadosBoleto obterBoleto(Long id);
+
+    /** Estornos do pagamento do pedido (só o dono do pedido ou funcionário). */
+    List<Estorno> listarEstornos(Long id);
     void processarEventoCobranca(Long pedidoId, EventoPagamento evento);
 }

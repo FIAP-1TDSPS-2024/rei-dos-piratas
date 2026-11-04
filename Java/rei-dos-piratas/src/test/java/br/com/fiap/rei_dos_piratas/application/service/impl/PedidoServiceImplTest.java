@@ -1748,4 +1748,40 @@ class PedidoServiceImplTest {
         verify(estornoPagamentoService).estornar(eq(1L), any(), any());
         verify(gatewayPagamento, never()).cancelarCobranca(any());
     }
+
+    // ---- Consulta dos estornos do pedido ----
+
+    @Test
+    void listarEstornos_DeveRetornarOsEstornosDoPagamentoDoPedido() {
+        // Arrange
+        Pedido pedido = pedidoAguardandoPagamento(TipoPagamentoEnum.PIX, 10);
+        pedido.getPagamento().setValor(new BigDecimal("221.19"));
+        pedido.getPagamento().setStatus(StatusPagamentoEnum.RECEBIDO);
+        Estorno estorno = pedido.getPagamento().solicitarEstorno(OrigemEstornoEnum.CANCELAMENTO, null, new BigDecimal("221.19"));
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+
+        // Act & Assert
+        assertThat(pedidoService.listarEstornos(1L)).containsExactly(estorno);
+    }
+
+    @Test
+    void listarEstornos_PedidoSemPagamentoDeveRetornarListaVazia() {
+        // Arrange
+        Pedido pedido = pedidoDoCliente(1L, criarCliente());
+        pedido.setPagamento(null);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+
+        // Act & Assert
+        assertThat(pedidoService.listarEstornos(1L)).isEmpty();
+    }
+
+    @Test
+    void listarEstornos_PedidoDeOutroClienteDeveLancarNaoEncontrado() {
+        // Arrange: os estornos são dados do pedido; só o dono ou funcionário vê
+        autenticarComo(TipoConta.CLIENTE, 99L);
+        when(pedidoRepository.findById(1L)).thenReturn(pedidoDoCliente(1L, criarCliente()));
+
+        // Act & Assert
+        assertThatThrownBy(() -> pedidoService.listarEstornos(1L)).isInstanceOf(ResourceNotFoundException.class);
+    }
 }

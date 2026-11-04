@@ -182,6 +182,20 @@ Aplicacao disponivel em `http://localhost:8080`.
   Respostas: 200 (processado, ou ignorado quando o corpo nao identifica um envio), 401 (assinatura
   ausente ou invalida) e 500 (falha ao processar; o evento nao e descartado em silencio).
 
+## Observacoes sobre estornos (Asaas)
+
+- Cancelamento (`PUT /pedidos/cancelamento/{id}`) de pedido ja pago estorna o valor total, frete incluido;
+  pedido ainda nao pago tem a cobranca cancelada no Asaas.
+- Devolucao: o estorno acontece quando o funcionario conclui a devolucao (`PUT /devolucoes/{id}/concluir`,
+  so com a devolucao `RETORNADO`). Valor: itens devolvidos pelo preco pago; no arrependimento do pedido
+  inteiro, tambem o frete de ida. O frete de volta e da loja.
+- PIX e cartao sao estornados pela API (cartao pode levar ate 10 dias uteis para aparecer na fatura).
+  Boleto: o Asaas gera um link para o cliente informar os dados bancarios.
+- `GET /pedidos/{id}/estornos` (dono do pedido ou funcionario): `origem`, `devolucao_id`, `valor`, `status`
+  (`SOLICITADO`, `EM_ANDAMENTO`, `AGUARDANDO_CLIENTE`, `CONCLUIDO`, `NEGADO`, `FALHOU`), `url_estorno_boleto`,
+  `data_solicitacao` e `data_conclusao`.
+- `FALHOU` (ex.: saldo insuficiente no Asaas para estornar PIX) precisa de acao manual.
+
 ## Observacoes sobre pagamento com boleto (Asaas)
 
 - Vencimento em `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` dias corridos (padrao `3`); o estoque fica reservado nesse periodo.
@@ -189,7 +203,7 @@ Aplicacao disponivel em `http://localhost:8080`.
 - `GET /pedidos/{id}/boleto` retorna `linha_digitavel`, `codigo_barras`, `url_boleto` e `data_vencimento`
   (dono do pedido ou funcionario). O JSON do pedido tambem traz `url_boleto`.
 - Cobranca vencida (boleto ou PIX) cancela o pedido e devolve o estoque. Pagamento recebido com o pedido ja
-  cancelado nao reativa o pedido: fica registrado e e sinalizado em log para estorno manual.
+  cancelado nao reativa o pedido: e estornado automaticamente.
 - Sandbox: `POST /v3/sandbox/payment/{id}/confirm` (API do Asaas) simula o pagamento do boleto.
 
 ## Observacao importante sobre etiquetas (Melhor Envio)

@@ -369,4 +369,23 @@ class PedidoRestControllerTest {
 
         verify(this.pedidoController).fazerPedido(any(PedidoInDto.class), eq("200.9.9.9"));
     }
+
+    @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
+    void listarEstornos_DeveRetornarOsEstornosEmSnakeCaseSemOMotivoDeFalha() throws Exception {
+        when(this.pedidoController.listarEstornos(1L)).thenReturn(java.util.List.of(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EstornoOutDto(
+                5L, br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum.DEVOLUCAO, 7L, new java.math.BigDecimal("45.90"),
+                br.com.fiap.rei_dos_piratas.domain.Enum.StatusEstornoEnum.AGUARDANDO_CLIENTE, "https://asaas/refund/abc",
+                java.time.LocalDateTime.of(2026, 11, 4, 10, 0), null)));
+
+        this.mockMvc.perform(get("/pedidos/{id}/estornos", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(5)))
+                .andExpect(jsonPath("$[0].origem", is("DEVOLUCAO")))
+                .andExpect(jsonPath("$[0].devolucao_id", is(7)))
+                .andExpect(jsonPath("$[0].valor", is(45.90)))
+                .andExpect(jsonPath("$[0].status", is("AGUARDANDO_CLIENTE")))
+                .andExpect(jsonPath("$[0].url_estorno_boleto", is("https://asaas/refund/abc")))
+                .andExpect(jsonPath("$[0].motivo_falha").doesNotExist());
+    }
 }

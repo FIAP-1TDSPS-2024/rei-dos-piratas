@@ -645,6 +645,13 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     @Override
+    public List<Estorno> listarEstornos(Long id) {
+        // findById valida o acesso: só o dono do pedido ou funcionário
+        Pedido pedido = this.findById(id);
+        return pedido.getPagamento() == null ? List.of() : List.copyOf(pedido.getPagamento().getEstornos());
+    }
+
+    @Override
     public DadosBoleto obterBoleto(Long id) {
         log.info("Consultando boleto do pedido ID={}", id);
         Pedido pedido = this.findById(id);

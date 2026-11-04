@@ -15,6 +15,8 @@ import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EstornoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.EstornoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PixQrCodeOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.PixQrCodeDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.BoletoDtoMapper;
@@ -139,6 +141,11 @@ public class PedidoControllerImpl implements PedidoController {
     @Override
     public PixQrCodeOutDto obterQrCodeCobrancaPix(Long id) {
         return PixQrCodeDtoMapper.toDto(this.service.obterQrCodeCobrancaPix(id));
+    }
+
+    @Override
+    public List<EstornoOutDto> listarEstornos(Long id) {
+        return this.service.listarEstornos(id).stream().map(EstornoDtoMapper::toDto).toList();
     }
 
     @Override
