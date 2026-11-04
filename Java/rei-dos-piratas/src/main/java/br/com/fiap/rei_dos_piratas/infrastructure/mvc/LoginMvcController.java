@@ -50,6 +50,12 @@ public class LoginMvcController {
         return "login";
     }
 
+    /** Cadastro de cliente; o envio é feito pelo web-auth.js para /web/auth/cadastro. */
+    @GetMapping("/web/cadastro")
+    public String cadastroPage() {
+        return "cadastro";
+    }
+
     /**
      * Logout web: revoga a sessao persistida e apaga os cookies.
      * Chamado pelo formulário <form method="post" action="/web/logout"> da navbar.

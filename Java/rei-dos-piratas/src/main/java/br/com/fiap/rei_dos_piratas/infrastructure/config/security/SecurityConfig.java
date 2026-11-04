@@ -75,7 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/produtos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/web/produtos", "/web/produtos/{id:[0-9]+}").permitAll()
                         // Autenticacao web publica; POSTs continuam protegidos por CSRF.
-                        .requestMatchers("/web/login", "/web/renovar", "/web/auth/**", "/assets/**").permitAll()
+                        .requestMatchers("/web/login", "/web/cadastro", "/web/renovar", "/web/auth/**", "/assets/**").permitAll()
                         // Logout web — precisa estar autenticado (o filtro extrai o token do cookie)
                         .requestMatchers("/web/logout").authenticated()
                         // Gerenciamento de carrinho

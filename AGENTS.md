@@ -267,7 +267,7 @@ Antes de corrigir, escreva um teste que **reproduz o bug e falha**. Só então c
 
 ## Front-end web (Thymeleaf)
 
-- Controllers MVC em `infrastructure/mvc` (só delegam aos controllers de `interfaces`), templates em `src/main/resources/templates` (área do cliente em `conta/`). Rotas: `/web/conta/**` só cliente (`ENDERECO_MANAGE`); `/web/pedidos/**` e `/web/devolucoes/**` funcionário (`PEDIDO_WRITE`); `/web/simulador/**` só com `APP_SIMULADOR_EVENTOS=true`.
+- Controllers MVC em `infrastructure/mvc` (só delegam aos controllers de `interfaces`), templates em `src/main/resources/templates` (área do cliente em `conta/`). Rotas: `/web/login` e `/web/cadastro` públicas (cadastro de cliente via `webAuth.cadastrar`); `/web/conta/**` só cliente (`ENDERECO_MANAGE`); `/web/pedidos/**` e `/web/devolucoes/**` funcionário (`PEDIDO_WRITE`); `/web/simulador/**` só com `APP_SIMULADOR_EVENTOS=true`.
 - Testes com `@WebMvcTest` renderizando o template real; permissões no `PermissoesIntegrationTest`.
 - Login web fora de HTTPS/`localhost` (ex.: VM de teste em `http://<IP>`): defina `AUTH_COOKIE_SECURE=false` (o navegador descarta cookie `Secure` em HTTP). Sem contexto seguro não há `navigator.locks`; o `web-auth.js` usa então um lease no `localStorage` (só id da aba e prazo, nunca tokens) para uma aba renovar por vez. Produção sempre em HTTPS com `AUTH_COOKIE_SECURE=true`.
 - Detalhes nos agentes `frontend-analista` e `frontend-desenvolvedor`.

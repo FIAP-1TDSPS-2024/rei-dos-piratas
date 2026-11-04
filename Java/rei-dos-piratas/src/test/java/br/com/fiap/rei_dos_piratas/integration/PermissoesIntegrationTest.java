@@ -136,6 +136,12 @@ class PermissoesIntegrationTest {
     }
 
     @Test
+    void paginaDeCadastroWebEhPublicaSemAbrirAAreaDoCliente() throws Exception {
+        mvc.perform(get("/web/cadastro").accept(MediaType.TEXT_HTML)).andExpect(status().isOk());
+        mvc.perform(get("/web/conta/pedidos").accept(MediaType.TEXT_HTML)).andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     void adminCriaProdutoEConsultaPedidosNaApi() throws Exception {
         mvc.perform(post("/produtos").header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON).content("""

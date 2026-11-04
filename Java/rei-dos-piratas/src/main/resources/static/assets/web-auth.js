@@ -108,6 +108,30 @@
         return operation();
     }
 
+    async function cadastrar(dados) {
+        const operation = async () => {
+            const token = await csrf();
+            const response = await request('/web/auth/cadastro', {
+                method: 'POST', credentials: 'same-origin', cache: 'no-store',
+                headers: { 'Content-Type': 'application/json', [token.headerName]: token.token },
+                body: JSON.stringify(dados)
+            });
+            if (!response.ok) throw new Error(await mensagemDeErro(response));
+        };
+        if (navigator.locks) return navigator.locks.request('rei-dos-piratas-auth', operation);
+        return operation();
+    }
+
+    async function mensagemDeErro(response) {
+        const generica = 'Não foi possível concluir o cadastro. Revise os dados e tente novamente.';
+        let corpo;
+        try { corpo = await response.json(); } catch (e) { return generica; }
+        if (!corpo || typeof corpo !== 'object') return generica;
+        if (typeof corpo.message === 'string') return corpo.message;
+        const mensagens = Object.values(corpo).filter(valor => typeof valor === 'string');
+        return mensagens.length ? mensagens.join(' ') : generica;
+    }
+
     async function authenticatedFetch(url, options = {}) {
         const target = new URL(url, location.origin);
         if (target.origin !== location.origin || !target.pathname.startsWith('/web/')) {
@@ -131,11 +155,11 @@
         return response;
     }
 
-    window.webAuth = { csrf, login, renew, fetch: authenticatedFetch };
+    window.webAuth = { csrf, login, cadastrar, renew, fetch: authenticatedFetch };
 
     document.addEventListener('submit', async event => {
         const form = event.target;
-        if (!(form instanceof HTMLFormElement) || form.id === 'loginForm'
+        if (!(form instanceof HTMLFormElement) || form.id === 'loginForm' || form.id === 'cadastroForm'
                 || form.method.toLowerCase() === 'get') return;
         const target = new URL(form.action, location.origin);
         if (target.origin !== location.origin || !target.pathname.startsWith('/web/')) return;

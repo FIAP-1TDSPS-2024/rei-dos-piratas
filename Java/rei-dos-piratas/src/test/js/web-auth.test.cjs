@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const path = require('node:path');
 const code = fs.readFileSync(path.join(__dirname, '../../main/resources/static/assets/web-auth.js'), 'utf8');
 
-function environment({ expired = true, locks = true, storage = false, refreshFailure = false, statuses = [200] } = {}) {
+function environment({ expired = true, locks = true, storage = false, refreshFailure = false, statuses = [200], cadastroResposta = null } = {}) {
     let expires = Date.now() + (expired ? -1000 : 900000);
     const calls = [];
     const queues = new Map();
@@ -30,6 +30,10 @@ function environment({ expired = true, locks = true, storage = false, refreshFai
             return { ok: true, status: 204 };
         }
         if (url === '/web/auth/login') return { ok: true, status: 204 };
+        if (url === '/web/auth/cadastro') {
+            const resposta = cadastroResposta || { status: 201, body: null };
+            return { ok: resposta.status < 400, status: resposta.status, json: async () => resposta.body };
+        }
         const status = statuses.shift() || 200;
         return { ok: status < 400, status };
     }
@@ -178,4 +182,41 @@ test('sem locks, nenhum token vai para o localStorage', async () => {
     await env.tab().renew();
     assert.ok(valores.length > 0);
     for (const valor of valores) assert.deepEqual(Object.keys(JSON.parse(valor)).sort(), ['ate', 'dono']);
+});
+
+// ---- Cadastro de cliente pela web ----
+
+const dadosCadastro = { user_name: 'cliente_web', nome_completo: 'Cliente Web', email: 'cliente@example.com',
+    senha: 'SenhaSegura123', data_nascimento: '1990-01-01', sexo: 'M', cpf: '52998224725', celular: '11987654321' };
+
+test('cadastro envia os dados em JSON com CSRF e cookies do servidor', async () => {
+    const env = environment({ expired: false });
+    await env.tab().cadastrar(dadosCadastro);
+    const cadastro = env.calls.find(call => call.url === '/web/auth/cadastro');
+    assert.equal(cadastro.options.method, 'POST');
+    assert.equal(cadastro.options.credentials, 'same-origin');
+    assert.equal(cadastro.options.headers['X-XSRF-TOKEN'], 'masked-csrf');
+    assert.deepEqual(JSON.parse(cadastro.options.body), dadosCadastro);
+});
+
+test('cadastro recusado mostra as mensagens de validacao do servidor', async () => {
+    const env = environment({ expired: false, cadastroResposta: { status: 400,
+        body: { cpf: 'CPF inválido', email: 'E-mail inválido' } } });
+    await assert.rejects(env.tab().cadastrar(dadosCadastro), error =>
+        error.message.includes('CPF inválido') && error.message.includes('E-mail inválido'));
+});
+
+test('cadastro recusado por regra mostra a mensagem do servidor', async () => {
+    const env = environment({ expired: false, cadastroResposta: { status: 400, body: { message: 'E-mail já cadastrado' } } });
+    await assert.rejects(env.tab().cadastrar(dadosCadastro), /E-mail já cadastrado/);
+});
+
+test('formulario de cadastro nao e interceptado pelo envio nativo autenticado', async () => {
+    const auth = environment().tab();
+    const form = new auth.testUi.Form();
+    form.id = 'cadastroForm';
+    let prevented = 0;
+    await auth.testUi.listeners.submit({ target: form, preventDefault() { prevented++; } });
+    assert.equal(prevented, 0);
+    assert.equal(form.submissions.length, 0);
 });

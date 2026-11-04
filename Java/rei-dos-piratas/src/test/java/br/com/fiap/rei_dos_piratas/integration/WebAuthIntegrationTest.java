@@ -168,6 +168,14 @@ class WebAuthIntegrationTest {
     }
 
     @Test
+    void paginaDeCadastroEhPublicaETemOFormularioDoCliente() throws Exception {
+        String pagina = mvc.perform(get("/web/cadastro").accept(MediaType.TEXT_HTML))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(pagina).contains("id=\"cadastroForm\"", "/assets/web-auth.js", "name=\"cpf\"",
+                "name=\"data_nascimento\"", "/web/login");
+    }
+
+    @Test
     void cadastroWebCriaSessaoComCookiesSemExporCredenciais() throws Exception {
         csrf();
         var result = executar(post("/web/auth/cadastro").header(csrfHeader, csrfToken)

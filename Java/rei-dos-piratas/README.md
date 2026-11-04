@@ -184,6 +184,8 @@ Aplicacao disponivel em `http://localhost:8080`.
 
 ## Telas web (Thymeleaf)
 
+- Publico: `/web/login` e `/web/cadastro` (criacao de conta de cliente; ao concluir ja entra logado).
+  Ainda nao ha recuperacao de senha.
 - Cliente (`/web/conta/**`, so perfil CLIENT): carrinho, checkout (endereco, frete, PIX/boleto/cartao),
   pagamento (QR Code PIX, linha digitavel do boleto, status do cartao), meus pedidos, cancelamento,
   estornos (com o link de dados bancarios do boleto) e pedido de devolucao.
