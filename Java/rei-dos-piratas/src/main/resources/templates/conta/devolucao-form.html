@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Devolução do pedido ' + pedido.id}">Devolução</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<main class="max-w-screen-md w-full mx-auto px-4 py-8 flex-1">
+    <h1 class="text-2xl font-black" th:text="${'Devolução do pedido #' + pedido.id}">Devolução</h1>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
+
+    <form th:action="@{/web/conta/pedidos/{id}/devolucao(id=${pedido.id})}" method="post" class="mt-4 bg-white rounded-xl shadow p-4 space-y-4">
+        <fieldset>
+            <legend class="font-semibold text-sm mb-1">Itens a devolver</legend>
+            <div th:each="item : ${pedido.produtosAdicionados}" class="flex items-center gap-3 text-sm py-1">
+                <input type="hidden" name="itemPedidoId" th:value="${item.itemPedidoId}">
+                <input type="number" name="quantidade" value="0" min="0" th:max="${item.quantidade}" class="w-16 border rounded px-2 py-1">
+                <span th:text="${item.produto.nome + ' (comprado: ' + item.quantidade + ')'}">Produto</span>
+            </div>
+        </fieldset>
+
+        <label class="block text-sm">
+            <span class="font-semibold">Motivo</span>
+            <select name="motivoId" required class="mt-1 w-full border rounded px-2 py-1">
+                <option th:each="motivo : ${motivos}" th:value="${motivo.id}" th:text="${motivo.descricao}">Motivo</option>
+            </select>
+        </label>
+
+        <label class="block text-sm">
+            <span class="font-semibold">Descrição (opcional)</span>
+            <textarea name="descricao" rows="3" class="mt-1 w-full border rounded px-2 py-1"></textarea>
+        </label>
+
+        <p class="text-xs text-gray-500">O reembolso é feito quando a loja recebe e confere os itens: o valor dos itens pagos e,
+            na desistência do pedido inteiro, também o frete. O frete de devolução é por conta da loja.</p>
+
+        <div class="flex gap-2">
+            <button type="submit" class="px-4 py-2 bg-yellow-400 font-bold rounded-xl">Solicitar devolução</button>
+            <a th:href="@{/web/conta/pedidos/{id}(id=${pedido.id})}" class="px-4 py-2 bg-white border rounded-xl text-sm">Voltar</a>
+        </div>
+    </form>
+</main>
+
+<div th:replace="~{fragments.html :: footer}"></div>
+</body>
+</html>

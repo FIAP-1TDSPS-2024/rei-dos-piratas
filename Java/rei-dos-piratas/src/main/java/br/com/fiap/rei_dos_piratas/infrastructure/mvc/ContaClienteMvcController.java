@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mvc;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.infrastructure.web.IpDoComprador;
@@ -37,9 +38,12 @@ public class ContaClienteMvcController {
     private final CartaoClienteController cartoes;
     private final FreteController frete;
     private final PedidoController pedidos;
+    private final DevolucaoController devolucoes;
 
     public ContaClienteMvcController(CarrinhoController carrinho, EnderecoController enderecos,
-                                     CartaoClienteController cartoes, FreteController frete, PedidoController pedidos) {
+                                     CartaoClienteController cartoes, FreteController frete, PedidoController pedidos,
+                                     DevolucaoController devolucoes) {
+        this.devolucoes = devolucoes;
         this.carrinho = carrinho;
         this.enderecos = enderecos;
         this.cartoes = cartoes;
@@ -167,6 +171,74 @@ public class ContaClienteMvcController {
             model.addAttribute("errorMessage", "Não foi possível carregar os dados do pagamento agora: " + MensagemWeb.de(e));
         }
         return "conta/pagamento";
+    }
+
+    // ─── MEUS PEDIDOS ────────────────────────────────────────────────────────
+
+    @GetMapping("/pedidos")
+    public String meusPedidos(@RequestParam(defaultValue = "0") int pageNumber,
+                              @RequestParam(defaultValue = "10") int pageSize, Model model) {
+        var pagina = this.pedidos.findAllByCliente(pageNumber, pageSize);
+        model.addAttribute("pedidos", pagina.pageItems());
+        model.addAttribute("pageNumber", pageNumber);
+        model.addAttribute("totalPages", pagina.numberOfPages());
+        return "conta/pedidos";
+    }
+
+    /** findById valida que o pedido é do cliente logado; as devoluções só são buscadas depois disso. */
+    @GetMapping("/pedidos/{id}")
+    public String detalhePedido(@PathVariable Long id, Model model) {
+        PedidoOutDto pedido = this.pedidos.findById(id);
+        List<DevolucaoOutDto> devolucoesDoPedido = this.devolucoes.findAllByPedidoId(id);
+        model.addAttribute("pedido", pedido);
+        model.addAttribute("estornos", this.pedidos.listarEstornos(id));
+        model.addAttribute("devolucoes", devolucoesDoPedido);
+        // Só decide quais botões aparecem; as regras continuam validadas no serviço
+        model.addAttribute("podeCancelar", pedido.status() == StatusEnum.AGUARDANDO_PAGAMENTO
+                || pedido.status() == StatusEnum.PREPARANDO_ENVIO);
+        model.addAttribute("podeDevolver", pedido.status() == StatusEnum.ENTREGUE && devolucoesDoPedido.stream()
+                .allMatch(d -> d.status() == StatusDevolucaoEnum.CANCELADO || d.status() == StatusDevolucaoEnum.RETORNADO));
+        return "conta/pedido-detalhes";
+    }
+
+    @PostMapping("/pedidos/{id}/cancelar")
+    public String cancelar(@PathVariable Long id, RedirectAttributes redirect) {
+        return executar(redirect, "redirect:/web/conta/pedidos/" + id,
+                "Pedido cancelado. Se já estava pago, o estorno foi solicitado.", () -> this.pedidos.cancelarPedido(id));
+    }
+
+    @GetMapping("/pedidos/{id}/devolucao")
+    public String formularioDevolucao(@PathVariable Long id, Model model) {
+        model.addAttribute("pedido", this.pedidos.findById(id));
+        model.addAttribute("motivos", this.devolucoes.listarMotivos());
+        return "conta/devolucao-form";
+    }
+
+    /** {@code itemPedidoId} e {@code quantidade} vêm na mesma ordem; itens com quantidade 0 ficam de fora. */
+    @PostMapping("/pedidos/{id}/devolucao")
+    public String solicitarDevolucao(@PathVariable Long id, @RequestParam Long motivoId,
+                                     @RequestParam(required = false) String descricao,
+                                     @RequestParam List<Long> itemPedidoId, @RequestParam List<Integer> quantidade,
+                                     RedirectAttributes redirect) {
+        List<ItemDevolucaoInDto> itens = new java.util.ArrayList<>();
+        for (int i = 0; i < itemPedidoId.size() && i < quantidade.size(); i++) {
+            if (quantidade.get(i) != null && quantidade.get(i) > 0) {
+                itens.add(new ItemDevolucaoInDto(itemPedidoId.get(i), quantidade.get(i)));
+            }
+        }
+        String formulario = "redirect:/web/conta/pedidos/" + id + "/devolucao";
+        if (itens.isEmpty()) {
+            redirect.addFlashAttribute("errorMessage", "Informe a quantidade de ao menos um item para devolver.");
+            return formulario;
+        }
+        try {
+            this.devolucoes.solicitarDevolucao(new DevolucaoInDto(id, motivoId, descricao, itens));
+            redirect.addFlashAttribute("successMessage", "Devolução solicitada. Acompanhe o andamento por aqui.");
+            return "redirect:/web/conta/pedidos/" + id;
+        } catch (RuntimeException e) {
+            redirect.addFlashAttribute("errorMessage", MensagemWeb.de(e));
+            return formulario;
+        }
     }
 
     // ─── AUXILIARES ──────────────────────────────────────────────────────────

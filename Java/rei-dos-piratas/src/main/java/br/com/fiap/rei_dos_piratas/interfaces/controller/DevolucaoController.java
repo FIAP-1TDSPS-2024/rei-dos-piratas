@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.DevolucaoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.DevolucaoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.MotivoDevolucaoOutDto;
 
 import java.util.List;
 import java.util.Map;
@@ -19,5 +20,7 @@ public interface DevolucaoController {
     String organizarDevolucoesParaEnvio(List<Long> devolucoes);
     DevolucaoOutDto recusarDevolucao(Long id);
     DevolucaoOutDto concluirDevolucao(Long id);
+
+    List<MotivoDevolucaoOutDto> listarMotivos();
 }
 

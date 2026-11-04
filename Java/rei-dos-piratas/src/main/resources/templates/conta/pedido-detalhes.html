@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Pedido ' + pedido.id}">Pedido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<main class="max-w-screen-lg w-full mx-auto px-4 py-8 flex-1 space-y-4">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-black" th:text="${'Pedido #' + pedido.id}">Pedido</h1>
+        <a th:href="@{/web/conta/pedidos}" class="text-sm text-blue-700">← Meus pedidos</a>
+    </div>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
+
+    <!-- Resumo e pagamento -->
+    <section class="bg-white rounded-xl shadow p-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+        <p>Status: <span th:replace="~{fragments.html :: status-badge(${pedido.status.name()})}"></span></p>
+        <p>Data: <span th:text="${#temporals.format(pedido.dataPedido, 'dd/MM/yyyy')}"></span></p>
+        <p>Pagamento: <span class="font-semibold" th:text="${pedido.tipoPagamento + ' · ' + pedido.statusPagamento}">PIX · PENDENTE</span></p>
+        <p>Total: <span class="font-bold" th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+            <span class="text-gray-500" th:if="${pedido.valorFrete != null}"
+                  th:text="${'(frete R$ ' + #numbers.formatDecimal(pedido.valorFrete, 1, 'POINT', 2, 'COMMA') + ')'}"></span></p>
+        <p class="sm:col-span-2">Entrega: <span th:text="${pedido.enderecoEntrega}"></span></p>
+        <p th:if="${pedido.tracking != null}">Rastreio:
+            <a th:if="${pedido.trackingUrl != null}" th:href="${pedido.trackingUrl}" target="_blank" rel="noopener"
+               class="text-blue-700 underline" th:text="${pedido.tracking}"></a>
+            <span th:unless="${pedido.trackingUrl != null}" th:text="${pedido.tracking}"></span>
+            <span class="text-gray-500" th:text="${pedido.statusEnvio != null ? '(' + pedido.statusEnvio + ')' : ''}"></span></p>
+        <p th:if="${pedido.dataEntrega != null}">Entregue em: <span th:text="${#temporals.format(pedido.dataEntrega, 'dd/MM/yyyy')}"></span></p>
+        <div class="sm:col-span-2 flex flex-wrap gap-2 mt-2">
+            <a th:if="${pedido.status.name() == 'AGUARDANDO_PAGAMENTO'}" th:href="@{/web/conta/pedidos/{id}/pagamento(id=${pedido.id})}"
+               class="px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-bold">Ver dados de pagamento</a>
+            <form th:if="${podeCancelar}" th:action="@{/web/conta/pedidos/{id}/cancelar(id=${pedido.id})}" method="post"
+                  onsubmit="return confirm('Cancelar o pedido? Se já foi pago, o valor será estornado.');">
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold">Cancelar pedido</button>
+            </form>
+            <a th:if="${podeDevolver}" th:href="@{/web/conta/pedidos/{id}/devolucao(id=${pedido.id})}"
+               class="px-4 py-2 bg-yellow-400 rounded-xl text-sm font-bold">Solicitar devolução</a>
+        </div>
+    </section>
+
+    <!-- Itens -->
+    <section class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">Itens</h2>
+        <ul class="text-sm divide-y">
+            <li th:each="item : ${pedido.produtosAdicionados}" class="py-1 flex justify-between">
+                <span th:text="${item.quantidade + ' x ' + item.produto.nome}">1 x Produto</span>
+                <span th:text="${'R$ ' + #numbers.formatDecimal(item.subtotal(), 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Estornos -->
+    <section th:unless="${#lists.isEmpty(estornos)}" class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">Estornos</h2>
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-gray-500"><th>Origem</th><th>Valor</th><th>Status</th><th>Solicitado em</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="estorno : ${estornos}" class="border-t">
+                <td th:text="${estorno.origem}">CANCELAMENTO</td>
+                <td th:text="${'R$ ' + #numbers.formatDecimal(estorno.valor, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+                <td class="font-semibold" th:text="${estorno.status}">SOLICITADO</td>
+                <td th:text="${#temporals.format(estorno.dataSolicitacao, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <a th:if="${estorno.urlEstornoBoleto != null}" th:href="${estorno.urlEstornoBoleto}" target="_blank" rel="noopener"
+                       class="text-blue-700 underline">Informar dados bancários</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Devoluções -->
+    <section th:unless="${#lists.isEmpty(devolucoes)}" class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">Devoluções</h2>
+        <div th:each="devolucao : ${devolucoes}" class="border-t py-2 text-sm">
+            <p><span class="font-semibold" th:text="${'Devolução #' + devolucao.id}"></span> ·
+                <span th:text="${devolucao.status}">EM_ANALISE</span> ·
+                <span th:text="${devolucao.motivoDescricao}"></span></p>
+            <ul class="text-gray-600">
+                <li th:each="item : ${devolucao.itens}" th:text="${item.quantidade + ' x ' + item.produtoNome}"></li>
+            </ul>
+            <p th:if="${devolucao.tracking != null}">Rastreio do retorno: <span th:text="${devolucao.tracking}"></span></p>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments.html :: footer}"></div>
+</body>
+</html>

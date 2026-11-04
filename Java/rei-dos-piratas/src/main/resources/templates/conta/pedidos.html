@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus pedidos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<main class="max-w-screen-lg w-full mx-auto px-4 py-8 flex-1">
+    <h1 class="text-2xl font-black mb-2">Meus pedidos</h1>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
+
+    <p th:if="${#lists.isEmpty(pedidos)}" class="mt-6 bg-white rounded-xl shadow p-8 text-center text-gray-600">
+        Você ainda não fez pedidos.</p>
+
+    <div th:unless="${#lists.isEmpty(pedidos)}" class="mt-6 bg-white rounded-xl shadow divide-y">
+        <a th:each="pedido : ${pedidos}" th:href="@{/web/conta/pedidos/{id}(id=${pedido.id})}"
+           class="p-4 flex items-center justify-between hover:bg-gray-50">
+            <div>
+                <p class="font-semibold" th:text="${'Pedido #' + pedido.id}">Pedido #1</p>
+                <p class="text-xs text-gray-500" th:text="${#temporals.format(pedido.dataPedido, 'dd/MM/yyyy') + ' · ' + pedido.tipoPagamento}">01/01/2026 · PIX</p>
+            </div>
+            <div class="text-right">
+                <span th:replace="~{fragments.html :: status-badge(${pedido.status.name()})}"></span>
+                <p class="text-sm font-bold mt-1"
+                   th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</p>
+            </div>
+        </a>
+    </div>
+
+    <div th:if="${totalPages > 1}" class="mt-4 flex gap-2 text-sm">
+        <a th:if="${pageNumber > 0}" th:href="@{/web/conta/pedidos(pageNumber=${pageNumber - 1})}" class="px-3 py-1 bg-white rounded border">Anterior</a>
+        <a th:if="${pageNumber + 1 < totalPages}" th:href="@{/web/conta/pedidos(pageNumber=${pageNumber + 1})}" class="px-3 py-1 bg-white rounded border">Próxima</a>
+    </div>
+</main>
+
+<div th:replace="~{fragments.html :: footer}"></div>
+</body>
+</html>

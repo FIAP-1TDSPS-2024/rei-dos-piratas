@@ -53,6 +53,7 @@ class ContaClienteMvcControllerTest {
     @MockBean CartaoClienteController cartoes;
     @MockBean FreteController frete;
     @MockBean PedidoController pedidos;
+    @MockBean DevolucaoController devolucoes;
 
     private final ProdutoOutDto manga = new ProdutoOutDto(7L, "One Piece Vol. 1", "Volume 1", "Eiichiro Oda",
             CategoriaEnum.AVENTURA, "https://example.com/op1.jpg", new BigDecimal("45.90"), new BigDecimal("45.90"),
@@ -276,6 +277,129 @@ class ContaClienteMvcControllerTest {
                 .andExpect(content().string(not(containsString("data:image/png;base64"))));
         verify(pedidos, never()).obterQrCodeCobrancaPix(any());
         verify(pedidos, never()).obterBoleto(any());
+    }
+
+
+    // ---- Meus pedidos, cancelamento e devolução ----
+
+    private DevolucaoOutDto devolucao(StatusDevolucaoEnum status) {
+        return new DevolucaoOutDto(4L, 10L, 1L, "ARREPENDIMENTO", "Desisti da compra", null,
+                List.of(new ItemDevolucaoOutDto(1L, 31L, 7L, "One Piece Vol. 1", 1, new BigDecimal("45.90"))),
+                new BigDecimal("45.90"), null, status, LocalDate.now(), null, null, null, null, null, null, null, null, null);
+    }
+
+    @Test
+    void meusPedidosDeveListarOsPedidosDoCliente() throws Exception {
+        when(pedidos.findAllByCliente(0, 10)).thenReturn(new Page<>(1, 0,
+                List.of(pedido(TipoPagamentoEnum.PIX, StatusEnum.AGUARDANDO_PAGAMENTO, StatusPagamentoEnum.PENDENTE))));
+
+        mvc.perform(get("/web/conta/pedidos"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("conta/pedidos"))
+                .andExpect(content().string(containsString("/web/conta/pedidos/10")));
+    }
+
+    @Test
+    void detalheDoPedidoDeveMostrarPagamentoEstornosEDevolucoes() throws Exception {
+        // Arrange
+        when(pedidos.findById(10L)).thenReturn(pedido(TipoPagamentoEnum.BOLETO, StatusEnum.CANCELADO, StatusPagamentoEnum.RECEBIDO));
+        when(pedidos.listarEstornos(10L)).thenReturn(List.of(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EstornoOutDto(
+                5L, OrigemEstornoEnum.CANCELAMENTO, null, new BigDecimal("113.00"), StatusEstornoEnum.AGUARDANDO_CLIENTE,
+                "https://asaas/refund/abc", LocalDateTime.now(), null)));
+        when(devolucoes.findAllByPedidoId(10L)).thenReturn(List.of());
+
+        // Act & Assert
+        mvc.perform(get("/web/conta/pedidos/10"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("conta/pedido-detalhes"))
+                .andExpect(content().string(containsString("AGUARDANDO_CLIENTE")))
+                .andExpect(content().string(containsString("https://asaas/refund/abc")));
+    }
+
+    @Test
+    void pedidoAindaNaoEnviadoDeveOferecerCancelamentoESemDevolucao() throws Exception {
+        when(pedidos.findById(10L)).thenReturn(pedido(TipoPagamentoEnum.PIX, StatusEnum.PREPARANDO_ENVIO, StatusPagamentoEnum.RECEBIDO));
+
+        mvc.perform(get("/web/conta/pedidos/10"))
+                .andExpect(content().string(containsString("/web/conta/pedidos/10/cancelar")))
+                .andExpect(content().string(not(containsString("/web/conta/pedidos/10/devolucao"))));
+    }
+
+    @Test
+    void pedidoEntregueSemDevolucaoAtivaDeveOferecerDevolucao() throws Exception {
+        when(pedidos.findById(10L)).thenReturn(pedido(TipoPagamentoEnum.PIX, StatusEnum.ENTREGUE, StatusPagamentoEnum.RECEBIDO));
+
+        mvc.perform(get("/web/conta/pedidos/10"))
+                .andExpect(content().string(containsString("/web/conta/pedidos/10/devolucao")))
+                .andExpect(content().string(not(containsString("/web/conta/pedidos/10/cancelar"))));
+    }
+
+    @Test
+    void cancelarDeveDelegarEVoltarAoDetalhe() throws Exception {
+        mvc.perform(post("/web/conta/pedidos/10/cancelar"))
+                .andExpect(redirectedUrl("/web/conta/pedidos/10"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        verify(pedidos).cancelarPedido(10L);
+    }
+
+    @Test
+    void cancelarPedidoJaEnviadoDeveMostrarAMensagem() throws Exception {
+        when(pedidos.cancelarPedido(10L)).thenThrow(new br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException(
+                "O pedido já foi tramitado. Para fazer o cancelamento, deve ser solicitada uma devolução."));
+
+        mvc.perform(post("/web/conta/pedidos/10/cancelar"))
+                .andExpect(redirectedUrl("/web/conta/pedidos/10"))
+                .andExpect(flash().attribute("errorMessage",
+                        "O pedido já foi tramitado. Para fazer o cancelamento, deve ser solicitada uma devolução."));
+    }
+
+    @Test
+    void formularioDeDevolucaoDeveListarMotivosEItensDoPedido() throws Exception {
+        when(pedidos.findById(10L)).thenReturn(pedido(TipoPagamentoEnum.PIX, StatusEnum.ENTREGUE, StatusPagamentoEnum.RECEBIDO));
+        when(devolucoes.listarMotivos()).thenReturn(List.of(new MotivoDevolucaoOutDto(1L, "ARREPENDIMENTO", "Desisti da compra", true)));
+
+        mvc.perform(get("/web/conta/pedidos/10/devolucao"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("conta/devolucao-form"))
+                .andExpect(content().string(containsString("Desisti da compra")))
+                .andExpect(content().string(containsString("value=\"31\"")));
+    }
+
+    @Test
+    void solicitarDevolucaoDeveEnviarSoOsItensComQuantidade() throws Exception {
+        // Arrange
+        when(devolucoes.solicitarDevolucao(any())).thenReturn(devolucao(StatusDevolucaoEnum.EM_ANALISE));
+
+        // Act
+        mvc.perform(post("/web/conta/pedidos/10/devolucao").param("motivoId", "1").param("descricao", "Veio amassado")
+                        .param("itemPedidoId", "31", "32").param("quantidade", "1", "0"))
+                .andExpect(redirectedUrl("/web/conta/pedidos/10"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        // Assert
+        verify(devolucoes).solicitarDevolucao(new DevolucaoInDto(10L, 1L, "Veio amassado", List.of(new ItemDevolucaoInDto(31L, 1))));
+    }
+
+    @Test
+    void solicitarDevolucaoSemItensNaoDeveChamarOServico() throws Exception {
+        mvc.perform(post("/web/conta/pedidos/10/devolucao").param("motivoId", "1")
+                        .param("itemPedidoId", "31").param("quantidade", "0"))
+                .andExpect(redirectedUrl("/web/conta/pedidos/10/devolucao"))
+                .andExpect(flash().attributeExists("errorMessage"));
+
+        verifyNoInteractions(devolucoes);
+    }
+
+    @Test
+    void devolucaoRecusadaPelaRegraDeveVoltarAoFormularioComAMensagem() throws Exception {
+        when(devolucoes.solicitarDevolucao(any())).thenThrow(new br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException(
+                "Não é possível solicitar novas devoluções se há uma devolução ativa"));
+
+        mvc.perform(post("/web/conta/pedidos/10/devolucao").param("motivoId", "1")
+                        .param("itemPedidoId", "31").param("quantidade", "1"))
+                .andExpect(redirectedUrl("/web/conta/pedidos/10/devolucao"))
+                .andExpect(flash().attribute("errorMessage", "Não é possível solicitar novas devoluções se há uma devolução ativa"));
     }
 
     private static org.hamcrest.Matcher<java.util.Collection<?>> hasSize(int tamanho) {

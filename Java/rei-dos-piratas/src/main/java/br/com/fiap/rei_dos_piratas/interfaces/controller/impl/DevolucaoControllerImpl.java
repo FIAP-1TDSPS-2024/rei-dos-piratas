@@ -15,6 +15,7 @@ import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.DevolucaoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.DevolucaoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.DevolucaoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.DevolucaoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.MotivoDevolucaoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemDevolucaoInDto;
 
 import java.util.Collections;
@@ -131,5 +132,11 @@ public class DevolucaoControllerImpl implements DevolucaoController {
     public DevolucaoOutDto concluirDevolucao(Long id) {
         return DevolucaoDtoMapper.toDto(service.concluirDevolucao(id));
     }
-}
 
+    @Override
+    public List<MotivoDevolucaoOutDto> listarMotivos() {
+        return this.motivoDevolucaoService.findAll().stream()
+                .map(motivo -> new MotivoDevolucaoOutDto(motivo.getId(), motivo.getCodigo(), motivo.getDescricao(), motivo.getArrependimento()))
+                .toList();
+    }
+}
