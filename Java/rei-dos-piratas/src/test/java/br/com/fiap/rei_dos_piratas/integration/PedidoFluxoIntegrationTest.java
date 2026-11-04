@@ -5,11 +5,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.*;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.repository.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.*;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.*;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -50,6 +46,7 @@ class PedidoFluxoIntegrationTest {
     @Autowired PedidoRepository pedidoRepo;
     @Autowired DevolucaoRepository devolucaoRepo;
     @MockBean FreteService fretes;
+    @MockBean br.com.fiap.rei_dos_piratas.domain.gateway.GatewayFrete envios;
     @MockBean br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.CobrancaAppClient cobranca;
     TransactionTemplate tx;
     final UUID ida = UUID.fromString("123e4567-e89b-12d3-a456-426614174010");
@@ -96,18 +93,12 @@ class PedidoFluxoIntegrationTest {
                 null,null,null,null,null,statusAsaas(inv.getArgument(0)),null,null,null,null,null,null,null,null,
                 null,null,null,null,null,null,null,"https://sandbox.asaas.com/b/pdf/pay_00000"+proximaCobranca.getAndIncrement(),null,null));
         when(fretes.calcularFreteProdutos(anyString(), anyList())).thenReturn(List.of(
-                new FreteServiceDto(1L,"Entrega",new BigDecimal("10.25"),null,null,"BRL",3,null)));
-        when(fretes.criarPedidoFrete(any())).thenReturn(new PedidoFreteResponseDto(
-                ida,"PROTOCOLO-IDA",1,null,null,new BigDecimal("10.25"),null,2,3,"pending",false,
-                LocalDateTime.now(),LocalDateTime.now()));
-        when(fretes.organizarFretes(anyList())).thenReturn(new CompraFreteResponseDto(null,null,null,null,null,null,null));
-        var etiquetas = new GeracaoEtiquetasResponseDto();
-        etiquetas.setPedido(ida.toString(),new StatusPedidoEtiqueta("OK",true));
-        when(fretes.gerarEtiquetasPedidoFrete(anyList())).thenReturn(etiquetas);
-        when(fretes.imprimirEtiquetasPedidoFrete(anyList())).thenReturn(new ImpressaoEtiquetasResponseDto("https://example.com/etiquetas"));
-        when(fretes.criarPedidoDevolucaoFrete(any())).thenReturn(new DevolucaoFreteResponseDto(
-                volta,"PROTOCOLO-VOLTA",1,null,new BigDecimal("12.35"),null,2,3,"pending",
-                LocalDateTime.now(),LocalDateTime.now(),1));
+                new br.com.fiap.rei_dos_piratas.domain.gateway.OpcaoFrete(1L,"Entrega",new BigDecimal("10.25"),null,null,"BRL",3,null)));
+        when(envios.criarEnvio(any())).thenReturn(new br.com.fiap.rei_dos_piratas.domain.gateway.EnvioCriado(ida,"PROTOCOLO-IDA",new BigDecimal("10.25"),3));
+        when(envios.comprarEnvios(anyList())).thenReturn(new br.com.fiap.rei_dos_piratas.domain.gateway.ResultadoCompraEnvios(null));
+        when(envios.gerarEtiquetas(anyList())).thenReturn(Map.of(ida,new br.com.fiap.rei_dos_piratas.domain.gateway.ResultadoEtiqueta(true,"OK")));
+        when(envios.obterLinkImpressao(anyList())).thenReturn("https://example.com/etiquetas");
+        when(envios.criarEnvioReverso(any())).thenReturn(new br.com.fiap.rei_dos_piratas.domain.gateway.EnvioCriado(volta,"PROTOCOLO-VOLTA",new BigDecimal("12.35"),3));
     }
 
     @AfterEach
@@ -249,7 +240,7 @@ class PedidoFluxoIntegrationTest {
     @Test
     void falhaDeFreteMantemPedidoAguardandoPagamento() {
         var pedido = criar();
-        when(fretes.criarPedidoFrete(any())).thenThrow(new IllegalStateException("Frete indisponivel"));
+        when(envios.criarEnvio(any())).thenThrow(new IllegalStateException("Frete indisponivel"));
         assertThatThrownBy(() -> pedidos.pagarPedido(pedido.getId())).isInstanceOf(IllegalStateException.class);
         var salvo = pedidos.findById(pedido.getId());
         assertThat(salvo.getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);

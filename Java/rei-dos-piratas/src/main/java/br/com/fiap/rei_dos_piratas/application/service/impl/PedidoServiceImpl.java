@@ -22,10 +22,6 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.domain.gateway.*;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +48,7 @@ public class PedidoServiceImpl implements PedidoService {
     private final DadosEmpresaRepository dadosEmpresaRepository;
 
     private final FreteService freteService;
+    private final GatewayFrete gatewayFrete;
 
     private final ClienteService clienteService;
 
@@ -63,7 +60,7 @@ public class PedidoServiceImpl implements PedidoService {
     private final RegraBoleto regraBoleto;
     private final ExecutorTransacional executorTransacional;
 
-    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, GatewayPagamento gatewayPagamento, UsuarioAtualService usuarioAtual,
+    public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, GatewayFrete gatewayFrete, ClienteService clienteService, GatewayPagamento gatewayPagamento, UsuarioAtualService usuarioAtual,
                              CartaoService cartaoService, RegraParcelamento regraParcelamento, RegraBoleto regraBoleto,
                              ExecutorTransacional executorTransacional) {
         this.cartaoService = cartaoService;
@@ -76,6 +73,7 @@ public class PedidoServiceImpl implements PedidoService {
         this.enderecoService = enderecoService;
         this.dadosEmpresaRepository = dadosEmpresaRepository;
         this.freteService = freteService;
+        this.gatewayFrete = gatewayFrete;
         this.clienteService = clienteService;
         this.gatewayPagamento = gatewayPagamento;
     }
@@ -271,13 +269,13 @@ public class PedidoServiceImpl implements PedidoService {
         log.debug("Consultando fretes disponíveis para CEP={} com {} produto(s)",
                 pedido.getEnderecoEntrega().getCep(), pedido.getProdutosAdicionados().size());
 
-        List<FreteServiceDto> fretes = this.freteService.calcularFreteProdutos(
+        List<OpcaoFrete> fretes = this.freteService.calcularFreteProdutos(
                 pedido.getEnderecoEntrega().getCep(),
                 pedido.getProdutosAdicionados());
 
         log.debug("API de frete retornou {} opção(ões) de entrega", fretes.size());
 
-        Optional<FreteServiceDto> consultaFrete = fretes
+        Optional<OpcaoFrete> consultaFrete = fretes
                 .stream()
                 .filter(frete -> frete.id().equals(pedido.getServicoEntrega()))
                 .findFirst();
@@ -287,7 +285,7 @@ public class PedidoServiceImpl implements PedidoService {
             throw new ResourceNotFoundException("Esse serviço de entrega não existe para esse serviço");
         }
 
-        pedido.setValorFrete(consultaFrete.get().price());
+        pedido.setValorFrete(consultaFrete.get().preco());
         pedido.setValorTotal(calcularValorTotalPedido(pedido));
 
         if (pedido.getPagamento() != null) {
@@ -350,14 +348,13 @@ public class PedidoServiceImpl implements PedidoService {
             pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
             log.debug("Status do pedido ID={} atualizado para PREPARANDO_ENVIO, criando pedido de frete na API", id);
 
-            PedidoFreteRequestDto pedidoFrete = this.montarPedidoFreteDto(pedido);
-            log.debug("Enviando pedido de frete para API — serviço ID={}, destino CEP={}", pedido.getServicoEntrega(), pedido.getEnderecoEntrega().getCep());
-
-            PedidoFreteResponseDto responsePedidoFrete = this.freteService.criarPedidoFrete(pedidoFrete);
+            SolicitacaoEnvio solicitacao = SolicitacaoEnvio.para(
+                    pedido, this.enderecoService.getEnderecoEmpresa(), this.dadosEmpresaRepository.get());
+            EnvioCriado envio = this.gatewayFrete.criarEnvio(solicitacao);
             log.info("Pedido de frete criado com sucesso — pedidoFrete UUID={}, previsão de entrega em {} dias",
-                    responsePedidoFrete.id(), responsePedidoFrete.deliveryMax());
+                    envio.id(), envio.prazoMaximoDias());
 
-            pedido = this.enriquecerPedidoPorFrete(pedido, responsePedidoFrete);
+            pedido = this.enriquecerPedidoPorFrete(pedido, envio);
             Pedido pedidoAtualizado = this.repository.update(pedido);
             log.info("Pedido ID={} pago e enriquecido com dados de frete com sucesso", id);
         } else {
@@ -380,26 +377,22 @@ public class PedidoServiceImpl implements PedidoService {
 
         log.debug("{} pedido(s) elegível(is) para organização encontrado(s)", pedidosParaOrganizacao.size());
 
-        List<String> pedidosFrete = pedidosParaOrganizacao
+        List<UUID> pedidosFrete = pedidosParaOrganizacao
                 .stream()
-                .map(pedido -> pedido.getPedidoFrete().toString())
+                .map(Pedido::getPedidoFrete)
                 .toList();
 
         log.debug("Enviando {} UUID(s) de pedido de frete para API de organização: {}", pedidosFrete.size(), pedidosFrete);
-        CompraFreteResponseDto response = this.freteService.organizarFretes(pedidosFrete);
-        if (response.error() != null) {
-            log.warn("API de frete retornou mensagem de erro na organização: {}", response.error());
-            return response.message();
+        ResultadoCompraEnvios compra = this.gatewayFrete.comprarEnvios(pedidosFrete);
+        if (!compra.sucesso()) {
+            log.warn("Compra dos fretes recusada pelo fornecedor: {}", compra.mensagemErro());
+            return compra.mensagemErro();
         }
-        if (response.message() != null) {
-            log.warn("API de frete retornou mensagem de erro na organização: {}", response.message());
-            return response.message();
-        } else {
-            List<Long> idsParaAtualizar = pedidosParaOrganizacao.stream().map(Pedido::getId).toList();
-            this.repository.updateStatusBatch(idsParaAtualizar, StatusEnum.AGUARDANDO_GERACAO_ETIQUETA);
-            log.info("Pedidos IDs={} organizados com sucesso — status atualizado para AGUARDANDO_GERACAO_ETIQUETA", idsParaAtualizar);
-            return null;
-        }
+
+        List<Long> idsParaAtualizar = pedidosParaOrganizacao.stream().map(Pedido::getId).toList();
+        this.repository.updateStatusBatch(idsParaAtualizar, StatusEnum.AGUARDANDO_GERACAO_ETIQUETA);
+        log.info("Fretes organizados para pedidos IDs={}", idsParaAtualizar);
+        return null;
     }
 
     @Override
@@ -415,34 +408,34 @@ public class PedidoServiceImpl implements PedidoService {
 
         log.debug("{} pedido(s) elegível(is) para geração de etiqueta encontrado(s)", pedidosParaOrganizacao.size());
 
-        Map<String, Long> freteParaPedidoMap = pedidosParaOrganizacao
+        Map<UUID, Long> freteParaPedidoMap = pedidosParaOrganizacao
                 .stream()
                 .collect(HashMap::new,
-                    (map, pedido) -> map.put(pedido.getPedidoFrete().toString(), pedido.getId()),
+                    (map, pedido) -> map.put(pedido.getPedidoFrete(), pedido.getId()),
                     HashMap::putAll);
 
-        List<String> pedidosFrete = pedidosParaOrganizacao
+        List<UUID> pedidosFrete = pedidosParaOrganizacao
                 .stream()
-                .map(pedido -> pedido.getPedidoFrete().toString())
+                .map(Pedido::getPedidoFrete)
                 .toList();
 
         log.debug("Solicitando geração de etiquetas à API de frete para UUIDs: {}", pedidosFrete);
-        GeracaoEtiquetasResponseDto response = this.freteService.gerarEtiquetasPedidoFrete(pedidosFrete);
+        Map<UUID, ResultadoEtiqueta> etiquetas = this.gatewayFrete.gerarEtiquetas(pedidosFrete);
 
         Map<Long, String> resultado = new HashMap<>();
         List<Long> pedidosComSucesso = new ArrayList<>();
 
-        if (response.pedidos() != null && !response.pedidos().isEmpty()) {
-            response.pedidos().forEach((freteId, statusEtiqueta) -> {
+        if (etiquetas != null && !etiquetas.isEmpty()) {
+            etiquetas.forEach((freteId, etiqueta) -> {
                 Long pedidoId = freteParaPedidoMap.get(freteId);
                 if (pedidoId != null) {
-                    if (statusEtiqueta.status()) {
+                    if (etiqueta.gerada()) {
                         log.debug("Etiqueta gerada com sucesso para pedido ID={} (freteId={})", pedidoId, freteId);
                         resultado.put(pedidoId, "Etiqueta gerada com sucesso");
                         pedidosComSucesso.add(pedidoId);
                     } else {
-                        log.warn("Falha ao gerar etiqueta para pedido ID={} (freteId={}): {}", pedidoId, freteId, statusEtiqueta.message());
-                        resultado.put(pedidoId, "Erro ao gerar etiqueta: " + statusEtiqueta.message());
+                        log.warn("Falha ao gerar etiqueta para pedido ID={} (freteId={}): {}", pedidoId, freteId, etiqueta.mensagem());
+                        resultado.put(pedidoId, "Erro ao gerar etiqueta: " + etiqueta.mensagem());
                     }
                 }
             });
@@ -472,13 +465,13 @@ public class PedidoServiceImpl implements PedidoService {
             throw new ResourceNotFoundException("Nenhum pedido válido encontrado para impressão na lista passada");
         }
 
-        List<String> pedidosFrete = pedidosParaImpressao
+        List<UUID> pedidosFrete = pedidosParaImpressao
                 .stream()
-                .map(pedido -> pedido.getPedidoFrete().toString())
+                .map(Pedido::getPedidoFrete)
                 .toList();
 
         log.debug("Solicitando URL de impressão de etiquetas à API de frete para UUIDs: {}", pedidosFrete);
-        String url = this.freteService.imprimirEtiquetasPedidoFrete(pedidosFrete).url();
+        String url = this.gatewayFrete.obterLinkImpressao(pedidosFrete);
         log.info("URL de impressão de etiquetas obtida com sucesso para {} pedido(s)", pedidosParaImpressao.size());
         return url;
     }
@@ -777,127 +770,13 @@ public class PedidoServiceImpl implements PedidoService {
                 });
     }
 
-    private Pedido enriquecerPedidoPorFrete(Pedido pedido, PedidoFreteResponseDto pedidoFreteResponseDto) {
-        pedido.setPedidoFrete(pedidoFreteResponseDto.id());
-        pedido.setDataPrevisaoEntrega(LocalDate.now().plusDays(pedidoFreteResponseDto.deliveryMax()));
-        pedido.setProtocoloEnvio(pedidoFreteResponseDto.protocol());
+    private Pedido enriquecerPedidoPorFrete(Pedido pedido, EnvioCriado envio) {
+        pedido.setPedidoFrete(envio.id());
+        pedido.setDataPrevisaoEntrega(LocalDate.now().plusDays(envio.prazoMaximoDias()));
+        pedido.setProtocoloEnvio(envio.protocolo());
         log.debug("Pedido ID={} enriquecido: pedidoFrete UUID={}, previsão de entrega={}",
-                pedido.getId(), pedidoFreteResponseDto.id(), pedido.getDataPrevisaoEntrega());
+                pedido.getId(), envio.id(), pedido.getDataPrevisaoEntrega());
         return this.repository.update(pedido);
-    }
-
-    private PedidoFreteRequestDto montarPedidoFreteDto(Pedido pedido) {
-        log.debug("Montando DTO de pedido de frete para pedido ID={}", pedido.getId());
-        //Definir empresa como remetente
-        Endereco enderecoEmpresa = this.enderecoService.getEnderecoEmpresa();
-        DadosEmpresa dadosEmpresa = this.dadosEmpresaRepository.get();
-        DestinoRemetenteDto remetente = this.definirRemetenteEmpresa(enderecoEmpresa, dadosEmpresa);
-
-        //Definir cliente como destino
-        Endereco enderecoDestino = pedido.getEnderecoEntrega();
-        Cliente cliente = pedido.getCliente();
-        DestinoRemetenteDto destino = this.definirDestinoEntrega(enderecoDestino, cliente);
-
-        //Definir lista de produtos e quantidade
-        List<ProdutoPedidoFreteDto> produtos = this.definirProdutosFrete(pedido);
-
-        //Definir dimensões do(s) volume(s) para entrega
-        List<VolumeFreteDto> volumes = new ArrayList<>();
-        volumes.add(definirDimensoesVolumes(pedido));
-
-        //Definir opções de entrega:
-        FreteOptionsDto opcoes = new FreteOptionsDto(
-                "Rei dos Piratas",
-                "Entrega do pedido " + pedido.getId(),
-                pedido.getValorTotal(),
-                false,
-                false,
-                false,
-                false,
-                null);
-
-        log.debug("DTO de pedido de frete montado com sucesso para pedido ID={}", pedido.getId());
-        return new PedidoFreteRequestDto(
-                pedido.getServicoEntrega(),
-                remetente,
-                destino,
-                produtos,
-                volumes,
-                opcoes);
-    }
-
-    private DestinoRemetenteDto definirRemetenteEmpresa(Endereco enderecoEmpresa, DadosEmpresa dadosEmpresa) {
-        return new DestinoRemetenteDto(
-                dadosEmpresa.getNomeFantasia(),
-                dadosEmpresa.getEmail(),
-                dadosEmpresa.getTelefone(),
-                null,
-                dadosEmpresa.getCnpj(),
-                dadosEmpresa.getStateRegister(),
-                dadosEmpresa.getEconomicActivityCode(),
-                enderecoEmpresa.getLogradouro(),
-                null,
-                String.valueOf(enderecoEmpresa.getNumero()),
-                enderecoEmpresa.getBairro(),
-                enderecoEmpresa.getCidade().getNome(),
-                enderecoEmpresa.getCep(),
-                enderecoEmpresa.getCidade().getEstado().getSigla());
-    }
-
-    private DestinoRemetenteDto definirDestinoEntrega(Endereco enderecoDestino, Cliente cliente) {
-        return new DestinoRemetenteDto(
-                cliente.getNomeCompleto(),
-                cliente.getEmail(),
-                cliente.getCelular(),
-                cliente.getCpf(),
-                null,
-                null,
-                null,
-                enderecoDestino.getLogradouro(),
-                null,
-                String.valueOf(enderecoDestino.getNumero()),
-                enderecoDestino.getBairro(),
-                enderecoDestino.getCidade().getNome(),
-                enderecoDestino.getCep(),
-                enderecoDestino.getCidade().getEstado().getSigla());
-    }
-
-    private List<ProdutoPedidoFreteDto> definirProdutosFrete(Pedido pedido) {
-return pedido.getProdutosAdicionados()
-                .stream()
-                .map(produto -> new ProdutoPedidoFreteDto(
-                        produto.getProduto().getNome(),
-                        String.valueOf(produto.getQuantidade()),
-                        String.valueOf(produto.getPrecoUnitario())))
-                .toList();
-    }
-
-    private VolumeFreteDto definirDimensoesVolumes(Pedido pedido) {
-        int quantidadeTotal = pedido.getProdutosAdicionados().stream()
-                .mapToInt(ItemProdutoPedido::getQuantidade)
-                .sum();
-
-        BigDecimal pesoTotal = pedido.getProdutosAdicionados().stream()
-                .map(produto -> produto.getProduto().getPeso().multiply(BigDecimal.valueOf(produto.getQuantidade())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        if (quantidadeTotal < 6) {
-            int altura = pedido.getProdutosAdicionados().stream()
-                    .mapToInt(produto -> produto.getProduto().getProfundidade().intValue() * produto.getQuantidade())
-                    .sum() + 3;
-
-            return new VolumeFreteDto(altura, 16, 26, pesoTotal);
-        }
-
-        if (quantidadeTotal < 11) {
-            return new VolumeFreteDto(28, 16, 26, pesoTotal);
-        }
-
-        if (quantidadeTotal < 20) {
-            return new VolumeFreteDto(28, 32, 26, pesoTotal);
-        }
-
-        return new VolumeFreteDto(28, 32, 52, pesoTotal);
     }
 
     private BigDecimal calcularValorTotalPedido(Pedido pedido){

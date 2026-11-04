@@ -1,15 +1,16 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
-import br.com.fiap.rei_dos_piratas.application.service.FreteService;
+import br.com.fiap.rei_dos_piratas.domain.gateway.EnvioCriado;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayFrete;
+import br.com.fiap.rei_dos_piratas.domain.gateway.ResultadoCompraEnvios;
+import br.com.fiap.rei_dos_piratas.domain.gateway.SolicitacaoEnvioReverso;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Devolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.DevolucaoRepository;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,6 @@ import java.util.UUID;
 import java.util.ArrayList;
 import org.mockito.ArgumentCaptor;
 import br.com.fiap.rei_dos_piratas.domain.entity.MotivoDevolucao;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -29,14 +29,14 @@ class DevolucaoServiceImplTest {
 
     private static final Long SERVICO_DEVOLUCAO_CONFIGURADO = 2L;
     private DevolucaoRepository repository;
-    private FreteService freteService;
+    private GatewayFrete gatewayFrete;
     private DevolucaoServiceImpl service;
 
     @BeforeEach
     void setUp() {
         repository = mock(DevolucaoRepository.class);
-        freteService = mock(FreteService.class);
-        service = new DevolucaoServiceImpl(repository, freteService, SERVICO_DEVOLUCAO_CONFIGURADO);
+        gatewayFrete = mock(GatewayFrete.class);
+        service = new DevolucaoServiceImpl(repository, gatewayFrete, SERVICO_DEVOLUCAO_CONFIGURADO);
     }
 
     private Devolucao prepararDevolucao(List<Long> ids) {
@@ -59,16 +59,14 @@ class DevolucaoServiceImplTest {
         UUID freteId = UUID.randomUUID();
         when(repository.findById(1L)).thenReturn(devolucao);
         when(repository.update(devolucao)).thenReturn(devolucao);
-        when(freteService.criarPedidoDevolucaoFrete(any())).thenReturn(
-                new DevolucaoFreteResponseDto(freteId, "protocolo", 1, null, BigDecimal.TEN,
-                        null, null, null, null, null, null, 1));
+        when(gatewayFrete.criarEnvioReverso(any())).thenReturn(new EnvioCriado(freteId, "protocolo", BigDecimal.TEN, null));
 
         Devolucao aprovada = service.aprovarDevolucao(1L);
 
         assertThat(aprovada.getStatus()).isEqualTo(StatusDevolucaoEnum.PREPARANDO_RETORNO);
         assertThat(aprovada.getPedidoFrete()).isEqualTo(freteId);
         assertThat(aprovada.getAprovada()).isTrue();
-        verify(freteService, never()).organizarFretes(anyList());
+        verify(gatewayFrete, never()).comprarEnvios(anyList());
     }
 
     @Test
@@ -98,23 +96,23 @@ class DevolucaoServiceImplTest {
     @Test
     void organizarDevePagarSomenteFretesElegiveisEAvancarDiretoParaPostagem() {
         Devolucao devolucao = prepararDevolucao(List.of(1L, 2L));
-        List<String> fretes = List.of(devolucao.getPedidoFrete().toString());
-        when(freteService.organizarFretes(fretes))
-                .thenReturn(new CompraFreteResponseDto(null, null, null, null, null, null, null));
+        List<UUID> fretes = List.of(devolucao.getPedidoFrete());
+        when(gatewayFrete.comprarEnvios(fretes))
+                .thenReturn(new ResultadoCompraEnvios(null));
 
         assertThat(service.organizarDevolucoesParaEnvio(List.of(1L, 2L))).isNull();
 
-        var ordem = inOrder(freteService, repository);
-        ordem.verify(freteService).organizarFretes(fretes);
+        var ordem = inOrder(gatewayFrete, repository);
+        ordem.verify(gatewayFrete).comprarEnvios(fretes);
         ordem.verify(repository).updateStatusBatch(List.of(1L), StatusDevolucaoEnum.AGUARDANDO_POSTAGEM_RETORNO);
-        verifyNoMoreInteractions(freteService);
+        verifyNoMoreInteractions(gatewayFrete);
     }
 
     @Test
     void erroSemMensagemNaoDeveSerInterpretadoComoSucesso() {
         prepararDevolucao(List.of(1L));
-        when(freteService.organizarFretes(anyList()))
-                .thenReturn(new CompraFreteResponseDto(null, null, null, "Saldo insuficiente", null, null, null));
+        when(gatewayFrete.comprarEnvios(anyList()))
+                .thenReturn(new ResultadoCompraEnvios("Saldo insuficiente"));
 
         assertThat(service.organizarDevolucoesParaEnvio(List.of(1L))).isEqualTo("Saldo insuficiente");
         verify(repository, never()).updateStatusBatch(anyList(), any());
@@ -123,8 +121,8 @@ class DevolucaoServiceImplTest {
     @Test
     void mensagemDoProvedorDeveSerRetornadaSemAvancarStatus() {
         prepararDevolucao(List.of(1L));
-        when(freteService.organizarFretes(anyList()))
-                .thenReturn(new CompraFreteResponseDto(null, null, "Frete indisponível", null, null, null, null));
+        when(gatewayFrete.comprarEnvios(anyList()))
+                .thenReturn(new ResultadoCompraEnvios("Frete indisponível"));
 
         assertThat(service.organizarDevolucoesParaEnvio(List.of(1L))).isEqualTo("Frete indisponível");
         verify(repository, never()).updateStatusBatch(anyList(), any());
@@ -133,7 +131,7 @@ class DevolucaoServiceImplTest {
     @Test
     void falhaExternaNaoDeveAvancarStatus() {
         prepararDevolucao(List.of(1L));
-        when(freteService.organizarFretes(anyList())).thenThrow(new ApiExternaException("Falha de comunicação"));
+        when(gatewayFrete.comprarEnvios(anyList())).thenThrow(new ApiExternaException("Falha de comunicação"));
 
         assertThatThrownBy(() -> service.organizarDevolucoesParaEnvio(List.of(1L)))
                 .isInstanceOf(ApiExternaException.class);
@@ -147,7 +145,7 @@ class DevolucaoServiceImplTest {
 
         assertThatThrownBy(() -> service.organizarDevolucoesParaEnvio(List.of(1L)))
                 .isInstanceOf(ResourceNotFoundException.class);
-        verifyNoInteractions(freteService);
+        verifyNoInteractions(gatewayFrete);
         verify(repository, never()).updateStatusBatch(anyList(), any());
     }
 
@@ -157,7 +155,7 @@ class DevolucaoServiceImplTest {
 
         assertThatThrownBy(() -> service.organizarDevolucoesParaEnvio(List.of(1L)))
                 .isInstanceOf(RegraDeNegocioException.class);
-        verifyNoInteractions(freteService);
+        verifyNoInteractions(gatewayFrete);
     }
 
     @Test
@@ -166,7 +164,7 @@ class DevolucaoServiceImplTest {
             assertThatThrownBy(() -> service.organizarDevolucoesParaEnvio(ids))
                     .isInstanceOf(RegraDeNegocioException.class);
         }
-        verifyNoInteractions(repository, freteService);
+        verifyNoInteractions(repository, gatewayFrete);
     }
 
     // --- Serviço de entrega da devolução (antes vinha de um @Value na entidade, que nunca era aplicado) ---
@@ -178,15 +176,13 @@ class DevolucaoServiceImplTest {
         devolucao.setItens(List.of());
         when(repository.findById(1L)).thenReturn(devolucao);
         when(repository.update(devolucao)).thenReturn(devolucao);
-        when(freteService.criarPedidoDevolucaoFrete(any())).thenReturn(
-                new DevolucaoFreteResponseDto(UUID.randomUUID(), "protocolo", 1, null, BigDecimal.TEN,
-                        null, null, null, null, null, null, 1));
+        when(gatewayFrete.criarEnvioReverso(any())).thenReturn(new EnvioCriado(UUID.randomUUID(), "protocolo", BigDecimal.TEN, null));
         return devolucao;
     }
 
-    private DevolucaoFreteRequestDto requisicaoEnviadaAoFrete() {
-        ArgumentCaptor<DevolucaoFreteRequestDto> captor = ArgumentCaptor.forClass(DevolucaoFreteRequestDto.class);
-        verify(freteService).criarPedidoDevolucaoFrete(captor.capture());
+    private SolicitacaoEnvioReverso requisicaoEnviadaAoFrete() {
+        ArgumentCaptor<SolicitacaoEnvioReverso> captor = ArgumentCaptor.forClass(SolicitacaoEnvioReverso.class);
+        verify(gatewayFrete).criarEnvioReverso(captor.capture());
         return captor.getValue();
     }
 
@@ -196,7 +192,7 @@ class DevolucaoServiceImplTest {
 
         service.aprovarDevolucao(1L);
 
-        assertThat(requisicaoEnviadaAoFrete().service()).isEqualTo(2);
+        assertThat(requisicaoEnviadaAoFrete().servico()).isEqualTo(2L);
     }
 
     @Test
@@ -206,18 +202,18 @@ class DevolucaoServiceImplTest {
 
         service.aprovarDevolucao(1L);
 
-        assertThat(requisicaoEnviadaAoFrete().service()).isEqualTo(1);
+        assertThat(requisicaoEnviadaAoFrete().servico()).isEqualTo(1L);
     }
 
     @Test
     void aprovarDevolucao_SemServicoNaDevolucaoESemConfiguracaoDeveFalharComMensagemClara() {
         devolucaoAprovavelSemServicoDeEntrega();
-        DevolucaoServiceImpl semConfiguracao = new DevolucaoServiceImpl(repository, freteService, null);
+        DevolucaoServiceImpl semConfiguracao = new DevolucaoServiceImpl(repository, gatewayFrete, null);
 
         assertThatThrownBy(() -> semConfiguracao.aprovarDevolucao(1L))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("ME_SERVICE_DEVOLUCAO");
-        verify(freteService, never()).criarPedidoDevolucaoFrete(any());
+        verify(gatewayFrete, never()).criarEnvioReverso(any());
     }
 
     @Test

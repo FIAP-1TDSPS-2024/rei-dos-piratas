@@ -2,7 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FreteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.ConsultaFreteDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.OpcaoFreteOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,7 +30,7 @@ public class FreteRestController {
             @ApiResponse(responseCode = "502", description = "Erro temporário no serviço de frete")
     })
     @PostMapping
-    public List<FreteServiceDto> calcularFreteProdutos(@RequestBody @Valid ConsultaFreteDto dto) {
+    public List<OpcaoFreteOutDto> calcularFreteProdutos(@RequestBody @Valid ConsultaFreteDto dto) {
         return controller.calcularFreteProdutos(dto);
     }
 }

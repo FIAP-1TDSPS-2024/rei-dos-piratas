@@ -1,24 +1,11 @@
 package br.com.fiap.rei_dos_piratas.application.service;
 
-import br.com.fiap.rei_dos_piratas.domain.entity.ItemDevolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.GeracaoEtiquetasResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.etiqueta.ImpressaoEtiquetasResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ItemProdutoInDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.domain.gateway.OpcaoFrete;
 
 import java.util.List;
 
+/** Cotação de frete para o app e para o pedido (CEP da loja ao CEP do cliente). */
 public interface FreteService {
-    List<FreteServiceDto> calcularFreteProdutos(String cepDestino, List<ItemProdutoPedido> itens);
-    DevolucaoFreteResponseDto criarPedidoDevolucaoFrete(DevolucaoFreteRequestDto devolucaoRequest);
-    PedidoFreteResponseDto criarPedidoFrete(PedidoFreteRequestDto pedidoRequest);
-    CompraFreteResponseDto organizarFretes(List<String> pedidos);
-    GeracaoEtiquetasResponseDto gerarEtiquetasPedidoFrete(List<String> pedidos);
-    ImpressaoEtiquetasResponseDto imprimirEtiquetasPedidoFrete(List<String> pedidos);
+    List<OpcaoFrete> calcularFreteProdutos(String cepDestino, List<ItemProdutoPedido> itens);
 }

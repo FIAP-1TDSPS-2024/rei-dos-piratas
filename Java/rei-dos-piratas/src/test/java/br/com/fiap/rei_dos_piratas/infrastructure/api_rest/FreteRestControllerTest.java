@@ -1,8 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FreteController;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.OpcaoFreteOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +35,9 @@ class FreteRestControllerTest {
     @Test
     void calcularFrete_DeveManterOContratoJsonDoApp() throws Exception {
         // Arrange
-        when(freteController.calcularFreteProdutos(any())).thenReturn(List.of(new FreteServiceDto(
+        when(freteController.calcularFreteProdutos(any())).thenReturn(List.of(new OpcaoFreteOutDto(
                 2L, "SEDEX", new BigDecimal("32.50"), new BigDecimal("30.00"), new BigDecimal("2.50"), "R$", 3,
-                new FreteCompanyDto(1L, "Correios", "https://example.com/correios.png"))));
+                new OpcaoFreteOutDto.Company(1L, "Correios", "https://example.com/correios.png"))));
 
         // Act & Assert
         mockMvc.perform(post("/frete")

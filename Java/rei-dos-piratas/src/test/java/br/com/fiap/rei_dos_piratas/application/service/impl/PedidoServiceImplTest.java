@@ -15,9 +15,6 @@ import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteCompanyDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.domain.gateway.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import org.mockito.ArgumentCaptor;
@@ -32,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +46,7 @@ class PedidoServiceImplTest {
     private EnderecoService enderecoService;
     private br.com.fiap.rei_dos_piratas.application.service.ClienteService clienteService;
     private FreteService freteService;
+    private GatewayFrete gatewayFrete;
     private DadosEmpresaRepository dadosEmpresaRepository;
     private UsuarioAtualService usuarioAtual;
     private GatewayPagamento gatewayPagamento;
@@ -80,6 +79,7 @@ class PedidoServiceImplTest {
         this.pedidoRepository = mock(PedidoRepository.class);
         this.produtoRepository = mock(ProdutoRepository.class);
         this.freteService = mock(FreteService.class);
+        this.gatewayFrete = mock(GatewayFrete.class);
         this.dadosEmpresaRepository = mock(DadosEmpresaRepository.class);
         this.enderecoService = mock(EnderecoService.class);
         HmacUtil hmacUtil = mock(HmacUtil.class);
@@ -95,7 +95,7 @@ class PedidoServiceImplTest {
 
     private PedidoService servicoComBoletoVencendoEm(int diasVencimento) {
         RegraParcelamento regraParcelamento = new RegraParcelamento(new BigDecimal("100.00"), 3);
-        return new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, gatewayPagamento, usuarioAtual,
+        return new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, gatewayFrete, clienteService, gatewayPagamento, usuarioAtual,
                 cartaoService, regraParcelamento, new RegraBoleto(diasVencimento), executor);
     }
 
@@ -188,10 +188,10 @@ class PedidoServiceImplTest {
                 BigDecimal.valueOf(1000));
     }
 
-    private List<FreteServiceDto> criarListaFretes(Long freteServiceId) {
-        FreteCompanyDto company = new FreteCompanyDto(2L, "Jadlog",
+    private List<OpcaoFrete> criarListaFretes(Long freteServiceId) {
+        Transportadora company = new Transportadora(2L, "Jadlog",
                 "https://sandbox.melhorenvio.com.br/images/shipping-companies/jadlog.png");
-        FreteServiceDto frete = new FreteServiceDto(freteServiceId, ".Package",
+        OpcaoFrete frete = new OpcaoFrete(freteServiceId, ".Package",
                 BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, company);
         return List.of(frete);
     }
@@ -500,23 +500,10 @@ class PedidoServiceImplTest {
         when(enderecoService.getEnderecoEmpresa()).thenReturn(enderecoEmpresa);
         when(enderecoService.findById(1L)).thenReturn(criarEndereco(cliente));
 
-        // Mock PedidoFreteResponseDto
-        PedidoFreteResponseDto pedidoFreteResponse = new PedidoFreteResponseDto(
-                UUID.randomUUID(),
-                "PROTOCOL123456",
-                3,
-                1,
-                BigDecimal.valueOf(21.19),
-                BigDecimal.valueOf(21.19),
-                BigDecimal.ZERO,
-                5,
-                6,
-                "posted",
-                false,
-                LocalDateTime.now(),
-                LocalDateTime.now());
+        // Envio criado no fornecedor
+        EnvioCriado pedidoFreteResponse = new EnvioCriado(UUID.randomUUID(), "PROTOCOL123456", BigDecimal.valueOf(21.19), 6);
 
-        when(freteService.criarPedidoFrete(any())).thenReturn(pedidoFreteResponse);
+        when(gatewayFrete.criarEnvio(any())).thenReturn(pedidoFreteResponse);
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
         // Act
@@ -656,9 +643,7 @@ class PedidoServiceImplTest {
         when(dadosEmpresaRepository.get()).thenReturn(dadosEmpresa);
         when(enderecoService.getEnderecoEmpresa()).thenReturn(enderecoEmpresa);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(freteService.criarPedidoFrete(any())).thenReturn(new PedidoFreteResponseDto(UUID.randomUUID(), "PROTOCOL123456",
-                3, 1, BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, 5, 6, "pending", false,
-                LocalDateTime.now(), LocalDateTime.now()));
+        when(gatewayFrete.criarEnvio(any())).thenReturn(new EnvioCriado(UUID.randomUUID(), "PROTOCOL123456", BigDecimal.valueOf(21.19), 6));
     }
 
     private EventoPagamento eventoCobranca(TipoEventoPagamento tipo, Long pedidoId) {
@@ -692,7 +677,7 @@ class PedidoServiceImplTest {
 
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.EM_TRANSITO);
-        verify(freteService, never()).criarPedidoFrete(any());
+        verify(gatewayFrete, never()).criarEnvio(any());
     }
 
     @Test
@@ -709,7 +694,7 @@ class PedidoServiceImplTest {
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.CANCELADO);
         assertThat(produto.getEstoque()).isEqualTo(10); // 8 + 2
-        verify(freteService, never()).criarPedidoFrete(any());
+        verify(gatewayFrete, never()).criarEnvio(any());
     }
 
     // ---- Criação do pedido com cartão de crédito ----
@@ -1240,7 +1225,7 @@ class PedidoServiceImplTest {
             assertThat(gravado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
             assertThat(gravado.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.RECEBIDO);
             assertThat(produto.getEstoque()).isEqualTo(10);
-            verify(freteService, never()).criarPedidoFrete(any());
+            verify(gatewayFrete, never()).criarEnvio(any());
             assertThat(logs.list)
                     .filteredOn(evento -> evento.getLevel() == ch.qos.logback.classic.Level.ERROR)
                     .extracting(ch.qos.logback.classic.spi.ILoggingEvent::getFormattedMessage)
@@ -1490,10 +1475,10 @@ class PedidoServiceImplTest {
         Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.PIX);
         pedido.setServicoEntrega(2L);
         prepararCriacaoDoPedido(pedido);
-        FreteCompanyDto correios = new FreteCompanyDto(1L, "Correios", "https://example.com/correios.png");
+        Transportadora correios = new Transportadora(1L, "Correios", "https://example.com/correios.png");
         when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(List.of(
-                new FreteServiceDto(1L, "PAC", BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, correios),
-                new FreteServiceDto(2L, "SEDEX", BigDecimal.valueOf(35.50), BigDecimal.valueOf(35.50), BigDecimal.ZERO, "R$", 2, correios)));
+                new OpcaoFrete(1L, "PAC", BigDecimal.valueOf(21.19), BigDecimal.valueOf(21.19), BigDecimal.ZERO, "R$", 6, correios),
+                new OpcaoFrete(2L, "SEDEX", BigDecimal.valueOf(35.50), BigDecimal.valueOf(35.50), BigDecimal.ZERO, "R$", 2, correios)));
 
         // Act
         Pedido resultado = pedidoService.fazerPedido(pedido);
@@ -1513,5 +1498,115 @@ class PedidoServiceImplTest {
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.fazerPedido(pedido)).isInstanceOf(ResourceNotFoundException.class);
         verify(pedidoRepository, never()).create(any());
+    }
+
+    // ---- Envio do pedido (caracterizado antes da migração para GatewayFrete) ----
+
+    private Pedido pedidoComFrete(Long id, StatusEnum status, UUID pedidoFrete) {
+        Pedido pedido = pedidoDeCartaoAguardandoPagamento(id, 10, 2);
+        pedido.setStatus(status);
+        pedido.setPedidoFrete(pedidoFrete);
+        return pedido;
+    }
+
+    @Test
+    void pagarPedido_DeveEnviarLojaComoRemetenteClienteComoDestinoProdutosEVolume() {
+        // Arrange
+        Pedido pedido = pedidoDeCartaoAguardandoPagamento(1L, 10, 2);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        prepararCriacaoDeFrete();
+
+        // Act
+        pedidoService.pagarPedido(1L);
+
+        // Assert
+        ArgumentCaptor<SolicitacaoEnvio> captor = ArgumentCaptor.forClass(SolicitacaoEnvio.class);
+        verify(gatewayFrete).criarEnvio(captor.capture());
+        SolicitacaoEnvio envio = captor.getValue();
+        assertThat(envio.servico()).isEqualTo(1L);
+        assertThat(envio.remetente().nome()).isEqualTo("Rei dos Piratas");
+        assertThat(envio.remetente().cnpj()).isEqualTo("12345678901234");
+        assertThat(envio.remetente().cep()).isEqualTo("12345678");
+        assertThat(envio.remetente().uf()).isEqualTo("SP");
+        assertThat(envio.destinatario().nome()).isEqualTo("João Silva");
+        assertThat(envio.destinatario().cpf()).isEqualTo("52998224725");
+        assertThat(envio.destinatario().email()).isEqualTo("joao@gmail.com");
+        assertThat(envio.produtos()).singleElement().satisfies(produto -> {
+            assertThat(produto.nome()).isEqualTo("Produto Teste");
+            assertThat(produto.quantidade()).isEqualTo(2);
+            assertThat(produto.valorUnitario()).isEqualByComparingTo("100");
+        });
+        // < 6 itens: altura = profundidade (0,2 -> 0) x 2 + 3; caixa 16 x 26; peso 0,3 x 2
+        assertThat(envio.volume().altura()).isEqualTo(3);
+        assertThat(envio.volume().largura()).isEqualTo(16);
+        assertThat(envio.volume().comprimento()).isEqualTo(26);
+        assertThat(envio.volume().peso()).isEqualByComparingTo("0.6");
+        assertThat(envio.valorSeguro()).isEqualByComparingTo("221.19");
+        assertThat(envio.lembrete()).isEqualTo("Entrega do pedido 1");
+    }
+
+    @Test
+    void organizarPedidosParaEnvio_CompraAprovadaDeveMoverParaAguardandoGeracaoDeEtiqueta() {
+        // Arrange
+        UUID frete = UUID.randomUUID();
+        when(pedidoRepository.findByIdsAndStatus(List.of(1L), StatusEnum.PREPARANDO_ENVIO))
+                .thenReturn(List.of(pedidoComFrete(1L, StatusEnum.PREPARANDO_ENVIO, frete)));
+        when(gatewayFrete.comprarEnvios(List.of(frete))).thenReturn(new ResultadoCompraEnvios(null));
+
+        // Act
+        String mensagem = pedidoService.organizarPedidosParaEnvio(List.of(1L));
+
+        // Assert
+        assertThat(mensagem).isNull();
+        verify(pedidoRepository).updateStatusBatch(List.of(1L), StatusEnum.AGUARDANDO_GERACAO_ETIQUETA);
+    }
+
+    @Test
+    void organizarPedidosParaEnvio_CompraComMensagemDeErroDeveRetornarAMensagemSemMudarStatus() {
+        // Arrange
+        UUID frete = UUID.randomUUID();
+        when(pedidoRepository.findByIdsAndStatus(List.of(1L), StatusEnum.PREPARANDO_ENVIO))
+                .thenReturn(List.of(pedidoComFrete(1L, StatusEnum.PREPARANDO_ENVIO, frete)));
+        when(gatewayFrete.comprarEnvios(any())).thenReturn(new ResultadoCompraEnvios("Saldo insuficiente"));
+
+        // Act
+        String mensagem = pedidoService.organizarPedidosParaEnvio(List.of(1L));
+
+        // Assert
+        assertThat(mensagem).isEqualTo("Saldo insuficiente");
+        verify(pedidoRepository, never()).updateStatusBatch(any(), any());
+    }
+
+    @Test
+    void gerarEtiquetasParaEnvio_DeveInformarOResultadoPorPedidoEAvancarSoOsGerados() {
+        // Arrange
+        UUID frete1 = UUID.randomUUID();
+        UUID frete2 = UUID.randomUUID();
+        when(pedidoRepository.findByIdsAndStatus(List.of(1L, 2L), StatusEnum.AGUARDANDO_GERACAO_ETIQUETA)).thenReturn(List.of(
+                pedidoComFrete(1L, StatusEnum.AGUARDANDO_GERACAO_ETIQUETA, frete1),
+                pedidoComFrete(2L, StatusEnum.AGUARDANDO_GERACAO_ETIQUETA, frete2)));
+        when(gatewayFrete.gerarEtiquetas(any())).thenReturn(Map.of(
+                frete1, new ResultadoEtiqueta(true, "OK"),
+                frete2, new ResultadoEtiqueta(false, "Sem saldo")));
+
+        // Act
+        Map<Long, String> resultado = pedidoService.gerarEtiquetasParaEnvio(List.of(1L, 2L));
+
+        // Assert
+        assertThat(resultado).containsEntry(1L, "Etiqueta gerada com sucesso")
+                .containsEntry(2L, "Erro ao gerar etiqueta: Sem saldo");
+        verify(pedidoRepository).updateStatusBatch(List.of(1L), StatusEnum.AGUARDANDO_POSTAGEM);
+    }
+
+    @Test
+    void imprimirEtiquetasEnvio_DeveRetornarOLinkDoFornecedor() {
+        // Arrange
+        UUID frete = UUID.randomUUID();
+        when(pedidoRepository.findByIdsAndStatus(List.of(1L), StatusEnum.AGUARDANDO_POSTAGEM))
+                .thenReturn(List.of(pedidoComFrete(1L, StatusEnum.AGUARDANDO_POSTAGEM, frete)));
+        when(gatewayFrete.obterLinkImpressao(List.of(frete))).thenReturn("https://example.com/etiquetas.pdf");
+
+        // Act & Assert
+        assertThat(pedidoService.imprimirEtiquetasEnvio(List.of(1L))).isEqualTo("https://example.com/etiquetas.pdf");
     }
 }

@@ -2,7 +2,8 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.repository.DevolucaoRepository;
-import br.com.fiap.rei_dos_piratas.application.service.FreteService;
+import br.com.fiap.rei_dos_piratas.domain.gateway.EnvioCriado;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayFrete;
 import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.negocio.*;
 import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.ItemProdutoDtoMapper;
 import org.junit.jupiter.api.Test;
@@ -60,16 +61,14 @@ class PrecoUnitarioTest {
         devolucao.setValorTotal(new BigDecimal("51.00"));
         devolucao.setServicoEntrega(1L);
         var repository = mock(DevolucaoRepository.class);
-        var frete = mock(FreteService.class);
+        var frete = mock(GatewayFrete.class);
         when(repository.findById(1L)).thenReturn(devolucao);
         when(repository.update(devolucao)).thenReturn(devolucao);
-        when(frete.criarPedidoDevolucaoFrete(any())).thenReturn(
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto(
-                        java.util.UUID.randomUUID(), "protocolo", 1, null, BigDecimal.TEN,
-                        null, null, null, null, null, null, 1));
+        when(frete.criarEnvioReverso(any())).thenReturn(
+                new EnvioCriado(java.util.UUID.randomUUID(), "protocolo", BigDecimal.TEN, null));
         new DevolucaoServiceImpl(repository, frete, 2L).aprovarDevolucao(1L);
         assertThat(devolucao.getValorTotal()).isEqualByComparingTo("61.00");
-        verify(frete).criarPedidoDevolucaoFrete(argThat(dto -> dto.insurance_value().compareTo(new BigDecimal("51.00")) == 0));
+        verify(frete).criarEnvioReverso(argThat(solicitacao -> solicitacao.valorSeguro().compareTo(new BigDecimal("51.00")) == 0));
     }
 
     @Test
@@ -106,7 +105,7 @@ class PrecoUnitarioTest {
         DevolucaoRepository repository = mock(DevolucaoRepository.class);
         when(repository.findAllByPedidoId(1L)).thenReturn(List.of());
         when(repository.create(devolucao)).thenReturn(devolucao);
-        new DevolucaoServiceImpl(repository, mock(FreteService.class), 2L).solicitarDevolucao(devolucao);
+        new DevolucaoServiceImpl(repository, mock(GatewayFrete.class), 2L).solicitarDevolucao(devolucao);
         assertThat(item.getPrecoUnitario()).isEqualByComparingTo("25.50");
         assertThat(devolucao.getValorTotal()).isEqualByComparingTo("51.00");
     }

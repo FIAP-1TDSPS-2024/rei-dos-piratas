@@ -1,18 +1,16 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.DevolucaoService;
-import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteResponseDto;
+import br.com.fiap.rei_dos_piratas.domain.gateway.EnvioCriado;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayFrete;
+import br.com.fiap.rei_dos_piratas.domain.gateway.ResultadoCompraEnvios;
+import br.com.fiap.rei_dos_piratas.domain.gateway.SolicitacaoEnvioReverso;
 import br.com.fiap.rei_dos_piratas.domain.repository.DevolucaoRepository;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteRequestDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoFreteResponseDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoOptionsDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.devolucao.DevolucaoPackageDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import lombok.extern.slf4j.Slf4j;
@@ -30,15 +28,15 @@ public class DevolucaoServiceImpl implements DevolucaoService {
 
     private final DevolucaoRepository repository;
 
-    private final FreteService freteService;
+    private final GatewayFrete gatewayFrete;
 
     /** Id do servico de entrega (Melhor Envio) usado nas devolucoes; vem de ME_SERVICE_DEVOLUCAO. */
     private final Long servicoEntregaDevolucao;
 
-    public DevolucaoServiceImpl(DevolucaoRepository repository, FreteService freteService, Long servicoEntregaDevolucao) {
+    public DevolucaoServiceImpl(DevolucaoRepository repository, GatewayFrete gatewayFrete, Long servicoEntregaDevolucao) {
         this.servicoEntregaDevolucao = servicoEntregaDevolucao;
         this.repository = repository;
-        this.freteService = freteService;
+        this.gatewayFrete = gatewayFrete;
     }
 
     @Override
@@ -130,10 +128,10 @@ devolucao.setAprovada(true);
         devolucao.setDataAprovacao(LocalDate.now());
         devolucao.setStatus(StatusDevolucaoEnum.PREPARANDO_RETORNO);
 
-        DevolucaoFreteRequestDto request = this.montarDevolucaoFreteDto(devolucao);
-        DevolucaoFreteResponseDto response = this.freteService.criarPedidoDevolucaoFrete(request);
+        SolicitacaoEnvioReverso solicitacao = SolicitacaoEnvioReverso.para(devolucao, this.servicoEntregaDaDevolucao(devolucao));
+        EnvioCriado envio = this.gatewayFrete.criarEnvioReverso(solicitacao);
 
-        this.enriquecerDevolucaoPorFrete(response, devolucao);
+        this.enriquecerDevolucaoPorFrete(envio, devolucao);
         log.debug("Valor do frete definido: R${}, valor total do pedido: R${}", devolucao.getValorFrete(), devolucao.getValorTotal());
 
         log.info("Pedido de devolucao frete aprovado com sucesso e criado no serviço de frete: ID={}, status={}, valor total=R${}",
@@ -163,14 +161,14 @@ devolucao.setAprovada(true);
                     "Todas as devoluções selecionadas para organização devem possuir um pedido de frete.");
         }
 
-        List<String> pedidosFrete = devolucoesParaOrganizacao.stream()
-                .map(devolucao -> devolucao.getPedidoFrete().toString())
+        List<UUID> pedidosFrete = devolucoesParaOrganizacao.stream()
+                .map(Devolucao::getPedidoFrete)
                 .toList();
 
         log.info("[SERVICE-DEVOLUCAO] Organizando fretes de {} devolução(ões)", devolucoesParaOrganizacao.size());
-        CompraFreteResponseDto response = freteService.organizarFretes(pedidosFrete);
-        if (response.error() != null || response.message() != null) {
-            return response.message() != null ? response.message() : response.error();
+        ResultadoCompraEnvios compra = this.gatewayFrete.comprarEnvios(pedidosFrete);
+        if (!compra.sucesso()) {
+            return compra.mensagemErro();
         }
 
         // A devolução reutiliza a nota existente e segue diretamente para postagem.
@@ -273,25 +271,6 @@ devolucao.setAprovada(true);
         log.debug("[SERVICE-DEVOLUCAO] Devolução ID={} persistida após processamento do evento '{}'", devolucao.getId(), rastreio.event());
     }
 
-    private DevolucaoFreteRequestDto montarDevolucaoFreteDto(Devolucao devolucao){
-
-        //Definir dimensoes do pacote de acordo com a quantidade de volumes
-        DevolucaoPackageDto devolucaoPackage = this.definirDimensoesPacote(devolucao);
-
-        //A princípio rodas as devoluções serão por envio
-        DevolucaoOptionsDto optionsDto = new DevolucaoOptionsDto(false, false);
-
-        return new DevolucaoFreteRequestDto(
-                Math.toIntExact(this.servicoEntregaDaDevolucao(devolucao)),
-                devolucao.getPedido().getCliente().getEmail(),
-                devolucao.getPedido().getCliente().getCelular(),
-                devolucao.getValorTotal(),
-                devolucao.getPedido().getPedidoFrete(),
-                devolucaoPackage,
-                optionsDto
-        );
-    }
-
     /** Usa o servico gravado na devolucao; devolucoes antigas (sem servico) usam o configurado. */
     private Long servicoEntregaDaDevolucao(Devolucao devolucao) {
         if (devolucao.getServicoEntrega() != null) {
@@ -303,34 +282,6 @@ devolucao.setAprovada(true);
         }
         devolucao.setServicoEntrega(this.servicoEntregaDevolucao);
         return this.servicoEntregaDevolucao;
-    }
-
-    private DevolucaoPackageDto definirDimensoesPacote(Devolucao devolucao) {
-        int quantidadeTotal = devolucao.getItens().stream()
-                .mapToInt(ItemDevolucao::getQuantidade)
-                .sum();
-
-        BigDecimal pesoTotal = devolucao.getItens().stream()
-                .map(produto -> produto.getItemPedido().getProduto().getPeso().multiply(BigDecimal.valueOf(produto.getQuantidade())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        if (quantidadeTotal < 6) {
-            int altura = devolucao.getItens().stream()
-                    .mapToInt(produto -> produto.getItemPedido().getProduto().getProfundidade().intValue() * produto.getQuantidade())
-                    .sum() + 3;
-
-            return new DevolucaoPackageDto(altura, 16, 26, pesoTotal);
-        }
-
-        if (quantidadeTotal < 11) {
-            return new DevolucaoPackageDto(28, 16, 26, pesoTotal);
-        }
-
-        if (quantidadeTotal < 20) {
-            return new DevolucaoPackageDto(28, 32, 26, pesoTotal);
-        }
-
-        return new DevolucaoPackageDto(28, 32, 52, pesoTotal);
     }
 
     private BigDecimal calcularValorTotalDevolucao(Devolucao devolucao){
@@ -349,11 +300,11 @@ devolucao.setAprovada(true);
                 .add(devolucao.getValorFrete());
     }
 
-    private void enriquecerDevolucaoPorFrete(DevolucaoFreteResponseDto response, Devolucao devolucao){
-        devolucao.setValorFrete(response.price());
+    private void enriquecerDevolucaoPorFrete(EnvioCriado envio, Devolucao devolucao){
+        devolucao.setValorFrete(envio.preco());
         devolucao.setValorTotal(this.calcularValorTotalDevolucao(devolucao));
-        devolucao.setPedidoFrete(response.id());
-        devolucao.setProtocoloEnvio(response.protocol());
+        devolucao.setPedidoFrete(envio.id());
+        devolucao.setProtocoloEnvio(envio.protocolo());
     }
 
 }

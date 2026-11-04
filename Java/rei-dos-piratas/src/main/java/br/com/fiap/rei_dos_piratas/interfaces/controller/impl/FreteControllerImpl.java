@@ -3,11 +3,11 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
-import br.com.fiap.rei_dos_piratas.interfaces.mapper.frete.ProdutoFreteDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.ItemProdutoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.FreteController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.ConsultaFreteDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.OpcaoFreteOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.mapper.frete.OpcaoFreteDtoMapper;
 
 import java.util.List;
 
@@ -23,12 +23,15 @@ public class FreteControllerImpl implements FreteController {
     }
 
     @Override
-    public List<FreteServiceDto> calcularFreteProdutos(ConsultaFreteDto dto) {
+    public List<OpcaoFreteOutDto> calcularFreteProdutos(ConsultaFreteDto dto) {
         return this.service.calcularFreteProdutos(
                 dto.cepDestino(),
                 dto.itens()
                         .stream()
                         .map(produto -> new ItemProdutoPedido(produtoService.findById(produto.produtoId()), produto.quantidade()))
-                        .toList());
+                        .toList())
+                .stream()
+                .map(OpcaoFreteDtoMapper::toDto)
+                .toList();
     }
 }
