@@ -1,6 +1,9 @@
 package br.com.fiap.rei_dos_piratas.domain.entity;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEstornoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusPagamentoEnum;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -10,11 +13,13 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.time.LocalDateTime;
 
 /** Pagamento de um pedido (um por pedido; fica dentro do agregado Pedido). */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Pagamento {
     private Long id;
@@ -60,6 +65,78 @@ public class Pagamento {
 
     /** Vencimento da cobrança no Asaas (boleto/PIX). */
     private LocalDate dataVencimento;
+
+    /** Estornos do pagamento, do mais antigo ao mais recente (devolução parcial gera mais de um). */
+    @Valid
+    private List<Estorno> estornos = new ArrayList<>();
+
+    public Pagamento(Long id, TipoPagamentoEnum tipo, StatusPagamentoEnum status, String idCobranca, BigDecimal valor,
+                     BigDecimal valorLiquido, Integer parcelas, CartaoCliente cartao, String motivoRecusa,
+                     LocalDateTime dataCriacao, LocalDateTime dataConfirmacao, String urlBoleto, LocalDate dataVencimento) {
+        this.id = id;
+        this.tipo = tipo;
+        this.status = status;
+        this.idCobranca = idCobranca;
+        this.valor = valor;
+        this.valorLiquido = valorLiquido;
+        this.parcelas = parcelas;
+        this.cartao = cartao;
+        this.motivoRecusa = motivoRecusa;
+        this.dataCriacao = dataCriacao;
+        this.dataConfirmacao = dataConfirmacao;
+        this.urlBoleto = urlBoleto;
+        this.dataVencimento = dataVencimento;
+    }
+
+    /**
+     * Registra a intenção de estornar {@code valor}. Exige pagamento confirmado ou recebido e não deixa
+     * o total estornado (concluído ou em aberto) passar do valor pago.
+     */
+    public Estorno solicitarEstorno(OrigemEstornoEnum origem, Long devolucaoId, BigDecimal valor) {
+        if (this.status != StatusPagamentoEnum.CONFIRMADO && this.status != StatusPagamentoEnum.RECEBIDO) {
+            throw new RegraDeNegocioException("Só é possível estornar um pagamento confirmado ou recebido.");
+        }
+        if (valor == null || valor.signum() <= 0) {
+            throw new RegraDeNegocioException("O valor do estorno deve ser maior que zero.");
+        }
+        BigDecimal comprometido = this.estornos.stream()
+                .filter(estorno -> estorno.getStatus() == StatusEstornoEnum.CONCLUIDO || estorno.getStatus().emAberto())
+                .map(Estorno::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (comprometido.add(valor).compareTo(this.valor) > 0) {
+            throw new RegraDeNegocioException("O valor do estorno ultrapassa o valor pago.");
+        }
+
+        Estorno estorno = new Estorno(null, origem, devolucaoId, valor, StatusEstornoEnum.SOLICITADO,
+                null, null, LocalDateTime.now(), null);
+        this.estornos.add(estorno);
+        return estorno;
+    }
+
+    /** Soma dos estornos concluídos. */
+    public BigDecimal valorEstornado() {
+        return this.estornos.stream()
+                .filter(estorno -> estorno.getStatus() == StatusEstornoEnum.CONCLUIDO)
+                .map(Estorno::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /** Conclui o estorno; com o valor pago todo devolvido, o pagamento vira ESTORNADO. */
+    public void concluirEstorno(Estorno estorno) {
+        if (estorno.getStatus() == StatusEstornoEnum.CONCLUIDO) {
+            return;
+        }
+        estorno.setStatus(StatusEstornoEnum.CONCLUIDO);
+        estorno.setDataConclusao(LocalDateTime.now());
+        if (this.valorEstornado().compareTo(this.valor) >= 0) {
+            this.status = StatusPagamentoEnum.ESTORNADO;
+        }
+    }
+
+    /** Estorno em aberto mais antigo (o fornecedor não diz qual estorno o evento conclui). */
+    public Optional<Estorno> estornoEmAberto() {
+        return this.estornos.stream().filter(estorno -> estorno.getStatus().emAberto()).findFirst();
+    }
 
     /** Pagamento escolhido na criação do pedido, antes de existir cobrança no Asaas. */
     public static Pagamento pendente(TipoPagamentoEnum tipo) {

@@ -1,6 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEstornoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
@@ -296,5 +297,103 @@ class GatewayPagamentoAsaasTest {
         assertThatThrownBy(() -> gateway.criarCobranca(solicitacao(TipoPagamentoEnum.CREDIT_CARD, 1, "tok_abc", "200.1.2.3", null)))
                 .isInstanceOf(CobrancaSemRespostaException.class);
         asaas.verify(1, postRequestedFor(urlPathEqualTo("/v3/payments/")));
+    }
+
+    // ---- Estorno e cancelamento de cobrança ----
+
+    @Test
+    void estornoPixDeveEnviarValorEDescricao() throws Exception {
+        // Arrange
+        asaas.stubFor(post(urlPathEqualTo("/v3/payments/pay_1/refund")).willReturn(okJson("""
+                {"id":"pay_1","status":"REFUNDED","refunds":[{"status":"DONE","value":221.19,"dateCreated":"2026-11-04 10:00:00"}]}""")));
+
+        // Act
+        gateway.estornar(new SolicitacaoEstorno("pay_1", TipoPagamentoEnum.PIX, new BigDecimal("221.19"), "cancelamento do pedido 10"));
+
+        // Assert
+        JsonNode corpo = corpoEnviado();
+        assertThat(corpo.get("value").decimalValue()).isEqualByComparingTo("221.19");
+        assertThat(corpo.get("description").asText()).isEqualTo("cancelamento do pedido 10");
+    }
+
+    @Test
+    void estornoConcluidoNaHoraDeveVirConcluido() {
+        // Arrange
+        asaas.stubFor(post(urlPathEqualTo("/v3/payments/pay_1/refund")).willReturn(okJson("""
+                {"id":"pay_1","status":"REFUNDED","refunds":[{"status":"DONE","value":221.19}]}""")));
+
+        // Act
+        ResultadoEstorno resultado = gateway.estornar(new SolicitacaoEstorno("pay_1", TipoPagamentoEnum.PIX, new BigDecimal("221.19"), "x"));
+
+        // Assert
+        assertThat(resultado.status()).isEqualTo(StatusEstornoEnum.CONCLUIDO);
+        assertThat(resultado.urlSolicitacaoBoleto()).isNull();
+    }
+
+    @Test
+    void estornoParcialDeCartaoEmProcessamentoDeveVirEmAndamento() {
+        // Arrange: parcial no cartão — a cobrança continua CONFIRMED e o estorno mais recente está PENDING
+        asaas.stubFor(post(urlPathEqualTo("/v3/payments/pay_1/refund")).willReturn(okJson("""
+                {"id":"pay_1","status":"CONFIRMED","refunds":[
+                  {"status":"DONE","value":50.00,"dateCreated":"2026-11-01 10:00:00"},
+                  {"status":"PENDING","value":30.00,"dateCreated":"2026-11-04 10:00:00"}]}""")));
+
+        // Act
+        ResultadoEstorno resultado = gateway.estornar(new SolicitacaoEstorno("pay_1", TipoPagamentoEnum.CREDIT_CARD, new BigDecimal("30.00"), "x"));
+
+        // Assert
+        assertThat(resultado.status()).isEqualTo(StatusEstornoEnum.EM_ANDAMENTO);
+    }
+
+    @Test
+    void estornoDeBoletoDeveUsarOEndpointDoBoletoEDevolverOLinkParaOCliente() {
+        // Arrange
+        asaas.stubFor(post(urlPathEqualTo("/v3/payments/pay_b/bankSlip/refund")).willReturn(okJson("""
+                {"requestUrl":"https://sandbox.asaas.com/refundRequest/abc"}""")));
+
+        // Act
+        ResultadoEstorno resultado = gateway.estornar(new SolicitacaoEstorno("pay_b", TipoPagamentoEnum.BOLETO, new BigDecimal("221.19"), "x"));
+
+        // Assert
+        assertThat(resultado.status()).isEqualTo(StatusEstornoEnum.AGUARDANDO_CLIENTE);
+        assertThat(resultado.urlSolicitacaoBoleto()).isEqualTo("https://sandbox.asaas.com/refundRequest/abc");
+        asaas.verify(0, postRequestedFor(urlPathEqualTo("/v3/payments/pay_b/refund")));
+    }
+
+    @Test
+    void estornoRecusadoPeloAsaasDeveVirApiExternaException() {
+        // Arrange: ex.: saldo insuficiente para estornar PIX (as taxas não voltam)
+        asaas.stubFor(post(urlPathEqualTo("/v3/payments/pay_1/refund")).willReturn(aResponse().withStatus(400)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{\"errors\":[{\"code\":\"invalid_action\",\"description\":\"Saldo insuficiente\"}]}")));
+
+        // Act & Assert
+        assertThatThrownBy(() -> gateway.estornar(new SolicitacaoEstorno("pay_1", TipoPagamentoEnum.PIX, new BigDecimal("221.19"), "x")))
+                .isInstanceOf(ApiExternaException.class)
+                .isNotInstanceOf(CobrancaSemRespostaException.class);
+    }
+
+    @Test
+    void estornoSemRespostaDeveVirCobrancaSemRespostaSemRepetir() {
+        // Arrange
+        asaas.stubFor(post(urlPathEqualTo("/v3/payments/pay_1/refund")).willReturn(okJson("{}").withFixedDelay(3000)));
+
+        // Act & Assert
+        assertThatThrownBy(() -> gateway.estornar(new SolicitacaoEstorno("pay_1", TipoPagamentoEnum.PIX, new BigDecimal("221.19"), "x")))
+                .isInstanceOf(CobrancaSemRespostaException.class);
+        asaas.verify(1, postRequestedFor(urlPathEqualTo("/v3/payments/pay_1/refund")));
+    }
+
+    @Test
+    void cancelarCobrancaDeveExcluirACobrancaNoAsaas() {
+        // Arrange
+        asaas.stubFor(delete(urlPathEqualTo("/v3/payments/pay_p")).willReturn(okJson("""
+                {"deleted":true,"id":"pay_p"}""")));
+
+        // Act
+        gateway.cancelarCobranca("pay_p");
+
+        // Assert
+        asaas.verify(1, deleteRequestedFor(urlPathEqualTo("/v3/payments/pay_p")));
     }
 }

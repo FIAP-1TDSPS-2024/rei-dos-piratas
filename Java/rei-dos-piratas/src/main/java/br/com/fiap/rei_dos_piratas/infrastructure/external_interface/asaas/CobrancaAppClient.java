@@ -3,6 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas;
 import br.com.fiap.rei_dos_piratas.infrastructure.config.feign.CobrancaFeignConfig;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +27,12 @@ public interface CobrancaAppClient {
     @GetMapping("/v3/payments/{id}/identificationField")
     LinhaDigitavelBoletoResponseDto obterLinhaDigitavelBoleto(@PathVariable("id") String id);
 
-    //@PostMapping("/v3/payments/{id}/refund")
-    //void estornarCobranca(@PathVariable("id") String id, @RequestBody EstornoCobrancaRequestDto request);
+    @PostMapping("/v3/payments/{id}/refund")
+    EstornoCobrancaResponseDto estornarCobranca(@PathVariable("id") String id, @RequestBody EstornoCobrancaRequestDto request);
+
+    @PostMapping("/v3/payments/{id}/bankSlip/refund")
+    EstornoBoletoResponseDto estornarBoleto(@PathVariable("id") String id);
+
+    @DeleteMapping("/v3/payments/{id}")
+    void excluirCobranca(@PathVariable("id") String id);
 }

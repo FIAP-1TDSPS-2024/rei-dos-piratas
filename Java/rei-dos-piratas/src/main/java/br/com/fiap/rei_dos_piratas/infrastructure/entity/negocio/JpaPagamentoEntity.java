@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "PAGAMENTOS")
@@ -62,4 +61,28 @@ public class JpaPagamentoEntity {
     private String urlBoleto;
 
     private java.time.LocalDate dataVencimento;
+
+    @OneToMany(mappedBy = "pagamento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id")
+    private java.util.List<JpaEstornoEntity> estornos = new java.util.ArrayList<>();
+
+    public JpaPagamentoEntity(Long id, JpaPedidoEntity pedido, TipoPagamentoEnum tipo, StatusPagamentoEnum status,
+                              String idCobranca, BigDecimal valor, BigDecimal valorLiquido, Integer parcelas,
+                              JpaCartaoClienteEntity cartao, String motivoRecusa, LocalDateTime dataCriacao,
+                              LocalDateTime dataConfirmacao, String urlBoleto, java.time.LocalDate dataVencimento) {
+        this.id = id;
+        this.pedido = pedido;
+        this.tipo = tipo;
+        this.status = status;
+        this.idCobranca = idCobranca;
+        this.valor = valor;
+        this.valorLiquido = valorLiquido;
+        this.parcelas = parcelas;
+        this.cartao = cartao;
+        this.motivoRecusa = motivoRecusa;
+        this.dataCriacao = dataCriacao;
+        this.dataConfirmacao = dataConfirmacao;
+        this.urlBoleto = urlBoleto;
+        this.dataVencimento = dataVencimento;
+    }
 }

@@ -1,73 +1,69 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
-import br.com.fiap.rei_dos_piratas.application.service.DevolucaoService;
 import br.com.fiap.rei_dos_piratas.application.service.EstornoService;
-import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
-import br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum;
-import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
-import br.com.fiap.rei_dos_piratas.domain.entity.Devolucao;
-import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEstornoEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoEventoPagamento;
+import br.com.fiap.rei_dos_piratas.domain.entity.Estorno;
 import br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento;
+import br.com.fiap.rei_dos_piratas.domain.entity.Pagamento;
+import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
+import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
+/**
+ * Aplica no pagamento do pedido os eventos de estorno do fornecedor. O fornecedor não diz qual estorno
+ * o evento resolve: vale o mais antigo em aberto. Evento sem estorno em aberto é só registrado (sem exceção,
+ * senão o evento seria reprocessado sem fim); a deduplicação por id do evento fica no EventoExterno.
+ */
 @Slf4j
 public class EstornoServiceImpl implements EstornoService {
 
-    private final PedidoService pedidoService;
+    private final PedidoRepository repository;
 
-    private final DevolucaoService devolucaoService;
-
-    public EstornoServiceImpl(PedidoService pedidoService, DevolucaoService devolucaoService) {
-        this.pedidoService = pedidoService;
-        this.devolucaoService = devolucaoService;
+    public EstornoServiceImpl(PedidoRepository repository) {
+        this.repository = repository;
     }
 
+    @Transactional
     @Override
     public void processarEventoEstorno(Long pedidoId, EventoPagamento evento) {
-        log.info("Processando evento de estorno para pedido ID={} — evento={}", pedidoId, evento.tipoOriginal());
+        log.info("[ESTORNO] Evento {} para pedido ID={}", evento.tipoOriginal(), pedidoId);
 
-        Pedido pedido = pedidoService.findById(pedidoId);
-
-        if (pedido.getStatus().equals(StatusEnum.CANCELADO)) {
-            tratarEvento(pedidoId, evento, OrigemEstornoEnum.CANCELAMENTO, null);
+        if (evento.tipo() == TipoEventoPagamento.OUTRO_ESTORNO) {
+            log.error("[ESTORNO] Contestação ou reversão {} no pedido ID={} — tratar manualmente", evento.tipoOriginal(), pedidoId);
+            return;
         }
-        else {
-            List<Devolucao> devolucoes = devolucaoService.findAllByPedidoId(pedidoId);
-            if (devolucoes.isEmpty()) {
-                log.info("Nenhuma devolução encontrada para o pedido ID={} — evento={}", pedidoId, evento.tipoOriginal());
-            } else {
-                Optional<Devolucao> ultimaDevolucao = devolucoes.stream()
-                        .filter(d -> d.getDataConclusao() != null)
-                        .max(Comparator.comparing(Devolucao::getDataConclusao));
 
-                if (ultimaDevolucao.isEmpty()) {
-                    log.info("Nenhuma devolução retornada para o pedido ID={}", pedidoId);
-                } else {
-                    Devolucao devolucao = ultimaDevolucao.get();
-                    tratarEvento(pedidoId, evento, OrigemEstornoEnum.DEVOLUCAO, devolucao.getId());
-                }
+        Pedido pedido = this.repository.findById(pedidoId);
+        Pagamento pagamento = pedido.getPagamento();
+        Optional<Estorno> emAberto = pagamento == null ? Optional.empty() : pagamento.estornoEmAberto();
+        if (emAberto.isEmpty()) {
+            log.warn("[ESTORNO] Evento {} sem estorno em aberto no pedido ID={} — nada a atualizar", evento.tipoOriginal(), pedidoId);
+            return;
+        }
+
+        Estorno estorno = emAberto.get();
+        switch (evento.tipo()) {
+            case ESTORNADA, ESTORNO_PARCIAL -> {
+                pagamento.concluirEstorno(estorno);
+                log.info("[ESTORNO] Estorno ID={} concluído — pagamento do pedido ID={} com status {}",
+                        estorno.getId(), pedidoId, pagamento.getStatus());
+            }
+            case ESTORNO_EM_ANDAMENTO -> estorno.setStatus(StatusEstornoEnum.EM_ANDAMENTO);
+            case ESTORNO_NEGADO -> {
+                estorno.setStatus(StatusEstornoEnum.NEGADO);
+                estorno.setMotivoFalha(evento.motivoRecusa());
+                log.error("[ESTORNO] Estorno ID={} do pedido ID={} negado pelo fornecedor — tratar manualmente",
+                        estorno.getId(), pedidoId);
+            }
+            default -> {
+                log.warn("[ESTORNO] Evento {} sem tratamento no pedido ID={}", evento.tipoOriginal(), pedidoId);
+                return;
             }
         }
-    }
-
-    private void tratarEvento(Long pedidoId, EventoPagamento evento, OrigemEstornoEnum origem, Long devolucaoId) {
-        log.info("Estorno [origem={}] pedido ID={} devolução ID={} — evento={}", origem, pedidoId, devolucaoId, evento.tipoOriginal());
-
-        switch (evento.tipo()) {
-            case ESTORNADA ->
-                    log.info("Estorno feito com sucesso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
-            case ESTORNO_PARCIAL ->
-                    log.info("Estorno parcial feito com sucesso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
-            case ESTORNO_EM_ANDAMENTO ->
-                    log.info("Estorno em progresso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
-            case ESTORNO_NEGADO ->
-                    log.info("Estorno negado [origem={}] pedido ID={} devolução ID={} — motivo: {}", origem, pedidoId, devolucaoId, evento.motivoRecusa());
-            default ->
-                    log.warn("Evento sem tratamento [origem={}] pedido ID={} devolução ID={} — evento={}", origem, pedidoId, devolucaoId, evento.tipoOriginal());
-        }
+        this.repository.update(pedido);
     }
 }

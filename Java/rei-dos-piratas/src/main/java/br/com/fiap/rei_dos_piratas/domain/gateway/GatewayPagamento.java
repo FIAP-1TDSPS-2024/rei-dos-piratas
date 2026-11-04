@@ -22,4 +22,10 @@ public interface GatewayPagamento {
     QrCodePix obterQrCodePix(String idCobranca);
 
     LinhaDigitavel obterLinhaDigitavel(String idCobranca);
+
+    /** Pede o estorno (total ou parcial) de uma cobrança paga. */
+    ResultadoEstorno estornar(SolicitacaoEstorno solicitacao);
+
+    /** Cancela uma cobrança ainda não paga (não devolve valores já pagos). */
+    void cancelarCobranca(String idCobranca);
 }

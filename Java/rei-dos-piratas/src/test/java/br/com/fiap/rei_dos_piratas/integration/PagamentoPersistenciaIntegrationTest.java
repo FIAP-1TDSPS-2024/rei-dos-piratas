@@ -230,4 +230,60 @@ class PagamentoPersistenciaIntegrationTest {
         assertThat(regraParcelamento.valorMinimo()).isEqualByComparingTo("100.00");
         assertThat(regraParcelamento.maxParcelas()).isEqualTo(3);
     }
+
+    // ---- Estornos do pagamento ----
+
+    private Pedido pedidoPago() {
+        Pedido pedido = pedidos.findById(novoPedidoGravado(TipoPagamentoEnum.PIX).getId());
+        pedido.getPagamento().setStatus(StatusPagamentoEnum.RECEBIDO);
+        pedido.getPagamento().setIdCobranca("pay_estorno");
+        pedidos.update(pedido);
+        sincronizar();
+        return pedidos.findById(pedido.getId());
+    }
+
+    @Test
+    void deveGravarERelerOEstornoSolicitadoDoPagamento() {
+        // Arrange
+        Pedido pedido = pedidoPago();
+        pedido.getPagamento().solicitarEstorno(br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum.CANCELAMENTO,
+                null, new BigDecimal("221.19"));
+
+        // Act
+        pedidos.update(pedido);
+        sincronizar();
+        List<Estorno> estornos = pedidos.findById(pedido.getId()).getPagamento().getEstornos();
+
+        // Assert
+        assertThat(estornos).singleElement().satisfies(estorno -> {
+            assertThat(estorno.getId()).isNotNull();
+            assertThat(estorno.getOrigem()).isEqualTo(br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum.CANCELAMENTO);
+            assertThat(estorno.getStatus()).isEqualTo(br.com.fiap.rei_dos_piratas.domain.Enum.StatusEstornoEnum.SOLICITADO);
+            assertThat(estorno.getValor()).isEqualByComparingTo("221.19");
+            assertThat(estorno.getDataSolicitacao()).isNotNull();
+        });
+    }
+
+    @Test
+    void concluirOEstornoDeveAtualizarAMesmaLinhaEMarcarOPagamentoEstornado() {
+        // Arrange
+        Pedido pedido = pedidoPago();
+        pedido.getPagamento().solicitarEstorno(br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum.CANCELAMENTO,
+                null, new BigDecimal("221.19"));
+        pedidos.update(pedido);
+        sincronizar();
+        Pedido relido = pedidos.findById(pedido.getId());
+
+        // Act
+        relido.getPagamento().concluirEstorno(relido.getPagamento().getEstornos().getFirst());
+        pedidos.update(relido);
+        sincronizar();
+
+        // Assert
+        Pagamento pagamento = pedidos.findById(pedido.getId()).getPagamento();
+        assertThat(pagamento.getStatus()).isEqualTo(StatusPagamentoEnum.ESTORNADO);
+        assertThat(pagamento.getEstornos()).singleElement().satisfies(estorno ->
+                assertThat(estorno.getStatus()).isEqualTo(br.com.fiap.rei_dos_piratas.domain.Enum.StatusEstornoEnum.CONCLUIDO));
+        assertThat(((Number) valor("SELECT COUNT(*) FROM ESTORNOS")).intValue()).isEqualTo(1);
+    }
 }

@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.config.pagamento;
 
 import br.com.fiap.rei_dos_piratas.application.service.DevolucaoService;
 import br.com.fiap.rei_dos_piratas.application.service.EstornoService;
+import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.application.service.EventoExternoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.RastreioCobrancaService;
@@ -25,8 +26,8 @@ public class EventoExternoServiceConfig {
     }
 
     @Bean
-    public EstornoService estornoService(PedidoService pedidoService, DevolucaoService devolucaoService) {
-        return new EstornoServiceImpl(pedidoService, devolucaoService);
+    public EstornoService estornoService(PedidoRepository pedidoRepository) {
+        return new EstornoServiceImpl(pedidoRepository);
     }
 
     @Bean
