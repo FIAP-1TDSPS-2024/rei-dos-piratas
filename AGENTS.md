@@ -265,6 +265,19 @@ Antes de corrigir, escreva um teste que **reproduz o bug e falha**. Só então c
 - Health check: `HealthRestController`.
 - Infraestrutura como código ainda não existe; ao propor, prefira Terraform ou AWS CDK em uma pasta `infra/` na raiz.
 
+## Front-end web (Thymeleaf)
+
+- Controllers MVC em `infrastructure/mvc` (só delegam aos controllers de `interfaces`), templates em `src/main/resources/templates` (área do cliente em `conta/`). Rotas: `/web/conta/**` só cliente (`ENDERECO_MANAGE`); `/web/pedidos/**` e `/web/devolucoes/**` funcionário (`PEDIDO_WRITE`); `/web/simulador/**` só com `APP_SIMULADOR_EVENTOS=true`.
+- Testes com `@WebMvcTest` renderizando o template real; permissões no `PermissoesIntegrationTest`.
+- O login web exige contexto seguro (HTTPS ou `http://localhost`): cookies `Secure` e `navigator.locks` do `web-auth.js` não funcionam em `http://<IP>` (VM sem TLS).
+- Detalhes nos agentes `frontend-analista` e `frontend-desenvolvedor`.
+
+## Agentes do projeto (`.claude/agents/`)
+
+- `backend-analista` / `backend-desenvolvedor`: análise (sem editar) e implementação TDD do back-end.
+- `frontend-analista` / `frontend-desenvolvedor`: análise (sem editar) e implementação TDD das telas Thymeleaf.
+- Cada agente traz o recorte deste arquivo de que precisa; **este arquivo prevalece**. Ao mudar uma regra aqui, atualize o agente correspondente (e vice-versa).
+
 ## Como trabalhar comigo (agente)
 
 1. Para tarefas não triviais, apresente um plano curto (incluindo os casos de teste) antes de editar e espere aprovação.
