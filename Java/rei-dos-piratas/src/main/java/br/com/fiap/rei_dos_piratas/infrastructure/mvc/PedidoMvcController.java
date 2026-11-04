@@ -69,7 +69,23 @@ public class PedidoMvcController {
     public String detalhesPedido(Model model, @PathVariable Long id) {
         PedidoOutDto pedido = controller.findById(id);
         model.addAttribute("pedido", pedido);
+        model.addAttribute("estornos", controller.listarEstornos(id));
+        // Só decide se o botão aparece; a regra continua no serviço
+        model.addAttribute("podeCancelar", pedido.status() == StatusEnum.AGUARDANDO_PAGAMENTO
+                || pedido.status() == StatusEnum.PREPARANDO_ENVIO);
         return "pedido-detalhes";
+    }
+
+    /** Cancela o pedido ainda não enviado; se já estava pago, o estorno total é solicitado ao Asaas. */
+    @PostMapping("/{id}/cancelar")
+    public String cancelarPedido(@PathVariable Long id, RedirectAttributes redirectAttrs) {
+        try {
+            controller.cancelarPedido(id);
+            redirectAttrs.addFlashAttribute("successMessage", "Pedido cancelado. Se já estava pago, o estorno foi solicitado.");
+        } catch (RuntimeException e) {
+            redirectAttrs.addFlashAttribute("errorMessage", MensagemWeb.de(e));
+        }
+        return "redirect:/web/pedidos/" + id;
     }
 
     // ─── ORGANIZAR PEDIDOS PARA ENVIO ────────────────────────────────────────
@@ -216,18 +232,5 @@ public class PedidoMvcController {
         return "redirect:/web/pedidos/imprimir";
     }
 
-    @PostMapping("/{id}/cancelar")
-    public String cancelarPedido(@PathVariable Long id, RedirectAttributes redirectAttrs) {
-        try {
-            controller.cancelarPedido(id);
-            redirectAttrs.addFlashAttribute("successMessage", "Pedido #" + id + " cancelado.");
-        } catch (WrongStatusException e) {
-            redirectAttrs.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("Erro ao cancelar pedido id={}", id, e);
-            redirectAttrs.addFlashAttribute("errorMessage", "Erro ao cancelar o pedido. Tente novamente.");
-        }
-        return "redirect:/web/pedidos";
-    }
 }
 

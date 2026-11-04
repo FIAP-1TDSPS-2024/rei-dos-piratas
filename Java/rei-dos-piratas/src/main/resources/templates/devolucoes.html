@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devoluções</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<main class="max-w-screen-xl w-full mx-auto px-4 py-8 flex-1">
+    <h1 class="text-2xl font-black">Devoluções</h1>
+    <p class="text-sm text-gray-500">Filtrando por: <span class="font-semibold" th:text="${statusAtual}">EM_ANALISE</span></p>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
+
+    <nav class="mt-4 flex flex-wrap gap-2 text-sm">
+        <a th:each="s : ${todosStatus}" th:href="@{/web/devolucoes/status/{s}(s=${s})}" th:text="${s}"
+           th:classappend="${s == statusAtual} ? 'bg-gray-900 text-white' : 'bg-white'"
+           class="px-3 py-1 rounded-full border">STATUS</a>
+    </nav>
+
+    <p th:if="${#lists.isEmpty(devolucoes)}" class="mt-6 bg-white rounded-xl shadow p-8 text-center text-gray-600">
+        Nenhuma devolução neste status.</p>
+
+    <form th:unless="${#lists.isEmpty(devolucoes)}" th:action="@{/web/devolucoes/organizar}" method="post"
+          class="mt-6 bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-gray-500">
+            <tr>
+                <th class="p-3" th:if="${statusAtual.name() == 'PREPARANDO_RETORNO'}"></th>
+                <th class="p-3">Devolução</th><th class="p-3">Pedido</th><th class="p-3">Motivo</th>
+                <th class="p-3">Itens</th><th class="p-3">Solicitada em</th><th class="p-3"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="devolucao : ${devolucoes}" class="border-t">
+                <td class="p-3" th:if="${statusAtual.name() == 'PREPARANDO_RETORNO'}">
+                    <input type="checkbox" name="devolucoesSelecionadas" th:value="${devolucao.id}"></td>
+                <td class="p-3 font-semibold" th:text="${'#' + devolucao.id}">#1</td>
+                <td class="p-3"><a th:href="@{/web/pedidos/{id}(id=${devolucao.pedidoId})}" class="text-blue-700" th:text="${'#' + devolucao.pedidoId}">#1</a></td>
+                <td class="p-3" th:text="${devolucao.motivoDescricao}">Motivo</td>
+                <td class="p-3" th:text="${#lists.size(devolucao.itens) + ' item(ns)'}">1 item(ns)</td>
+                <td class="p-3" th:text="${#temporals.format(devolucao.dataSolicitacao, 'dd/MM/yyyy')}"></td>
+                <td class="p-3"><a th:href="@{/web/devolucoes/{id}(id=${devolucao.id})}" class="text-blue-700 font-semibold">Abrir</a></td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${statusAtual.name() == 'PREPARANDO_RETORNO'}" class="p-3 border-t bg-gray-50">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold">Pagar fretes de retorno selecionados</button>
+        </div>
+    </form>
+</main>
+
+<div th:replace="~{fragments.html :: footer}"></div>
+</body>
+</html>

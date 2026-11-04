@@ -128,6 +128,11 @@ class PermissoesIntegrationTest {
                 .andExpect(status().isForbidden());
         mvc.perform(get("/web/conta/carrinho").accept(MediaType.TEXT_HTML))
                 .andExpect(status().is3xxRedirection());
+        // Painel de devoluções é do funcionário
+        mvc.perform(get("/web/devolucoes").cookie(new Cookie("jwt_token", clienteToken)))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/web/devolucoes").cookie(new Cookie("jwt_token", token)))
+                .andExpect(status().isOk());
     }
 
     @Test

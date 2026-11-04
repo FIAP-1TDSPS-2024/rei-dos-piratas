@@ -83,6 +83,16 @@
                     <span>Pedidos</span>
                 </a>
 
+                <!-- Funcionario: Devolucoes -->
+                <a sec:authorize="hasRole('PEDIDO_WRITE')"
+                   th:href="@{/web/devolucoes}"
+                   class="flex flex-col items-center text-gray-900 hover:text-gray-700 transition text-xs font-medium">
+                    <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                    </svg>
+                    <span>Devoluções</span>
+                </a>
+
                 <!-- Funcionario: Cadastrar -->
                 <a sec:authorize="hasRole('PRODUTO_WRITE')"
                    th:href="@{/web/produtos/novo}"

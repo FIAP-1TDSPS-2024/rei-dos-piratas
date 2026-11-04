@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Devolução ' + devolucao.id}">Devolução</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <th:block th:replace="~{fragments.html :: head-scripts}"></th:block>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments.html :: navbar}"></div>
+
+<main class="max-w-screen-lg w-full mx-auto px-4 py-8 flex-1 space-y-4">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-black" th:text="${'Devolução #' + devolucao.id}">Devolução</h1>
+        <a th:href="@{/web/devolucoes/status/{s}(s=${devolucao.status})}" class="text-sm text-blue-700">← Devoluções</a>
+    </div>
+    <div th:replace="~{fragments.html :: flash-messages}"></div>
+
+    <section class="bg-white rounded-xl shadow p-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+        <p>Status: <span class="font-semibold" th:text="${devolucao.status}">EM_ANALISE</span></p>
+        <p>Pedido: <a th:href="@{/web/pedidos/{id}(id=${devolucao.pedidoId})}" class="text-blue-700" th:text="${'#' + devolucao.pedidoId}">#1</a></p>
+        <p>Motivo: <span th:text="${devolucao.motivoDescricao}"></span></p>
+        <p>Solicitada em: <span th:text="${#temporals.format(devolucao.dataSolicitacao, 'dd/MM/yyyy')}"></span></p>
+        <p class="sm:col-span-2" th:if="${devolucao.descricao != null}">Descrição do cliente: <span th:text="${devolucao.descricao}"></span></p>
+        <p th:if="${devolucao.tracking != null}">Rastreio do retorno:
+            <a th:if="${devolucao.trackingUrl != null}" th:href="${devolucao.trackingUrl}" target="_blank" rel="noopener" class="text-blue-700" th:text="${devolucao.tracking}"></a>
+            <span th:unless="${devolucao.trackingUrl != null}" th:text="${devolucao.tracking}"></span></p>
+        <p th:if="${devolucao.dataConclusao != null}">Retornou em: <span th:text="${#temporals.format(devolucao.dataConclusao, 'dd/MM/yyyy')}"></span></p>
+    </section>
+
+    <section class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-bold mb-2">Itens devolvidos</h2>
+        <ul class="text-sm divide-y">
+            <li th:each="item : ${devolucao.itens}" class="py-1 flex justify-between">
+                <span th:text="${item.quantidade + ' x ' + item.produtoNome}">1 x Produto</span>
+                <span th:text="${'R$ ' + #numbers.formatDecimal(item.precoUnitario, 1, 'POINT', 2, 'COMMA') + ' cada'}">R$ 0,00</span>
+            </li>
+        </ul>
+    </section>
+
+    <section th:unless="${#lists.isEmpty(estornos)}" class="bg-white rounded-xl shadow p-4 text-sm">
+        <h2 class="font-bold mb-2">Estorno ao cliente</h2>
+        <p th:each="estorno : ${estornos}">
+            <span th:text="${'R$ ' + #numbers.formatDecimal(estorno.valor, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span> ·
+            <span class="font-semibold" th:text="${estorno.status}">SOLICITADO</span>
+        </p>
+        <p class="text-xs text-gray-500 mt-1">FALHOU ou NEGADO precisam de ação manual no painel do Asaas.</p>
+    </section>
+
+    <section class="bg-white rounded-xl shadow p-4 flex flex-wrap gap-2">
+        <th:block th:if="${devolucao.status.name() == 'EM_ANALISE'}">
+            <form th:action="@{/web/devolucoes/{id}/aprovar(id=${devolucao.id})}" method="post">
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-bold">Aprovar (cria o envio reverso)</button>
+            </form>
+            <form th:action="@{/web/devolucoes/{id}/recusar(id=${devolucao.id})}" method="post">
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold">Recusar</button>
+            </form>
+        </th:block>
+        <p th:if="${devolucao.status.name() == 'PREPARANDO_RETORNO'}" class="text-sm text-gray-600">
+            Pague o frete de retorno na lista de devoluções em PREPARANDO_RETORNO.</p>
+        <form th:if="${devolucao.status.name() == 'RETORNADO'}" th:action="@{/web/devolucoes/{id}/concluir(id=${devolucao.id})}" method="post"
+              onsubmit="return confirm('Confirma que os itens foram recebidos e conferidos? O estorno será solicitado ao Asaas.');">
+            <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold">Concluir e estornar ao cliente</button>
+        </form>
+    </section>
+</main>
+
+<div th:replace="~{fragments.html :: footer}"></div>
+</body>
+</html>

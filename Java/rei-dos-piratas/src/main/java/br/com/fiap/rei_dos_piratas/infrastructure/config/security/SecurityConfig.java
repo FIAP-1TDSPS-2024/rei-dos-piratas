@@ -105,6 +105,8 @@ public class SecurityConfig {
                         .requestMatchers("/web/pedidos/**").hasRole("PEDIDO_WRITE")
                         // Área do cliente na web (carrinho, checkout, pedidos e devoluções próprios): só o perfil CLIENT
                         .requestMatchers("/web/conta/**").hasRole("ENDERECO_MANAGE")
+                        // Painel web de devoluções para funcionários
+                        .requestMatchers("/web/devolucoes/**").hasRole("PEDIDO_WRITE")
                         // Operações de devoluções
                         .requestMatchers(HttpMethod.POST, "/devolucoes/**").hasRole("PEDIDO_READ")
                         .requestMatchers(HttpMethod.GET, "/devolucoes/**").hasAnyRole("PEDIDO_READ", "PEDIDO_WRITE")
