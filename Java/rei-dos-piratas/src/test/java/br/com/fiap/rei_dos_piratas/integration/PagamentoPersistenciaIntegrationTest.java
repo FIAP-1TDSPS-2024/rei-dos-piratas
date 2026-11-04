@@ -156,6 +156,25 @@ class PagamentoPersistenciaIntegrationTest {
     }
 
     @Test
+    void deveSalvarERelerUrlEVencimentoDoBoleto() {
+        // Arrange
+        Pedido pedido = pedidos.findById(novoPedidoGravado(TipoPagamentoEnum.BOLETO).getId());
+        pedido.getPagamento().setIdCobranca("pay_boleto");
+        pedido.getPagamento().setUrlBoleto("https://sandbox.asaas.com/b/pdf/pay_boleto");
+        pedido.getPagamento().setDataVencimento(java.time.LocalDate.of(2026, 11, 2));
+
+        // Act
+        pedidos.update(pedido);
+        sincronizar();
+        Pagamento relido = pedidos.findById(pedido.getId()).getPagamento();
+
+        // Assert
+        assertThat(relido.getTipo()).isEqualTo(TipoPagamentoEnum.BOLETO);
+        assertThat(relido.getUrlBoleto()).isEqualTo("https://sandbox.asaas.com/b/pdf/pay_boleto");
+        assertThat(relido.getDataVencimento()).isEqualTo(java.time.LocalDate.of(2026, 11, 2));
+    }
+
+    @Test
     void deveAtualizarOPagamentoExistenteSemCriarOutroRegistro() {
         // Arrange
         Pedido pedido = pedidos.findById(novoPedidoGravado(TipoPagamentoEnum.PIX).getId());

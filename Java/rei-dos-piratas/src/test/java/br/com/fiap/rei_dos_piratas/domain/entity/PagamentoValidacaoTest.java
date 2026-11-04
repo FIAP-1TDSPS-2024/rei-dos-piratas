@@ -36,7 +36,7 @@ class PagamentoValidacaoTest {
     private Pagamento pagamentoValido() {
         return new Pagamento(1L, TipoPagamentoEnum.CREDIT_CARD, StatusPagamentoEnum.CONFIRMADO, "pay_000001",
                 new BigDecimal("221.19"), new BigDecimal("210.50"), 3, null, null,
-                LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1));
+                LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), null, null);
     }
 
     @Test
@@ -100,6 +100,14 @@ class PagamentoValidacaoTest {
         pagamento.setMotivoRecusa("m".repeat(256));
 
         assertThat(validator.validateProperty(pagamento, "motivoRecusa")).isNotEmpty();
+    }
+
+    @Test
+    void urlDoBoletoDeveTerNoMaximo500Caracteres() {
+        Pagamento pagamento = pagamentoValido();
+        pagamento.setUrlBoleto("https://example.com/" + "b".repeat(500));
+
+        assertThat(validator.validateProperty(pagamento, "urlBoleto")).isNotEmpty();
     }
 
     @ParameterizedTest

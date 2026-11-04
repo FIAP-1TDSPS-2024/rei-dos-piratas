@@ -18,5 +18,6 @@ public record PagamentoCobrancaRequestDto(
         Integer installmentCount,
         String creditCardToken,
         BigDecimal totalValue,
-        String remoteIp
+        String remoteIp,
+        Integer daysAfterDueDateToRegistrationCancellation
 ) {}

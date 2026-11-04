@@ -304,6 +304,32 @@ class PedidoRestControllerTest {
 
     @Test
     @WithMockUser(username = "jonas", roles = {"CLIENT"})
+    void obterBoleto_DeveRetornar200ComOsDadosEmSnakeCase() throws Exception {
+        when(this.pedidoController.obterBoleto(1L)).thenReturn(new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.BoletoOutDto(
+                "00190000090123456789012345678901234567890123", "00191234500000221190000001234567890123456789",
+                "https://sandbox.asaas.com/b/pdf/pay_boleto", LocalDate.of(2026, 11, 2)));
+
+        this.mockMvc.perform(get("/pedidos/{id}/boleto", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.linha_digitavel", is("00190000090123456789012345678901234567890123")))
+                .andExpect(jsonPath("$.codigo_barras", is("00191234500000221190000001234567890123456789")))
+                .andExpect(jsonPath("$.url_boleto", is("https://sandbox.asaas.com/b/pdf/pay_boleto")))
+                .andExpect(jsonPath("$.data_vencimento", is("2026-11-02")));
+    }
+
+    @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
+    void obterBoleto_PedidoSemBoletoDeveRetornar400() throws Exception {
+        when(this.pedidoController.obterBoleto(1L))
+                .thenThrow(new br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException("O pedido não foi pago com boleto."));
+
+        this.mockMvc.perform(get("/pedidos/{id}/boleto", 1L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("O pedido não foi pago com boleto.")));
+    }
+
+    @Test
+    @WithMockUser(username = "jonas", roles = {"CLIENT"})
     void fazerPedido_DeveRepassarOPrimeiroIpDoXForwardedFor() throws Exception {
         // Atrás do load balancer, o IP do comprador é o primeiro da lista
         this.mockMvc.perform(post("/pedidos")

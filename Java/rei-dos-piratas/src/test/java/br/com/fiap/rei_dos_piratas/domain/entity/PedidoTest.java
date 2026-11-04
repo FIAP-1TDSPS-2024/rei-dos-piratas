@@ -32,7 +32,7 @@ class PedidoTest {
         // Arrange
         Pedido pedido = new Pedido(null, null, new ArrayList<>(), 1L);
         pedido.setPagamento(new Pagamento(1L, TipoPagamentoEnum.BOLETO, StatusPagamentoEnum.PENDENTE, "pay_1",
-                new BigDecimal("50.00"), null, 1, null, null, LocalDateTime.now(), null));
+                new BigDecimal("50.00"), null, 1, null, null, LocalDateTime.now(), null, null, null));
 
         // Act & Assert
         assertThat(pedido.getTipoPagamento()).isEqualTo(TipoPagamentoEnum.BOLETO);

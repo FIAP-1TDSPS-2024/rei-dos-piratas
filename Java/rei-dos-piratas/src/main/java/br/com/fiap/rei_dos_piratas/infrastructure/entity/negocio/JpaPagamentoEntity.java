@@ -57,4 +57,9 @@ public class JpaPagamentoEntity {
     private LocalDateTime dataCriacao;
 
     private LocalDateTime dataConfirmacao;
+
+    @Column(length = 500)
+    private String urlBoleto;
+
+    private java.time.LocalDate dataVencimento;
 }

@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.application.service;
 
+import br.com.fiap.rei_dos_piratas.domain.entity.DadosBoleto;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.PagamentoCartao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
@@ -28,5 +29,7 @@ public interface PedidoService {
     Optional<Pedido> findByPedidoFrete(UUID pedidoFrete);
     Pedido cancelarPedido(Long id);
     PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id);
+    /** Linha digitável, código de barras, URL e vencimento do boleto do pedido. */
+    DadosBoleto obterBoleto(Long id);
     void processarEventoCobranca(Long pedidoId, EventoCobrancaDto evento);
 }

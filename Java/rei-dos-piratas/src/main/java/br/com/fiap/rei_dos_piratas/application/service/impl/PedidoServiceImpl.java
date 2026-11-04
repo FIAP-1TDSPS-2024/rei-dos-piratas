@@ -60,11 +60,13 @@ public class PedidoServiceImpl implements PedidoService {
 
     private final CartaoService cartaoService;
     private final RegraParcelamento regraParcelamento;
+    private final RegraBoleto regraBoleto;
 
     public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, CobrancaAppClient apiCobranca, UsuarioAtualService usuarioAtual,
-                             CartaoService cartaoService, RegraParcelamento regraParcelamento) {
+                             CartaoService cartaoService, RegraParcelamento regraParcelamento, RegraBoleto regraBoleto) {
         this.cartaoService = cartaoService;
         this.regraParcelamento = regraParcelamento;
+        this.regraBoleto = regraBoleto;
         this.usuarioAtual = usuarioAtual;
         this.repository = repository;
         this.produtoRepository = produtoRepository;
@@ -234,6 +236,11 @@ public class PedidoServiceImpl implements PedidoService {
         pagamento.setIdCobranca(response.id());
         pagamento.setValorLiquido(response.netValue());
 
+        if (TipoPagamentoEnum.BOLETO.equals(pagamento.getTipo())) {
+            pagamento.setUrlBoleto(response.bankSlipUrl());
+            pagamento.setDataVencimento(request.dueDate());
+        }
+
         // Cartão: o Asaas responde na hora; recusa vem como erro (PagamentoRecusadoException).
         // Em análise de risco a cobrança fica pendente até o webhook.
         if (TipoPagamentoEnum.CREDIT_CARD.equals(pagamento.getTipo()) && cobrancaAprovada(response)) {
@@ -268,6 +275,7 @@ public class PedidoServiceImpl implements PedidoService {
                         null,
                         null,
                         null,
+                        null,
                         null);
 
             case TipoPagamentoEnum.CREDIT_CARD:
@@ -286,10 +294,23 @@ public class PedidoServiceImpl implements PedidoService {
                         parcelado ? pedido.getPagamento().getParcelas() : null,
                         cartaoCliente.getToken(),
                         parcelado ? pedido.getValorTotal() : null,
-                        ipRemoto);
+                        ipRemoto,
+                        null);
 
             case TipoPagamentoEnum.BOLETO:
-                throw new UnsupportedOperationException("Pagamento por boleto não é suportado no momento");
+                // Registro cancelado logo após o vencimento: boleto vencido deixa de ser pagável
+                return new PagamentoCobrancaRequestDto(
+                        pedido.getCliente().getIdCobranca(),
+                        pedido.getTipoPagamento(),
+                        pedido.getValorTotal(),
+                        this.regraBoleto.vencimentoAPartirDe(LocalDate.now(FUSO_LOJA)),
+                        "cobrança do pedido " + pedido.getId(),
+                        pedido.getId().toString(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        RegraBoleto.DIAS_CANCELAMENTO_REGISTRO);
 
             default:
                 throw new RegraDeNegocioException("Tipo de pagamento não suportado: " + pedido.getTipoPagamento());
@@ -575,6 +596,25 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     @Override
+    public DadosBoleto obterBoleto(Long id) {
+        log.info("Consultando boleto do pedido ID={}", id);
+        Pedido pedido = this.findById(id);
+        Pagamento pagamento = pedido.getPagamento();
+
+        if (pagamento == null || !TipoPagamentoEnum.BOLETO.equals(pagamento.getTipo())) {
+            throw new RegraDeNegocioException("O pedido não foi pago com boleto.");
+        }
+        if (pagamento.getIdCobranca() == null) {
+            log.warn("Pedido ID={} não possui cobrança de boleto associada", id);
+            throw new RegraDeNegocioException("O pedido não possui cobrança associada.");
+        }
+
+        // Linha digitável consultada na hora: o Asaas recomenda buscar de novo se valor/vencimento mudarem
+        LinhaDigitavelBoletoResponseDto linha = this.apiCobranca.obterLinhaDigitavelBoleto(pagamento.getIdCobranca());
+        return new DadosBoleto(linha.identificationField(), linha.barCode(), pagamento.getUrlBoleto(), pagamento.getDataVencimento());
+    }
+
+    @Override
     public PixQrCodeResponseDto obterQrCodeCobrancaPix(Long id) {
         log.info("Iniciando consulta de QR Code de cobrança do pedido ID={}", id);
         Pedido pedido = this.findById(id);
@@ -618,7 +658,28 @@ public class PedidoServiceImpl implements PedidoService {
 
         if (pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO) {
             this.pagarPedido(pedidoId);
+        } else if (pedido.getStatus() == StatusEnum.CANCELADO) {
+            // Ex.: boleto compensado depois do vencimento. Não reativa (o estoque pode já ter sido vendido).
+            log.error("Pagamento recebido para pedido CANCELADO ID={} (cobrança {}) — estorno manual necessário",
+                    pedidoId, pagamento != null ? pagamento.getIdCobranca() : null);
         }
+    }
+
+    /** Cobrança vencida sem pagamento (boleto/PIX): cancela e devolve o estoque uma única vez. */
+    private void registrarVencimento(Long pedidoId) {
+        Pedido pedido = this.findById(pedidoId);
+        if (pedido.getStatus() != StatusEnum.AGUARDANDO_PAGAMENTO) {
+            log.info("Vencimento ignorado para pedido ID={} — status atual={}", pedidoId, pedido.getStatus());
+            return;
+        }
+
+        log.info("Cancelando pedido ID={} por cobrança vencida e devolvendo estoque", pedidoId);
+        this.devolverEstoque(pedido);
+        pedido.setStatus(StatusEnum.CANCELADO);
+        if (pedido.getPagamento() != null) {
+            pedido.getPagamento().setStatus(StatusPagamentoEnum.CANCELADO);
+        }
+        this.repository.update(pedido);
     }
 
     /** Recusa do cartão pelo Asaas (captura ou análise de risco): cancela e devolve o estoque uma única vez. */
@@ -653,7 +714,8 @@ public class PedidoServiceImpl implements PedidoService {
                 break;
 
             case "PAYMENT_OVERDUE":
-                log.info("Pagamento vencido para pedido ID={} — atualizando status para CANCELADO", pedidoId);
+                log.info("Cobrança vencida sem pagamento para pedido ID={}", pedidoId);
+                this.registrarVencimento(pedidoId);
                 break;
 
             case "PAYMENT_CREATED":

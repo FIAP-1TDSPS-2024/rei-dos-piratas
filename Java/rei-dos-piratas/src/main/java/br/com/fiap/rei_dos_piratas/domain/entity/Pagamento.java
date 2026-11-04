@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /** Pagamento de um pedido (um por pedido; fica dentro do agregado Pedido). */
@@ -52,6 +53,13 @@ public class Pagamento {
 
     @PastOrPresent(message = "A data de confirmação do pagamento deve estar no presente ou passado")
     private LocalDateTime dataConfirmacao;
+
+    /** PDF do boleto no Asaas (só boleto). */
+    @Size(max = 500, message = "A URL do boleto deve ter até 500 caracteres")
+    private String urlBoleto;
+
+    /** Vencimento da cobrança no Asaas (boleto/PIX). */
+    private LocalDate dataVencimento;
 
     /** Pagamento escolhido na criação do pedido, antes de existir cobrança no Asaas. */
     public static Pagamento pendente(TipoPagamentoEnum tipo) {

@@ -75,9 +75,20 @@ class PedidoServiceImplTest {
         this.apiCobranca = mock(CobrancaAppClient.class);
         when(apiCobranca.criarNovaCobranca(any())).thenReturn(cobrancaCriada("pay_000001", new BigDecimal("219.20")));
         this.cartaoService = mock(CartaoService.class);
+        this.pedidoService = servicoComBoletoVencendoEm(3);
+    }
+
+    private PedidoService servicoComBoletoVencendoEm(int diasVencimento) {
         RegraParcelamento regraParcelamento = new RegraParcelamento(new BigDecimal("100.00"), 3);
-        this.pedidoService = new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, apiCobranca, usuarioAtual,
-                cartaoService, regraParcelamento);
+        return new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, apiCobranca, usuarioAtual,
+                cartaoService, regraParcelamento, new RegraBoleto(diasVencimento));
+    }
+
+    /** Resposta do Asaas para boleto: id da cobrança, valor líquido e URL do PDF (bankSlipUrl). */
+    private PagamentoCobrancaResponseDto cobrancaDeBoleto(String id, String urlBoleto) {
+        return new PagamentoCobrancaResponseDto(null, id, null, null, null, null, null, new BigDecimal("218.20"),
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, urlBoleto, null, null);
     }
 
     private PagamentoCobrancaResponseDto cobrancaCriada(String id, BigDecimal valorLiquido) {
@@ -1021,5 +1032,213 @@ class PedidoServiceImplTest {
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.ENTREGUE);
         assertThat(pedido.getDataEntrega()).isEqualTo(LocalDate.of(2026, 10, 23));
+    }
+
+    // ---- Boleto ----
+
+    private static final java.time.ZoneId FUSO_LOJA = java.time.ZoneId.of("America/Sao_Paulo");
+
+    @Test
+    void fazerPedido_BoletoDeveCriarCobrancaComValorVencimentoECancelamentoDoRegistro() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.BOLETO);
+        prepararCriacaoDoPedido(pedido);
+
+        // Act
+        pedidoService.fazerPedido(pedido);
+
+        // Assert
+        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
+        verify(apiCobranca).criarNovaCobranca(captor.capture());
+        PagamentoCobrancaRequestDto request = captor.getValue();
+        assertThat(request.billingType()).isEqualTo(TipoPagamentoEnum.BOLETO);
+        assertThat(request.value()).isEqualByComparingTo("221.19");
+        assertThat(request.dueDate()).isEqualTo(LocalDate.now(FUSO_LOJA).plusDays(3));
+        assertThat(request.daysAfterDueDateToRegistrationCancellation()).isEqualTo(1);
+        assertThat(request.remoteIp()).isNull();
+        assertThat(request.installmentCount()).isNull();
+        assertThat(request.creditCardToken()).isNull();
+        assertThat(request.externalReference()).isEqualTo("10");
+    }
+
+    @Test
+    void fazerPedido_BoletoDeveGuardarIdUrlEVencimentoComPagamentoPendente() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.BOLETO);
+        prepararCriacaoDoPedido(pedido);
+        when(apiCobranca.criarNovaCobranca(any())).thenReturn(cobrancaDeBoleto("pay_boleto", "https://sandbox.asaas.com/b/pdf/pay_boleto"));
+
+        // Act
+        Pedido resultado = pedidoService.fazerPedido(pedido);
+
+        // Assert
+        Pagamento pagamento = resultado.getPagamento();
+        assertThat(pagamento.getIdCobranca()).isEqualTo("pay_boleto");
+        assertThat(pagamento.getUrlBoleto()).isEqualTo("https://sandbox.asaas.com/b/pdf/pay_boleto");
+        assertThat(pagamento.getDataVencimento()).isEqualTo(LocalDate.now(FUSO_LOJA).plusDays(3));
+        assertThat(pagamento.getStatus()).isEqualTo(StatusPagamentoEnum.PENDENTE);
+        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
+    }
+
+    @Test
+    void fazerPedido_BoletoUsaOsDiasDeVencimentoConfigurados() {
+        // Arrange
+        PedidoService servico = servicoComBoletoVencendoEm(5);
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.BOLETO);
+        prepararCriacaoDoPedido(pedido);
+
+        // Act
+        servico.fazerPedido(pedido);
+
+        // Assert
+        ArgumentCaptor<PagamentoCobrancaRequestDto> captor = ArgumentCaptor.forClass(PagamentoCobrancaRequestDto.class);
+        verify(apiCobranca).criarNovaCobranca(captor.capture());
+        assertThat(captor.getValue().dueDate()).isEqualTo(LocalDate.now(FUSO_LOJA).plusDays(5));
+    }
+
+    private Pedido pedidoDeBoletoComCobranca() {
+        Pedido pedido = pedidoDoCliente(1L, criarCliente());
+        pedido.setPagamento(Pagamento.pendente(TipoPagamentoEnum.BOLETO));
+        pedido.getPagamento().setIdCobranca("pay_boleto");
+        pedido.getPagamento().setUrlBoleto("https://sandbox.asaas.com/b/pdf/pay_boleto");
+        pedido.getPagamento().setDataVencimento(LocalDate.of(2026, 11, 2));
+        return pedido;
+    }
+
+    @Test
+    void obterBoleto_DeveRetornarLinhaDigitavelCodigoDeBarrasUrlEVencimento() {
+        // Arrange
+        when(pedidoRepository.findById(1L)).thenReturn(pedidoDeBoletoComCobranca());
+        when(apiCobranca.obterLinhaDigitavelBoleto("pay_boleto")).thenReturn(
+                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.LinhaDigitavelBoletoResponseDto(
+                        "00190000090123456789012345678901234567890123", "6543", "00191234500000221190000001234567890123456789"));
+
+        // Act
+        DadosBoleto boleto = pedidoService.obterBoleto(1L);
+
+        // Assert
+        assertThat(boleto.linhaDigitavel()).isEqualTo("00190000090123456789012345678901234567890123");
+        assertThat(boleto.codigoBarras()).isEqualTo("00191234500000221190000001234567890123456789");
+        assertThat(boleto.urlBoleto()).isEqualTo("https://sandbox.asaas.com/b/pdf/pay_boleto");
+        assertThat(boleto.dataVencimento()).isEqualTo(LocalDate.of(2026, 11, 2));
+    }
+
+    @Test
+    void obterBoleto_PedidoQueNaoEhBoletoDeveLancarRegraDeNegocio() {
+        // Arrange
+        Pedido pedido = pedidoDoCliente(1L, criarCliente());
+        pedido.setPagamento(Pagamento.pendente(TipoPagamentoEnum.PIX));
+        pedido.getPagamento().setIdCobranca("pay_pix");
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+
+        // Act & Assert
+        assertThatThrownBy(() -> pedidoService.obterBoleto(1L)).isInstanceOf(RegraDeNegocioException.class);
+        verify(apiCobranca, never()).obterLinhaDigitavelBoleto(any());
+    }
+
+    @Test
+    void obterBoleto_SemCobrancaDeveLancarRegraDeNegocio() {
+        // Arrange
+        Pedido pedido = pedidoDoCliente(1L, criarCliente());
+        pedido.setPagamento(Pagamento.pendente(TipoPagamentoEnum.BOLETO));
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+
+        // Act & Assert
+        assertThatThrownBy(() -> pedidoService.obterBoleto(1L)).isInstanceOf(RegraDeNegocioException.class);
+        verify(apiCobranca, never()).obterLinhaDigitavelBoleto(any());
+    }
+
+    // ---- Cobrança vencida (boleto e PIX) ----
+
+    private Pedido pedidoAguardandoPagamento(TipoPagamentoEnum tipo, int estoqueProduto) {
+        Pedido pedido = pedidoDeCartaoAguardandoPagamento(1L, estoqueProduto, 2);
+        pedido.setPagamento(Pagamento.pendente(tipo));
+        pedido.getPagamento().setIdCobranca("pay_000001");
+        return pedido;
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value = TipoPagamentoEnum.class, names = {"BOLETO", "PIX"})
+    void processarEventoCobranca_VencidaDeveCancelarPedidoDevolverEstoqueECancelarPagamento(TipoPagamentoEnum tipo) {
+        // Arrange
+        Pedido pedido = pedidoAguardandoPagamento(tipo, 8);
+        Produto produto = pedido.getProdutosAdicionados().getFirst().getProduto();
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_OVERDUE", 1L));
+
+        // Assert
+        Pedido gravado = ultimoPedidoGravado();
+        assertThat(gravado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(gravado.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.CANCELADO);
+        assertThat(produto.getEstoque()).isEqualTo(10); // 8 + 2
+    }
+
+    @Test
+    void processarEventoCobranca_VencidaDePedidoJaCanceladoNaoFazNada() {
+        // Arrange
+        Pedido pedido = pedidoAguardandoPagamento(TipoPagamentoEnum.BOLETO, 10);
+        pedido.setStatus(StatusEnum.CANCELADO);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+
+        // Act
+        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_OVERDUE", 1L));
+
+        // Assert
+        verify(produtoRepository, never()).update(any());
+        verify(pedidoRepository, never()).update(any());
+    }
+
+    @Test
+    void processarEventoCobranca_VencidaDePedidoJaPagoNaoFazNada() {
+        // Arrange
+        Pedido pedido = pedidoAguardandoPagamento(TipoPagamentoEnum.BOLETO, 10);
+        pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+
+        // Act
+        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_OVERDUE", 1L));
+
+        // Assert
+        assertThat(pedido.getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+        verify(produtoRepository, never()).update(any());
+        verify(pedidoRepository, never()).update(any());
+    }
+
+    // ---- Pagamento depois do cancelamento (compensação atrasada) ----
+
+    @Test
+    void processarEventoCobranca_PagamentoDePedidoCanceladoRegistraRecebidoSemReativarESinalizaEstorno() {
+        // Arrange
+        Pedido pedido = pedidoAguardandoPagamento(TipoPagamentoEnum.BOLETO, 10);
+        pedido.setStatus(StatusEnum.CANCELADO);
+        Produto produto = pedido.getProdutosAdicionados().getFirst().getProduto();
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(PedidoServiceImpl.class);
+        ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> logs = new ch.qos.logback.core.read.ListAppender<>();
+        logs.start();
+        logger.addAppender(logs);
+
+        try {
+            // Act
+            pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_RECEIVED", 1L));
+
+            // Assert
+            Pedido gravado = ultimoPedidoGravado();
+            assertThat(gravado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+            assertThat(gravado.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.RECEBIDO);
+            assertThat(produto.getEstoque()).isEqualTo(10);
+            verify(freteService, never()).criarPedidoFrete(any());
+            assertThat(logs.list)
+                    .filteredOn(evento -> evento.getLevel() == ch.qos.logback.classic.Level.ERROR)
+                    .extracting(ch.qos.logback.classic.spi.ILoggingEvent::getFormattedMessage)
+                    .anyMatch(mensagem -> mensagem.contains("estorno"));
+        } finally {
+            logger.detachAppender(logs);
+        }
     }
 }

@@ -23,6 +23,9 @@ public interface CobrancaAppClient {
     @GetMapping("/v3/payments/{id}/pixQrCode")
     PixQrCodeResponseDto obterQrCodePix(@PathVariable("id") String id);
 
+    @GetMapping("/v3/payments/{id}/identificationField")
+    LinhaDigitavelBoletoResponseDto obterLinhaDigitavelBoleto(@PathVariable("id") String id);
+
     //@PostMapping("/v3/payments/{id}/refund")
     //void estornarCobranca(@PathVariable("id") String id, @RequestBody EstornoCobrancaRequestDto request);
 }

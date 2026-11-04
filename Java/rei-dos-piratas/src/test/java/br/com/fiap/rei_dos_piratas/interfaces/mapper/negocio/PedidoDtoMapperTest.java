@@ -30,6 +30,19 @@ class PedidoDtoMapperTest {
     }
 
     @Test
+    void urlDoBoletoDaRespostaVemDoPagamento() {
+        // Arrange
+        Pedido pedido = new Pedido(null, null, new ArrayList<>(), 1L, TipoPagamentoEnum.BOLETO);
+        pedido.getPagamento().setUrlBoleto("https://sandbox.asaas.com/b/pdf/pay_boleto");
+
+        // Act
+        PedidoOutDto dto = PedidoDtoMapper.toDto(pedido);
+
+        // Assert
+        assertThat(dto.urlBoleto()).isEqualTo("https://sandbox.asaas.com/b/pdf/pay_boleto");
+    }
+
+    @Test
     void pedidoSemPagamentoRetornaCamposDePagamentoNulos() {
         // Arrange
         Pedido pedido = new Pedido(null, null, new ArrayList<>(), 1L);

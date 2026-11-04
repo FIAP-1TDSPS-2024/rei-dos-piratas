@@ -89,10 +89,11 @@ class PedidoFluxoIntegrationTest {
                 "11987654321","Rua Fluxo","100","Centro","01001000","9601",true));
         // id_cobranca e unico em PAGAMENTOS: cada cobranca recebe um id novo, como no Asaas
         var proximaCobranca = new java.util.concurrent.atomic.AtomicInteger(9601);
+        // Como no Asaas, a resposta traz o PDF do boleto (bankSlipUrl); só é usado quando o pedido é boleto
         when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.PagamentoCobrancaResponseDto(
-                null,"pay_00000"+proximaCobranca.getAndIncrement(),null,null,null,null,null,new BigDecimal("98.95"),
+                null,"pay_00000"+proximaCobranca.get(),null,null,null,null,null,new BigDecimal("98.95"),
                 null,null,null,null,null,null,null,null,null,null,null,null,null,null,
-                null,null,null,null,null,null,null,null,null,null));
+                null,null,null,null,null,null,null,"https://sandbox.asaas.com/b/pdf/pay_00000"+proximaCobranca.getAndIncrement(),null,null));
         when(fretes.calcularFreteProdutos(anyString(), anyList())).thenReturn(List.of(
                 new FreteServiceDto(1L,"Entrega",new BigDecimal("10.25"),null,null,"BRL",3,null)));
         when(fretes.criarPedidoFrete(any())).thenReturn(new PedidoFreteResponseDto(
@@ -309,6 +310,40 @@ class PedidoFluxoIntegrationTest {
                 new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto.Payment("pay_000009601",null,criado.getId().toString()),null));
 
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+    }
+
+    br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto eventoCobranca(String nome, Pedido pedido) {
+        return new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto(
+                "evt_"+nome+"_"+pedido.getId(),nome,LocalDateTime.now(),
+                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto.Payment(
+                        pedido.getPagamento().getIdCobranca(),null,pedido.getId().toString()),null);
+    }
+
+    @Test
+    void pedidoComBoletoGuardaUrlEVencimentoEChegaAPreparandoEnvioPeloEventoDeConfirmacao() {
+        Pedido criado = pedidos.fazerPedido(novoPedido(TipoPagamentoEnum.BOLETO));
+
+        Pedido salvo = pedidos.findById(criado.getId());
+        assertThat(salvo.getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
+        assertThat(salvo.getPagamento().getStatus()).isEqualTo(br.com.fiap.rei_dos_piratas.domain.Enum.StatusPagamentoEnum.PENDENTE);
+        assertThat(salvo.getPagamento().getUrlBoleto()).startsWith("https://sandbox.asaas.com/b/pdf/");
+        assertThat(salvo.getPagamento().getDataVencimento()).isEqualTo(LocalDate.now(ZoneId.of("America/Sao_Paulo")).plusDays(3));
+
+        pedidos.processarEventoCobranca(criado.getId(), eventoCobranca("PAYMENT_CONFIRMED", salvo));
+
+        assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+    }
+
+    @Test
+    void boletoVencidoCancelaPedidoERestauraEstoque() {
+        Pedido criado = pedidos.fazerPedido(novoPedido(TipoPagamentoEnum.BOLETO));
+        assertThat(((Number)valor("SELECT estoque FROM PRODUTOS WHERE id=9601")).intValue()).isEqualTo(97);
+
+        pedidos.processarEventoCobranca(criado.getId(), eventoCobranca("PAYMENT_OVERDUE", pedidos.findById(criado.getId())));
+
+        assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("CANCELADO");
+        assertThat(((Number)valor("SELECT estoque FROM PRODUTOS WHERE id=9601")).intValue()).isEqualTo(100);
     }
 
     @Test

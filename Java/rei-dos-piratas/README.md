@@ -97,6 +97,10 @@ Variaveis de parcelamento no cartao (opcionais):
 - `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO` (padrao `100.00`: abaixo disso, so a vista)
 - `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` (padrao `3`)
 
+Variavel de boleto (opcional):
+
+- `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` (padrao `3`, dias corridos)
+
 Variavel de log:
 
 - `JPA_SHOW_SQL` (opcional, padrao `false`; use `true` apenas para depuracao local)
@@ -163,6 +167,16 @@ Aplicacao disponivel em `http://localhost:8080`.
 - Timeout de leitura do cliente Asaas: 60s (o cartao e processado na propria requisicao).
 - Sandbox: `4444 4444 4444 4444` (validade futura, CCV `123`) aprova; `5184019740373151` e
   `4916561358240741` sao recusados de proposito (HTTP 422 "Pagamento recusado").
+
+## Observacoes sobre pagamento com boleto (Asaas)
+
+- Vencimento em `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` dias corridos (padrao `3`); o estoque fica reservado nesse periodo.
+- O registro do boleto e cancelado 1 dia apos o vencimento (nao pode ser pago depois).
+- `GET /pedidos/{id}/boleto` retorna `linha_digitavel`, `codigo_barras`, `url_boleto` e `data_vencimento`
+  (dono do pedido ou funcionario). O JSON do pedido tambem traz `url_boleto`.
+- Cobranca vencida (boleto ou PIX) cancela o pedido e devolve o estoque. Pagamento recebido com o pedido ja
+  cancelado nao reativa o pedido: fica registrado e e sinalizado em log para estorno manual.
+- Sandbox: `POST /v3/sandbox/payment/{id}/confirm` (API do Asaas) simula o pagamento do boleto.
 
 ## Observacao importante sobre etiquetas (Melhor Envio)
 

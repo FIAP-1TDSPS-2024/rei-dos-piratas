@@ -222,4 +222,21 @@ class PedidoControllerImplTest {
         verify(pedidoService).fazerPedido(any(Pedido.class), captor.capture());
         assertThat(captor.getValue().ipRemoto()).isEqualTo("200.1.2.3");
     }
+
+    @Test
+    void obterBoleto_DeveConverterOsDadosDoBoletoParaDto() {
+        // Arrange
+        when(pedidoService.obterBoleto(1L)).thenReturn(new DadosBoleto(
+                "00190000090123456789012345678901234567890123", "00191234500000221190000001234567890123456789",
+                "https://sandbox.asaas.com/b/pdf/pay_boleto", LocalDate.of(2026, 11, 2)));
+
+        // Act
+        var boleto = pedidoController.obterBoleto(1L);
+
+        // Assert
+        assertThat(boleto.linhaDigitavel()).isEqualTo("00190000090123456789012345678901234567890123");
+        assertThat(boleto.codigoBarras()).isEqualTo("00191234500000221190000001234567890123456789");
+        assertThat(boleto.urlBoleto()).isEqualTo("https://sandbox.asaas.com/b/pdf/pay_boleto");
+        assertThat(boleto.dataVencimento()).isEqualTo(LocalDate.of(2026, 11, 2));
+    }
 }

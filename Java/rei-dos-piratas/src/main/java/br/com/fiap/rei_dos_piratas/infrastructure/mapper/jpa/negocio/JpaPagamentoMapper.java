@@ -21,7 +21,9 @@ public class JpaPagamentoMapper {
                 jpaPagamento.getCartao() == null ? null : JpaCartaoClienteMapper.toEntity(jpaPagamento.getCartao()),
                 jpaPagamento.getMotivoRecusa(),
                 jpaPagamento.getDataCriacao(),
-                jpaPagamento.getDataConfirmacao());
+                jpaPagamento.getDataConfirmacao(),
+                jpaPagamento.getUrlBoleto(),
+                jpaPagamento.getDataVencimento());
     }
 
     public static JpaPagamentoEntity toJpaEntity(Pagamento pagamento, JpaPedidoEntity pedido) {
@@ -40,7 +42,9 @@ public class JpaPagamentoMapper {
                 pagamento.getCartao() == null ? null : JpaCartaoClienteMapper.toReferencia(pagamento.getCartao()),
                 pagamento.getMotivoRecusa(),
                 pagamento.getDataCriacao(),
-                pagamento.getDataConfirmacao());
+                pagamento.getDataConfirmacao(),
+                pagamento.getUrlBoleto(),
+                pagamento.getDataVencimento());
     }
 
     private JpaPagamentoMapper() {}

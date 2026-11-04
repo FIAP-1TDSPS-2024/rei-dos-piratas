@@ -58,7 +58,9 @@ public record PedidoOutDto(
         String trackingUrl,
         TipoPagamentoEnum tipoPagamento,
         BigDecimal valorLiquido,
-        String idCobranca
+        String idCobranca,
+        // PDF do boleto (só pagamento por boleto)
+        String urlBoleto
 ) {
     public PedidoOutDto(Long id, LocalDate dataPedido, LocalDate dataEntrega, LocalDate previsaoEntrega,
                         LocalDate dataCancelamento, BigDecimal valorTotal, BigDecimal valorFrete, StatusEnum status,
@@ -67,6 +69,6 @@ public record PedidoOutDto(
                         String tracking, String trackingUrl) {
         this(id, dataPedido, dataEntrega, previsaoEntrega, dataCancelamento, valorTotal, valorFrete, status,
                 produtosAdicionados, nomeCliente, enderecoEntrega, notaFiscal, pedidoFrete, protocoloEnvio,
-                statusEnvio, tracking, trackingUrl, null, null, null);
+                statusEnvio, tracking, trackingUrl, null, null, null, null);
     }
 }
