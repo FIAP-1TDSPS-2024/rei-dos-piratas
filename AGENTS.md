@@ -269,7 +269,7 @@ Antes de corrigir, escreva um teste que **reproduz o bug e falha**. Só então c
 
 - Controllers MVC em `infrastructure/mvc` (só delegam aos controllers de `interfaces`), templates em `src/main/resources/templates` (área do cliente em `conta/`). Rotas: `/web/conta/**` só cliente (`ENDERECO_MANAGE`); `/web/pedidos/**` e `/web/devolucoes/**` funcionário (`PEDIDO_WRITE`); `/web/simulador/**` só com `APP_SIMULADOR_EVENTOS=true`.
 - Testes com `@WebMvcTest` renderizando o template real; permissões no `PermissoesIntegrationTest`.
-- O login web exige contexto seguro (HTTPS ou `http://localhost`): cookies `Secure` e `navigator.locks` do `web-auth.js` não funcionam em `http://<IP>` (VM sem TLS).
+- Login web fora de HTTPS/`localhost` (ex.: VM de teste em `http://<IP>`): defina `AUTH_COOKIE_SECURE=false` (o navegador descarta cookie `Secure` em HTTP). Sem contexto seguro não há `navigator.locks`; o `web-auth.js` usa então um lease no `localStorage` (só id da aba e prazo, nunca tokens) para uma aba renovar por vez. Produção sempre em HTTPS com `AUTH_COOKIE_SECURE=true`.
 - Detalhes nos agentes `frontend-analista` e `frontend-desenvolvedor`.
 
 ## Agentes do projeto (`.claude/agents/`)

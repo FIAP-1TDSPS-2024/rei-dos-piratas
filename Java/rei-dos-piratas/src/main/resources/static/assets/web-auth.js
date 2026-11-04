@@ -4,6 +4,52 @@
     let renewal;
     let timer;
 
+    // Exclusao entre abas na renovacao: Web Locks quando ha contexto seguro (HTTPS ou localhost).
+    // Em HTTP fora do localhost (ex.: VM de teste) navigator.locks nao existe: usa um lease no localStorage
+    // (so um id da aba e o prazo, nunca tokens). Sem os dois, pede novo login para nao reutilizar o refresh.
+    const LEASE_KEY = 'rei-dos-piratas-auth-lease';
+    const LEASE_MS = 15000;
+    const tabId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    function storage() {
+        try { return typeof localStorage !== 'undefined' ? localStorage : null; }
+        catch (error) { return null; }
+    }
+
+    function readLease(store) {
+        try { return JSON.parse(store.getItem(LEASE_KEY)); }
+        catch (error) { return null; }
+    }
+
+    async function leaseLock(callback) {
+        const store = storage();
+        if (!store) throw new Error('Entre novamente para continuar.');
+        const deadline = Date.now() + 2 * LEASE_MS;
+        for (;;) {
+            const current = readLease(store);
+            if (!current || current.ate < Date.now() || current.dono === tabId) {
+                store.setItem(LEASE_KEY, JSON.stringify({ dono: tabId, ate: Date.now() + LEASE_MS }));
+                // localStorage nao e atomico: confirma depois de um instante (a ultima aba a gravar vence)
+                await sleep(25);
+                const confirmed = readLease(store);
+                if (confirmed && confirmed.dono === tabId) break;
+            } else {
+                if (Date.now() > deadline) throw new Error('Entre novamente para continuar.');
+                await sleep(50);
+            }
+        }
+        try { return await callback(); }
+        finally {
+            const current = readLease(store);
+            if (current && current.dono === tabId) store.removeItem(LEASE_KEY);
+        }
+    }
+
+    function authLock(callback) {
+        return navigator.locks ? navigator.locks.request('rei-dos-piratas-auth', callback) : leaseLock(callback);
+    }
+
     function expiration() {
         const cookie = document.cookie.split('; ').find(value => value.startsWith('auth_expires_at='));
         return cookie ? Number(cookie.substring('auth_expires_at='.length)) : 0;
@@ -22,9 +68,7 @@
         if (renewal) return renewal;
         const observed = expiration();
         if (!force && (!observed || observed > Date.now() + 60000)) return false;
-        // Sem exclusao entre abas, solicitamos novo login em vez de arriscar reutilizar o refresh.
-        if (!navigator.locks) throw new Error('Entre novamente para continuar.');
-        renewal = navigator.locks.request('rei-dos-piratas-auth', async () => {
+        renewal = authLock(async () => {
             const current = expiration();
             if (current > Date.now() + 60000 && (!force || current !== observed)) return false;
             const token = await csrf();

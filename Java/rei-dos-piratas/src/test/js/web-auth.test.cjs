@@ -5,10 +5,14 @@ const vm = require('node:vm');
 const path = require('node:path');
 const code = fs.readFileSync(path.join(__dirname, '../../main/resources/static/assets/web-auth.js'), 'utf8');
 
-function environment({ expired = true, locks = true, refreshFailure = false, statuses = [200] } = {}) {
+function environment({ expired = true, locks = true, storage = false, refreshFailure = false, statuses = [200] } = {}) {
     let expires = Date.now() + (expired ? -1000 : 900000);
     const calls = [];
     const queues = new Map();
+    // localStorage compartilhado entre as abas (mesma origem), como no navegador
+    const items = new Map();
+    const localStorage = { getItem: key => (items.has(key) ? items.get(key) : null),
+        setItem: (key, value) => items.set(key, String(value)), removeItem: key => items.delete(key) };
     const lockManager = { request(name, callback) {
         const next = (queues.get(name) || Promise.resolve()).catch(() => {}).then(callback);
         queues.set(name, next);
@@ -50,12 +54,14 @@ function environment({ expired = true, locks = true, refreshFailure = false, sta
             querySelector() { return {}; }, createElement() { return {}; }
         };
         const window = { fetch, location };
-        vm.runInNewContext(code, { window, document, location, navigator: locks ? { locks: lockManager } : {},
-            Date, URL, Headers, setTimeout, clearTimeout, HTMLFormElement: Form });
+        const context = { window, document, location, navigator: locks ? { locks: lockManager } : {},
+            Date, URL, Headers, setTimeout, clearTimeout, HTMLFormElement: Form };
+        if (storage) context.localStorage = localStorage;
+        vm.runInNewContext(code, context);
         window.webAuth.testUi = { Form, listeners, redirects };
         return window.webAuth;
     }
-    return { tab, calls };
+    return { tab, calls, localStorage };
 }
 
 test('duas abas e chamadas paralelas consomem somente um refresh', async () => {
@@ -84,7 +90,7 @@ test('falha de rede nao repete automaticamente refresh ja possivelmente consumid
     assert.equal(env.calls.filter(call => call.url === '/web/auth/refresh').length, 1);
 });
 
-test('navegador sem locks pede novo login ao expirar, sem arriscar reutilizacao', async () => {
+test('navegador sem locks e sem localStorage pede novo login ao expirar, sem arriscar reutilizacao', async () => {
     const env = environment({ locks: false });
     await assert.rejects(env.tab().renew(), /Entre novamente/);
     assert.equal(env.calls.length, 0);
@@ -135,4 +141,41 @@ test('falha de renovacao impede envio do formulario e encaminha para login', asy
     await auth.testUi.listeners.submit({ target: form, preventDefault() {} });
     assert.equal(form.submissions.length, 0);
     assert.deepEqual(auth.testUi.redirects, ['/web/login?error']);
+});
+
+// ---- Contexto inseguro (HTTP fora do localhost): sem Web Locks, a exclusão entre abas usa um lease no localStorage ----
+
+test('sem locks, duas abas e chamadas paralelas consomem somente um refresh', async () => {
+    const env = environment({ locks: false, storage: true });
+    const a = env.tab();
+    const b = env.tab();
+    await Promise.all([a.renew(), a.renew(), b.renew()]);
+    assert.equal(env.calls.filter(call => call.url === '/web/auth/refresh').length, 1);
+});
+
+test('sem locks, lease abandonado por aba fechada expira e outra aba renova', async () => {
+    const env = environment({ locks: false, storage: true });
+    env.localStorage.setItem('rei-dos-piratas-auth-lease', JSON.stringify({ dono: 'aba-fechada', ate: Date.now() - 1 }));
+    await env.tab().renew();
+    assert.equal(env.calls.filter(call => call.url === '/web/auth/refresh').length, 1);
+});
+
+test('sem locks, o lease e liberado depois do refresh, mesmo com falha de rede', async () => {
+    const ok = environment({ locks: false, storage: true });
+    await ok.tab().renew();
+    assert.equal(ok.localStorage.getItem('rei-dos-piratas-auth-lease'), null);
+    const falha = environment({ locks: false, storage: true, refreshFailure: true });
+    await assert.rejects(falha.tab().renew(), /network/);
+    assert.equal(falha.localStorage.getItem('rei-dos-piratas-auth-lease'), null);
+    assert.equal(falha.calls.filter(call => call.url === '/web/auth/refresh').length, 1);
+});
+
+test('sem locks, nenhum token vai para o localStorage', async () => {
+    const env = environment({ locks: false, storage: true });
+    const valores = [];
+    const original = env.localStorage.setItem;
+    env.localStorage.setItem = (key, value) => { valores.push(value); original(key, value); };
+    await env.tab().renew();
+    assert.ok(valores.length > 0);
+    for (const valor of valores) assert.deepEqual(Object.keys(JSON.parse(valor)).sort(), ['ate', 'dono']);
 });

@@ -193,6 +193,10 @@ Aplicacao disponivel em `http://localhost:8080`.
   simula pagamento confirmado/recebido/vencido, cartao recusado, estorno concluido/negado e rastreio
   postado/entregue/cancelado, pelo mesmo caminho dos webhooks reais. Util sem SQS/webhook local.
   **Nunca ligar em producao.**
+- Acesso por HTTP fora do `localhost` (ex.: VM de teste em `http://<IP>:8080`): defina `AUTH_COOKIE_SECURE=false`,
+  senao o navegador descarta os cookies de sessao e o login volta para a tela inicial. Sem HTTPS o navegador
+  tambem nao oferece Web Locks; o `web-auth.js` usa entao um lease no `localStorage` (sem tokens) para que so
+  uma aba renove a sessao por vez. Em producao use HTTPS e `AUTH_COOKIE_SECURE=true`.
 
 ## Observacoes sobre estornos (Asaas)
 

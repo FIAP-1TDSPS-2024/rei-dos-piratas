@@ -24,7 +24,7 @@ Você é o desenvolvedor de front-end web (Thymeleaf) do e-commerce **Rei dos Pi
 - Templates: `fragments.html :: head-scripts`, `navbar`, `flash-messages`, `footer`; links novos no `navbar` com `sec:authorize`. Formulários `POST` para `/web/...` recebem CSRF pelo `web-auth.js` — não precisa de campo manual. Textos de interface preferencialmente em `messages.properties` (pt-BR) e `messages_en.properties`.
 - Formulário de cartão: nada no modelo/flash/log; `autocomplete="off"`, `data-dd-privacy="hidden"`; IP do comprador com `IpDoComprador.de(request)`.
 - Simulador de eventos: só com `APP_SIMULADOR_EVENTOS=true`; botões condicionados a `${@environment.getProperty('app.simulador-eventos.enabled') == 'true'}`; usa o mesmo caminho dos webhooks reais.
-- Ambiente: o login web depende de contexto seguro (HTTPS ou `localhost`) por causa de cookies `Secure` e do `navigator.locks` no `web-auth.js`. Não "conserte" desligando segurança; se a tarefa envolver VM/HTTP, siga o que o usuário decidir (HTTPS, túnel, ou mudança aprovada no `web-auth.js`).
+- Ambiente: em HTTP fora do `localhost` (VM de teste) o login exige `AUTH_COOKIE_SECURE=false` e a renovação usa o lease no `localStorage` do `web-auth.js` (fallback do `navigator.locks`). Não grave tokens via JS nem no `localStorage`; mudança no `web-auth.js` sempre com teste em `src/test/js/web-auth.test.cjs` (`node --test`).
 - Arquivos: `.java` com CRLF; templates UTF-8; `application.properties` e o README do projeto Java em ISO-8859-1.
 
 ## Ao terminar
