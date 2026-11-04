@@ -11,6 +11,8 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.StatusPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.CobrancaSemRespostaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.EstoqueInsuficienteException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
@@ -59,12 +61,15 @@ public class PedidoServiceImpl implements PedidoService {
     private final CartaoService cartaoService;
     private final RegraParcelamento regraParcelamento;
     private final RegraBoleto regraBoleto;
+    private final ExecutorTransacional executorTransacional;
 
     public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, ClienteService clienteService, GatewayPagamento gatewayPagamento, UsuarioAtualService usuarioAtual,
-                             CartaoService cartaoService, RegraParcelamento regraParcelamento, RegraBoleto regraBoleto) {
+                             CartaoService cartaoService, RegraParcelamento regraParcelamento, RegraBoleto regraBoleto,
+                             ExecutorTransacional executorTransacional) {
         this.cartaoService = cartaoService;
         this.regraParcelamento = regraParcelamento;
         this.regraBoleto = regraBoleto;
+        this.executorTransacional = executorTransacional;
         this.usuarioAtual = usuarioAtual;
         this.repository = repository;
         this.produtoRepository = produtoRepository;
@@ -137,15 +142,21 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     /**
-     * Cartão: grava o pedido, tokeniza (o cliente Asaas já existe nesse ponto) e cobra.
-     * A recusa do Asaas grava pedido CANCELADO + pagamento RECUSADO e só então propaga o erro,
-     * por isso a transação não é desfeita para {@link PagamentoRecusadoException}.
+     * Cartão, em três passos para nunca haver cobrança sem pedido gravado:
+     * <ol>
+     *   <li>T1: grava o pedido (estoque baixado, AGUARDANDO_PAGAMENTO / PENDENTE) e confirma;</li>
+     *   <li>sem transação: tokeniza e cobra no fornecedor (até 60s, sem segurar conexão do banco);</li>
+     *   <li>T2: relê o pedido (o evento do fornecedor pode ter chegado antes) e registra o resultado.</li>
+     * </ol>
+     * Recusa grava CANCELADO + RECUSADO e propaga; erro do fornecedor (cobrança certamente não criada)
+     * cancela e propaga; sem resposta, o pedido fica pendente e o evento de pagamento resolve (sem nova tentativa).
+     * Não é {@code @Transactional}: as transações são abertas pelo {@link ExecutorTransacional}.
      */
-    @Transactional(noRollbackFor = PagamentoRecusadoException.class)
     @Override
     public Pedido fazerPedido(Pedido pedido, PagamentoCartao pagamentoCartao) {
         if (!TipoPagamentoEnum.CREDIT_CARD.equals(pedido.getTipoPagamento())) {
-            return this.fazerPedido(pedido);
+            // Autochamada não passa pelo proxy do @Transactional: abre a transação explicitamente
+            return this.executorTransacional.emTransacao(() -> this.fazerPedido(pedido));
         }
 
         if (pagamentoCartao == null) {
@@ -154,17 +165,94 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         pedido.getPagamento().setParcelas(pagamentoCartao.parcelas());
-        Pedido pedidoCriado = this.criarPedido(pedido);
+        Pedido pedidoCriado = this.executorTransacional.emTransacao(() -> this.criarPedido(pedido));
+        Long pedidoId = pedidoCriado.getId();
 
+        CartaoCliente cartao;
         try {
-            CartaoCliente cartao = this.cartaoService.obterOuTokenizar(
+            cartao = this.cartaoService.obterOuTokenizar(
                     pedidoCriado.getCliente(), pedidoCriado.getEnderecoEntrega(), pagamentoCartao);
-            pedidoCriado.getPagamento().setCartao(cartao);
-            return this.criarCobrancaPedido(pedidoCriado, pagamentoCartao.ipRemoto());
         } catch (PagamentoRecusadoException e) {
-            this.registrarRecusa(pedidoCriado, e.getMessage());
+            this.executorTransacional.emTransacaoSemRetorno(() -> this.registrarRecusaDoCartao(pedidoId, e.getMessage()));
+            throw e;
+        } catch (RuntimeException e) {
+            // Nada foi cobrado: cancela para devolver o estoque
+            this.executorTransacional.emTransacaoSemRetorno(() -> this.cancelarPorFalhaNaCobranca(pedidoId));
             throw e;
         }
+
+        pedidoCriado.getPagamento().setCartao(cartao);
+        SolicitacaoCobranca solicitacao = SolicitacaoCobranca.para(
+                pedidoCriado, this.regraBoleto, LocalDate.now(FUSO_LOJA), pagamentoCartao.ipRemoto());
+
+        CobrancaCriada cobranca;
+        try {
+            cobranca = this.gatewayPagamento.criarCobranca(solicitacao);
+        } catch (PagamentoRecusadoException e) {
+            this.executorTransacional.emTransacaoSemRetorno(() -> this.registrarRecusaDoCartao(pedidoId, e.getMessage()));
+            throw e;
+        } catch (CobrancaSemRespostaException e) {
+            log.warn("Cobrança do pedido ID={} sem resposta do fornecedor — pedido mantido pendente até o evento de pagamento", pedidoId);
+            return this.executorTransacional.emTransacao(() -> this.registrarCartaoDoPagamento(pedidoId, cartao));
+        } catch (ApiExternaException e) {
+            this.executorTransacional.emTransacaoSemRetorno(() -> this.cancelarPorFalhaNaCobranca(pedidoId));
+            throw e;
+        }
+
+        return this.executorTransacional.emTransacao(() -> this.registrarCobrancaDoCartao(pedidoId, cartao, cobranca));
+    }
+
+    /** T2 do cartão aprovado ou em análise. Idempotente com o evento de pagamento, que pode ter chegado antes. */
+    private Pedido registrarCobrancaDoCartao(Long pedidoId, CartaoCliente cartao, CobrancaCriada cobranca) {
+        Pedido pedido = this.repository.findById(pedidoId);
+        Pagamento pagamento = pedido.getPagamento();
+        pagamento.setCartao(cartao);
+        if (pagamento.getIdCobranca() == null) {
+            pagamento.setIdCobranca(cobranca.idCobranca());
+        }
+        pagamento.setValorLiquido(cobranca.valorLiquido());
+
+        // Em análise de risco fica PENDENTE até o evento; nunca rebaixa um status já avançado pelo evento
+        if (cobranca.confirmada() && pagamento.getStatus() == StatusPagamentoEnum.PENDENTE) {
+            pagamento.setStatus(StatusPagamentoEnum.CONFIRMADO);
+            if (pagamento.getDataConfirmacao() == null) {
+                pagamento.setDataConfirmacao(LocalDateTime.now());
+            }
+        }
+
+        log.info("Cobrança do cartão registrada: pedido ID={}, cobrança ID={}, status do pagamento={}",
+                pedidoId, pagamento.getIdCobranca(), pagamento.getStatus());
+        return this.repository.update(pedido);
+    }
+
+    /** Sem resposta do fornecedor: guarda o cartão usado e mantém o pedido como está. */
+    private Pedido registrarCartaoDoPagamento(Long pedidoId, CartaoCliente cartao) {
+        Pedido pedido = this.repository.findById(pedidoId);
+        pedido.getPagamento().setCartao(cartao);
+        return this.repository.update(pedido);
+    }
+
+    /** Recusa síncrona do cartão (tokenização ou cobrança); ignorada se um evento já tirou o pedido de AGUARDANDO_PAGAMENTO. */
+    private void registrarRecusaDoCartao(Long pedidoId, String motivo) {
+        Pedido pedido = this.repository.findById(pedidoId);
+        if (pedido.getStatus() != StatusEnum.AGUARDANDO_PAGAMENTO) {
+            log.info("Recusa síncrona ignorada para pedido ID={} — status atual={}", pedidoId, pedido.getStatus());
+            return;
+        }
+        this.registrarRecusa(pedido, motivo);
+    }
+
+    /** O fornecedor respondeu com erro (não é recusa): a cobrança não existe, cancela e devolve o estoque. */
+    private void cancelarPorFalhaNaCobranca(Long pedidoId) {
+        Pedido pedido = this.repository.findById(pedidoId);
+        if (pedido.getStatus() != StatusEnum.AGUARDANDO_PAGAMENTO) {
+            return;
+        }
+        log.warn("Falha ao cobrar o pedido ID={} no fornecedor — cancelando e devolvendo estoque", pedidoId);
+        this.devolverEstoque(pedido);
+        pedido.setStatus(StatusEnum.CANCELADO);
+        pedido.getPagamento().setStatus(StatusPagamentoEnum.CANCELADO);
+        this.repository.update(pedido);
     }
 
     private void registrarRecusa(Pedido pedido, String motivo) {
@@ -577,10 +665,17 @@ public class PedidoServiceImpl implements PedidoService {
                 });
     }
 
-    /** Marca o pagamento e libera o pedido para envio; idempotente (eventos podem repetir ou chegar fora de ordem). */
-    private void registrarPagamento(Long pedidoId, StatusPagamentoEnum status) {
+    /**
+     * Marca o pagamento e libera o pedido para envio; idempotente (eventos podem repetir ou chegar fora de ordem).
+     * Se a criação da cobrança ficou sem resposta, o pagamento não tem id da cobrança: usa o do evento.
+     */
+    private void registrarPagamento(Long pedidoId, StatusPagamentoEnum status, String idCobrancaDoEvento) {
         Pedido pedido = this.findById(pedidoId);
         Pagamento pagamento = pedido.getPagamento();
+        if (pagamento != null && pagamento.getIdCobranca() == null && idCobrancaDoEvento != null) {
+            log.info("Pagamento do pedido ID={} sem cobrança registrada — usando a cobrança {} do evento", pedidoId, idCobrancaDoEvento);
+            pagamento.setIdCobranca(idCobrancaDoEvento);
+        }
         if (pagamento != null && pagamento.getStatus() != StatusPagamentoEnum.RECEBIDO) {
             pagamento.setStatus(status);
             if (pagamento.getDataConfirmacao() == null) {
@@ -636,12 +731,12 @@ public class PedidoServiceImpl implements PedidoService {
         switch (evento.tipo()) {
             case RECEBIDA -> {
                 log.info("Pagamento recebido para pedido ID={}", pedidoId);
-                this.registrarPagamento(pedidoId, StatusPagamentoEnum.RECEBIDO);
+                this.registrarPagamento(pedidoId, StatusPagamentoEnum.RECEBIDO, evento.idCobranca());
             }
             case CONFIRMADA -> {
                 // Cartão: confirmado já libera o envio; o RECEBIDA só chega quando o valor é creditado (~30 dias)
                 log.info("Pagamento confirmado para pedido ID={} — liberando para envio", pedidoId);
-                this.registrarPagamento(pedidoId, StatusPagamentoEnum.CONFIRMADO);
+                this.registrarPagamento(pedidoId, StatusPagamentoEnum.CONFIRMADO, evento.idCobranca());
             }
             case RECUSADA -> {
                 log.warn("Pagamento com cartão recusado para pedido ID={} — evento={}", pedidoId, evento.tipoOriginal());

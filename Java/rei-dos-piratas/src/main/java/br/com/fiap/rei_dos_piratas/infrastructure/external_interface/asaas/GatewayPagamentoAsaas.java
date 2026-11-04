@@ -6,6 +6,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.DadosCartaoCredito;
 import br.com.fiap.rei_dos_piratas.domain.entity.Endereco;
 import br.com.fiap.rei_dos_piratas.domain.gateway.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.*;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.CobrancaSemRespostaException;
+import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -68,7 +70,7 @@ public class GatewayPagamentoAsaas implements GatewayPagamento {
                 && solicitacao.parcelas() != null && solicitacao.parcelas() > 1;
 
         log.info("[ASAAS] Criando cobrança {} do pedido {}", solicitacao.tipo(), solicitacao.referenciaPedido());
-        PagamentoCobrancaResponseDto resposta = this.api.criarNovaCobranca(new PagamentoCobrancaRequestDto(
+        PagamentoCobrancaRequestDto requisicao = new PagamentoCobrancaRequestDto(
                 solicitacao.idClienteExterno(),
                 solicitacao.tipo(),
                 parcelado ? null : solicitacao.valor(),
@@ -79,7 +81,16 @@ public class GatewayPagamentoAsaas implements GatewayPagamento {
                 solicitacao.tokenCartao(),
                 parcelado ? solicitacao.valor() : null,
                 solicitacao.ipRemoto(),
-                solicitacao.diasCancelamentoRegistro()));
+                solicitacao.diasCancelamentoRegistro());
+
+        PagamentoCobrancaResponseDto resposta;
+        try {
+            resposta = this.api.criarNovaCobranca(requisicao);
+        } catch (RetryableException e) {
+            // Sem resposta: a cobrança pode ter sido criada. Não repetir (cobrança duplicada); o webhook resolve.
+            log.error("[ASAAS] Sem resposta ao criar cobrança do pedido {}: {}", solicitacao.referenciaPedido(), e.getMessage());
+            throw new CobrancaSemRespostaException("O provedor de pagamento não respondeu. O pagamento será confirmado assim que houver retorno.");
+        }
 
         boolean confirmada = resposta.status() == AsaasPaymentStatus.CONFIRMED
                 || resposta.status() == AsaasPaymentStatus.RECEIVED;

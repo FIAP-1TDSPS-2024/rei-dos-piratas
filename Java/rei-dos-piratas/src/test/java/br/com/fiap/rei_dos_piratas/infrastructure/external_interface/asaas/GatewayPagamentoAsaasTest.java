@@ -4,6 +4,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.SexoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.CobrancaSemRespostaException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException;
 import br.com.fiap.rei_dos_piratas.domain.gateway.*;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,6 +40,8 @@ class GatewayPagamentoAsaasTest {
     @DynamicPropertySource
     static void apontarParaOWireMock(DynamicPropertyRegistry registry) {
         registry.add("spring.cloud.openfeign.client.config.cobranca-app.url", asaas::baseUrl);
+        // Timeout curto só no teste, para simular o Asaas sem responder
+        registry.add("spring.cloud.openfeign.client.config.cobranca-app.read-timeout", () -> "1500");
     }
 
     @Autowired GatewayPagamento gateway;
@@ -279,5 +282,19 @@ class GatewayPagamentoAsaasTest {
 
         assertThat(linha.linhaDigitavel()).isEqualTo("00190000090123456789012345678901234567890123");
         assertThat(linha.codigoBarras()).isEqualTo("00191234500000221190000001234567890123456789");
+    }
+
+    // ---- Sem resposta do Asaas ----
+
+    @Test
+    void cobrancaSemRespostaDeveLancarCobrancaSemRespostaSemRepetirARequisicao() {
+        // Arrange: responde depois do read-timeout (não se sabe se a cobrança foi criada)
+        asaas.stubFor(post(urlPathEqualTo("/v3/payments/")).willReturn(okJson("""
+                {"id":"pay_000001","netValue":219.20,"status":"CONFIRMED"}""").withFixedDelay(3000)));
+
+        // Act & Assert
+        assertThatThrownBy(() -> gateway.criarCobranca(solicitacao(TipoPagamentoEnum.CREDIT_CARD, 1, "tok_abc", "200.1.2.3", null)))
+                .isInstanceOf(CobrancaSemRespostaException.class);
+        asaas.verify(1, postRequestedFor(urlPathEqualTo("/v3/payments/")));
     }
 }

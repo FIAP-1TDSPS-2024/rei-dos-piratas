@@ -165,6 +165,14 @@ Aplicacao disponivel em `http://localhost:8080`.
   primeiro IP do header `X-Forwarded-For` (quando ha load balancer/proxy na frente) ou, sem ele, o IP
   da conexao. O proxy precisa repassar esse header.
 - Timeout de leitura do cliente Asaas: 60s (o cartao e processado na propria requisicao).
+- O pedido e gravado antes da cobranca e o resultado e registrado depois, em outra transacao (nunca ha
+  cobranca sem pedido). Respostas do `POST /pedidos` com cartao:
+  - aprovado ou em analise de risco: 201, pagamento `CONFIRMADO` ou `PENDENTE`;
+  - recusado: 422, pedido `CANCELADO` e pagamento `RECUSADO`, estoque devolvido;
+  - erro do Asaas que nao e recusa: 502, pedido `CANCELADO` e pagamento `CANCELADO`, estoque devolvido;
+  - Asaas sem resposta (timeout): 201 com pedido `AGUARDANDO_PAGAMENTO` e pagamento `PENDENTE`. Nao ha
+    nova tentativa automatica (risco de cobranca duplicada); o webhook do Asaas confirma o pagamento e
+    preenche o id da cobranca.
 - Sandbox: `4444 4444 4444 4444` (validade futura, CCV `123`) aprova; `5184019740373151` e
   `4916561358240741` sao recusados de proposito (HTTP 422 "Pagamento recusado").
 

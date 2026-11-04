@@ -52,6 +52,24 @@ class PedidoServiceImplTest {
     private UsuarioAtualService usuarioAtual;
     private GatewayPagamento gatewayPagamento;
     private CartaoService cartaoService;
+    private ExecutorTransacionalFalso executor;
+
+    /** Executa na hora e registra se o trecho está dentro de uma transação. */
+    static class ExecutorTransacionalFalso implements ExecutorTransacional {
+        boolean dentroDeTransacao;
+        int transacoes;
+
+        @Override
+        public <T> T emTransacao(java.util.function.Supplier<T> operacao) {
+            transacoes++;
+            dentroDeTransacao = true;
+            try {
+                return operacao.get();
+            } finally {
+                dentroDeTransacao = false;
+            }
+        }
+    }
 
     @BeforeEach
     void setUp() {
@@ -71,13 +89,14 @@ class PedidoServiceImplTest {
         this.gatewayPagamento = mock(GatewayPagamento.class);
         when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaCriada("pay_000001", new BigDecimal("219.20")));
         this.cartaoService = mock(CartaoService.class);
+        this.executor = new ExecutorTransacionalFalso();
         this.pedidoService = servicoComBoletoVencendoEm(3);
     }
 
     private PedidoService servicoComBoletoVencendoEm(int diasVencimento) {
         RegraParcelamento regraParcelamento = new RegraParcelamento(new BigDecimal("100.00"), 3);
         return new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, clienteService, gatewayPagamento, usuarioAtual,
-                cartaoService, regraParcelamento, new RegraBoleto(diasVencimento));
+                cartaoService, regraParcelamento, new RegraBoleto(diasVencimento), executor);
     }
 
     /** Cobrança de boleto criada: id, valor líquido e URL do PDF. */
@@ -1229,5 +1248,237 @@ class PedidoServiceImplTest {
         } finally {
             logger.detachAppender(logs);
         }
+    }
+
+    // ---- Cartão: cobrança fora da transação (T1 grava o pedido -> cobra sem transação -> T2 registra) ----
+
+    /** Pedido como relido do banco depois do commit da T1: outra instância, mesmo id. */
+    private Pedido pedidoRelidoDoBanco(StatusEnum status, StatusPagamentoEnum statusPagamento) {
+        Pedido relido = novoPedido(produtoComEstoque(8), TipoPagamentoEnum.CREDIT_CARD);
+        relido.setId(10L);
+        relido.setStatus(status);
+        relido.getPagamento().setStatus(statusPagamento);
+        when(pedidoRepository.findById(10L)).thenReturn(relido);
+        return relido;
+    }
+
+    @Test
+    void fazerPedido_CartaoDeveCobrarForaDeTransacao() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        prepararCartaoTokenizado();
+        List<Boolean> cobrouDentroDeTransacao = new ArrayList<>();
+        when(gatewayPagamento.criarCobranca(any())).thenAnswer(inv -> {
+            cobrouDentroDeTransacao.add(executor.dentroDeTransacao);
+            return cobrancaAprovada("pay_000001", new BigDecimal("219.20"));
+        });
+
+        // Act
+        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+
+        // Assert
+        assertThat(cobrouDentroDeTransacao).containsExactly(false);
+    }
+
+    @Test
+    void fazerPedido_CartaoDeveGravarOPedidoEmTransacaoAntesDeCobrar() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        prepararCartaoTokenizado();
+        List<Boolean> gravouDentroDeTransacao = new ArrayList<>();
+        when(pedidoRepository.create(any(Pedido.class))).thenAnswer(inv -> {
+            gravouDentroDeTransacao.add(executor.dentroDeTransacao);
+            Pedido salvo = inv.getArgument(0);
+            salvo.setId(10L);
+            return salvo;
+        });
+
+        // Act
+        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+
+        // Assert
+        assertThat(gravouDentroDeTransacao).containsExactly(true);
+        var ordem = inOrder(pedidoRepository, gatewayPagamento);
+        ordem.verify(pedidoRepository).create(any());
+        ordem.verify(gatewayPagamento).criarCobranca(any());
+    }
+
+    @Test
+    void fazerPedido_CartaoAprovadoDeveRegistrarOResultadoNoPedidoRelidoDoBanco() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        CartaoCliente cartao = prepararCartaoTokenizado();
+        Pedido relido = pedidoRelidoDoBanco(StatusEnum.AGUARDANDO_PAGAMENTO, StatusPagamentoEnum.PENDENTE);
+        when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaAprovada("pay_000001", new BigDecimal("219.20")));
+        List<Boolean> registrouDentroDeTransacao = new ArrayList<>();
+        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(inv -> {
+            registrouDentroDeTransacao.add(executor.dentroDeTransacao);
+            return inv.getArgument(0);
+        });
+
+        // Act
+        Pedido resultado = pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+
+        // Assert
+        assertThat(ultimoPedidoGravado()).isSameAs(relido);
+        assertThat(registrouDentroDeTransacao).containsOnly(true);
+        assertThat(relido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.CONFIRMADO);
+        assertThat(relido.getPagamento().getIdCobranca()).isEqualTo("pay_000001");
+        assertThat(relido.getPagamento().getValorLiquido()).isEqualByComparingTo("219.20");
+        assertThat(relido.getPagamento().getCartao()).isSameAs(cartao);
+        assertThat(resultado).isSameAs(relido);
+    }
+
+    @Test
+    void fazerPedido_CartaoComEventoDeConfirmacaoAntesDoRegistroNaoDeveVoltarOStatusDoPedido() {
+        // Arrange: o webhook liberou o pedido enquanto a resposta da cobrança voltava
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        prepararCartaoTokenizado();
+        Pedido relido = pedidoRelidoDoBanco(StatusEnum.PREPARANDO_ENVIO, StatusPagamentoEnum.RECEBIDO);
+        relido.getPagamento().setIdCobranca("pay_000001");
+        when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaAprovada("pay_000001", new BigDecimal("219.20")));
+
+        // Act
+        pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+
+        // Assert
+        assertThat(relido.getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+        assertThat(relido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.RECEBIDO);
+        assertThat(relido.getPagamento().getIdCobranca()).isEqualTo("pay_000001");
+    }
+
+    @Test
+    void fazerPedido_CartaoSemRespostaDoFornecedorDeveManterPedidoPendenteSemRepetirACobranca() {
+        // Arrange
+        Produto produto = produtoComEstoque(10);
+        Pedido pedido = novoPedido(produto, TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        prepararCartaoTokenizado();
+        when(gatewayPagamento.criarCobranca(any())).thenThrow(
+                new br.com.fiap.rei_dos_piratas.domain.exceptions.CobrancaSemRespostaException("sem resposta"));
+
+        // Act
+        Pedido resultado = pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3"));
+
+        // Assert
+        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
+        assertThat(resultado.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.PENDENTE);
+        assertThat(resultado.getPagamento().getIdCobranca()).isNull();
+        assertThat(produto.getEstoque()).isEqualTo(8); // reservado até o evento do Asaas
+        verify(gatewayPagamento, times(1)).criarCobranca(any());
+    }
+
+    @Test
+    void fazerPedido_CartaoComErroDoFornecedorDeveCancelarPedidoDevolverEstoqueEPropagar() {
+        // Arrange: o Asaas respondeu com erro que não é recusa -> a cobrança certamente não existe
+        Produto produto = produtoComEstoque(10);
+        Pedido pedido = novoPedido(produto, TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        prepararCartaoTokenizado();
+        when(gatewayPagamento.criarCobranca(any())).thenThrow(
+                new br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException("Erro no Asaas"));
+
+        // Act & Assert
+        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3")))
+                .isInstanceOf(br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException.class);
+        Pedido gravado = ultimoPedidoGravado();
+        assertThat(gravado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(gravado.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.CANCELADO);
+        assertThat(produto.getEstoque()).isEqualTo(10);
+    }
+
+    @Test
+    void fazerPedido_CartaoComErroNaTokenizacaoDeveCancelarPedidoSemCobrar() {
+        // Arrange
+        Produto produto = produtoComEstoque(10);
+        Pedido pedido = novoPedido(produto, TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        when(cartaoService.obterOuTokenizar(any(), any(), any())).thenThrow(
+                new br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException("Erro no Asaas"));
+
+        // Act & Assert
+        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3")))
+                .isInstanceOf(br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException.class);
+        assertThat(ultimoPedidoGravado().getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(produto.getEstoque()).isEqualTo(10);
+        verify(gatewayPagamento, never()).criarCobranca(any());
+    }
+
+    @Test
+    void fazerPedido_CartaoRecusadoDeveRegistrarARecusaEmTransacao() {
+        // Arrange
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.CREDIT_CARD);
+        prepararCriacaoDoPedido(pedido);
+        prepararCartaoTokenizado();
+        when(gatewayPagamento.criarCobranca(any())).thenThrow(new PagamentoRecusadoException("Transação não autorizada"));
+        List<Boolean> registrouDentroDeTransacao = new ArrayList<>();
+        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(inv -> {
+            registrouDentroDeTransacao.add(executor.dentroDeTransacao);
+            return inv.getArgument(0);
+        });
+
+        // Act
+        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido, new PagamentoCartao(null, cartaoNovo, 1, "200.1.2.3")))
+                .isInstanceOf(PagamentoRecusadoException.class);
+
+        // Assert
+        assertThat(registrouDentroDeTransacao).isNotEmpty().containsOnly(true);
+    }
+
+    @Test
+    void fazerPedido_PixPeloMetodoDoCartaoDeveExecutarEmTransacao() {
+        // Arrange: o método do cartão não é transacional; o PIX não pode perder a transação por autochamada
+        Pedido pedido = novoPedido(produtoComEstoque(10), TipoPagamentoEnum.PIX);
+        prepararCriacaoDoPedido(pedido);
+        List<Boolean> cobrouDentroDeTransacao = new ArrayList<>();
+        when(gatewayPagamento.criarCobranca(any())).thenAnswer(inv -> {
+            cobrouDentroDeTransacao.add(executor.dentroDeTransacao);
+            return cobrancaCriada("pay_000001", new BigDecimal("219.20"));
+        });
+
+        // Act
+        pedidoService.fazerPedido(pedido, null);
+
+        // Assert
+        assertThat(cobrouDentroDeTransacao).containsExactly(true);
+    }
+
+    // ---- Cobrança sem resposta: o evento completa o id da cobrança ----
+
+    @Test
+    void processarEventoCobranca_ConfirmacaoDeCobrancaSemIdDevePreencherComOIdDoEventoELiberarEnvio() {
+        // Arrange: o Asaas não respondeu na criação, então o pagamento ficou sem id da cobrança
+        Pedido pedido = pedidoDeCartaoAguardandoPagamento(1L, 10, 2);
+        pedido.getPagamento().setIdCobranca(null);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        prepararCriacaoDeFrete();
+
+        // Act
+        pedidoService.processarEventoCobranca(1L, new EventoPagamento("evt_1", TipoEventoPagamento.CONFIRMADA,
+                "PAYMENT_CONFIRMED", LocalDateTime.now(), "pay_do_evento", 1L, null));
+
+        // Assert
+        assertThat(pedido.getPagamento().getIdCobranca()).isEqualTo("pay_do_evento");
+        assertThat(pedido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.CONFIRMADO);
+        assertThat(pedido.getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+    }
+
+    @Test
+    void processarEventoCobranca_ConfirmacaoNaoDeveSobrescreverOIdDaCobrancaJaGravado() {
+        // Arrange
+        Pedido pedido = pedidoDeCartaoAguardandoPagamento(1L, 10, 2);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        prepararCriacaoDeFrete();
+
+        // Act
+        pedidoService.processarEventoCobranca(1L, new EventoPagamento("evt_1", TipoEventoPagamento.CONFIRMADA,
+                "PAYMENT_CONFIRMED", LocalDateTime.now(), "pay_outro", 1L, null));
+
+        // Assert
+        assertThat(pedido.getPagamento().getIdCobranca()).isEqualTo("pay_000001");
     }
 }

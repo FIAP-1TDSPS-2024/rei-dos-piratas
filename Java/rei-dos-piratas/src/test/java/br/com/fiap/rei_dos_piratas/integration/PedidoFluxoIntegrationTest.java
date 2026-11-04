@@ -375,6 +375,34 @@ class PedidoFluxoIntegrationTest {
         assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id=(SELECT id FROM PEDIDOS WHERE cliente_id=9601)")).isEqualTo("RECUSADO");
     }
 
+    @Test
+    void cartaoSemRespostaDoAsaasFicaPendenteGravadoForaDeTransacaoEOEventoCompletaACobranca() {
+        when(cobranca.tokenizarCartao(any())).thenReturn(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+        List<Boolean> cobrouDentroDeTransacao = new ArrayList<>();
+        when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> {
+            cobrouDentroDeTransacao.add(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+            throw new feign.RetryableException(-1, "Read timed out", feign.Request.HttpMethod.POST, (Long) null,
+                    feign.Request.create(feign.Request.HttpMethod.POST, "http://asaas/v3/payments/", Map.of(), null,
+                            java.nio.charset.StandardCharsets.UTF_8, null));
+        });
+
+        Pedido criado = pedidos.fazerPedido(novoPedido(TipoPagamentoEnum.CREDIT_CARD), cartaoNovo());
+
+        // Cobrança chamada uma vez, sem transação aberta; pedido gravado e pendente
+        assertThat(cobrouDentroDeTransacao).containsExactly(false);
+        assertThat(valor("SELECT status FROM PEDIDOS WHERE id="+criado.getId())).isEqualTo("AGUARDANDO_PAGAMENTO");
+        assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("PENDENTE");
+        assertThat(valor("SELECT id_cobranca FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isNull();
+
+        pedidos.processarEventoCobranca(criado.getId(), traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
+                "evt_sem_resposta","PAYMENT_CONFIRMED",LocalDateTime.now(),
+                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment("pay_sem_resposta",null,criado.getId().toString()),null)));
+
+        assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+        assertThat(valor("SELECT id_cobranca FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("pay_sem_resposta");
+        assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("CONFIRMADO");
+    }
+
     @ParameterizedTest
     @EnumSource(StatusEnum.class)
     void todosStatusDePedidoPersistemEFiltram(StatusEnum status) {
