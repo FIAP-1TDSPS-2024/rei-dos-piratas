@@ -3,9 +3,11 @@ package br.com.fiap.rei_dos_piratas.application.service.impl;
 import br.com.fiap.rei_dos_piratas.application.service.CartaoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
+import br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
+import br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
@@ -57,14 +59,16 @@ public class PedidoServiceImpl implements PedidoService {
     private final RegraParcelamento regraParcelamento;
     private final RegraBoleto regraBoleto;
     private final ExecutorTransacional executorTransacional;
+    private final EstornoPagamentoService estornoPagamentoService;
 
     public PedidoServiceImpl(PedidoRepository repository, ProdutoRepository produtoRepository, EnderecoService enderecoService, DadosEmpresaRepository dadosEmpresaRepository, FreteService freteService, GatewayFrete gatewayFrete, ClienteService clienteService, GatewayPagamento gatewayPagamento, UsuarioAtualService usuarioAtual,
                              CartaoService cartaoService, RegraParcelamento regraParcelamento, RegraBoleto regraBoleto,
-                             ExecutorTransacional executorTransacional) {
+                             ExecutorTransacional executorTransacional, EstornoPagamentoService estornoPagamentoService) {
         this.cartaoService = cartaoService;
         this.regraParcelamento = regraParcelamento;
         this.regraBoleto = regraBoleto;
         this.executorTransacional = executorTransacional;
+        this.estornoPagamentoService = estornoPagamentoService;
         this.usuarioAtual = usuarioAtual;
         this.repository = repository;
         this.produtoRepository = produtoRepository;
@@ -579,7 +583,12 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
 
-    @Transactional
+    /**
+     * Cancela o pedido ainda não enviado e devolve o estoque. Pagamento já feito (confirmado ou recebido) é
+     * estornado por inteiro, frete incluído; cobrança pendente é cancelada no fornecedor depois do commit
+     * (se o cancelamento no fornecedor falhar e o cliente pagar mesmo assim, o pagamento tardio é estornado).
+     * Não é {@code @Transactional}: as transações são abertas pelo {@link ExecutorTransacional}.
+     */
     @Override
     public Pedido cancelarPedido(Long id) {
         log.info("Iniciando cancelamento do pedido ID={}", id);
@@ -591,16 +600,47 @@ public class PedidoServiceImpl implements PedidoService {
         } else if (pedido.getStatus() == StatusEnum.ENTREGUE) {
             log.warn("Pedido ID={} já foi entregue, cancelamento não permitido", id);
             throw new WrongStatusException("O pedido já foi entregue");
-        } else if ((pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO) || pedido.getStatus() == StatusEnum.PREPARANDO_ENVIO) {
-            this.devolverEstoque(pedido);
-            pedido.setStatus(StatusEnum.CANCELADO);
-            Pedido pedidoCancelado = this.repository.update(pedido);
-            log.info("Pedido ID={} cancelado com sucesso", id);
-            return pedidoCancelado;
-        } else {
+        } else if (pedido.getStatus() != StatusEnum.AGUARDANDO_PAGAMENTO && pedido.getStatus() != StatusEnum.PREPARANDO_ENVIO) {
             log.warn("Pedido ID={} não pode ser cancelado diretamente no status={} — devolução necessária", id, pedido.getStatus());
             throw new WrongStatusException("O pedido já foi tramitado. Para fazer o cancelamento, deve ser solicitada uma devolução.");
         }
+
+        Pagamento pagamento = pedido.getPagamento();
+        boolean pago = pagamento != null && (pagamento.getStatus() == StatusPagamentoEnum.CONFIRMADO
+                || pagamento.getStatus() == StatusPagamentoEnum.RECEBIDO);
+        if (pago) {
+            log.info("Pedido ID={} já pago — cancelando com estorno do valor total", id);
+            return this.estornoPagamentoService.estornar(id, pedidoAtual -> {
+                this.marcarCancelado(pedidoAtual);
+                return pedidoAtual.getPagamento().solicitarEstorno(
+                        OrigemEstornoEnum.CANCELAMENTO, null, pedidoAtual.getPagamento().getValor());
+            }, "Cancelamento do pedido " + id);
+        }
+
+        boolean cobrancaPendente = pagamento != null && pagamento.getStatus() == StatusPagamentoEnum.PENDENTE;
+        Pedido pedidoCancelado = this.executorTransacional.emTransacao(() -> {
+            this.marcarCancelado(pedido);
+            if (cobrancaPendente) {
+                pagamento.setStatus(StatusPagamentoEnum.CANCELADO);
+            }
+            return this.repository.update(pedido);
+        });
+        log.info("Pedido ID={} cancelado com sucesso", id);
+
+        if (cobrancaPendente && pagamento.getIdCobranca() != null) {
+            try {
+                this.gatewayPagamento.cancelarCobranca(pagamento.getIdCobranca());
+            } catch (RuntimeException e) {
+                log.warn("Não foi possível cancelar a cobrança {} do pedido ID={} no fornecedor: {} — se for paga, será estornada",
+                        pagamento.getIdCobranca(), id, e.getMessage());
+            }
+        }
+        return pedidoCancelado;
+    }
+
+    private void marcarCancelado(Pedido pedido) {
+        this.devolverEstoque(pedido);
+        pedido.setStatus(StatusEnum.CANCELADO);
     }
 
     @Override

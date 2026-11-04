@@ -1,7 +1,11 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.pagamento;
 
 import br.com.fiap.rei_dos_piratas.application.service.DevolucaoService;
+import br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService;
 import br.com.fiap.rei_dos_piratas.application.service.EstornoService;
+import br.com.fiap.rei_dos_piratas.application.service.impl.EstornoPagamentoServiceImpl;
+import br.com.fiap.rei_dos_piratas.domain.gateway.ExecutorTransacional;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.application.service.EventoExternoService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
@@ -23,6 +27,12 @@ public class EventoExternoServiceConfig {
     public EventoExternoService eventoExternoService(EventoExternoRepository eventoExternoRepository,
                                                      @Value("${app.eventos-externos.lease-segundos:300}") long leaseSegundos) {
         return new EventoExternoServiceImpl(eventoExternoRepository, Duration.ofSeconds(leaseSegundos));
+    }
+
+    @Bean
+    public EstornoPagamentoService estornoPagamentoService(PedidoRepository pedidoRepository, GatewayPagamento gatewayPagamento,
+                                                           ExecutorTransacional executorTransacional) {
+        return new EstornoPagamentoServiceImpl(pedidoRepository, gatewayPagamento, executorTransacional);
     }
 
     @Bean

@@ -45,6 +45,7 @@ class PedidoFluxoIntegrationTest {
     @Autowired PedidoRepository pedidoRepo;
     @Autowired DevolucaoRepository devolucaoRepo;
     @MockBean FreteService fretes;
+    @Autowired EstornoService estornos;
     @MockBean br.com.fiap.rei_dos_piratas.domain.gateway.GatewayFrete envios;
     @MockBean br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.CobrancaAppClient cobranca;
     TransactionTemplate tx;
@@ -103,6 +104,7 @@ class PedidoFluxoIntegrationTest {
     @AfterEach
     void limpar() {
         banco(() -> {
+            sql("DELETE FROM ESTORNOS WHERE pagamento_id IN (SELECT id FROM PAGAMENTOS WHERE pedido_id IN (SELECT id FROM PEDIDOS WHERE cliente_id=9601))");
             sql("DELETE FROM PAGAMENTOS WHERE pedido_id IN (SELECT id FROM PEDIDOS WHERE cliente_id=9601)");
             sql("DELETE FROM CARTOES_CLIENTE WHERE cliente_id=9601");
             sql("DELETE FROM DEVOLUCAO_ITENS WHERE devolucao_id IN (SELECT id FROM DEVOLUCOES WHERE pedido_id IN (SELECT id FROM PEDIDOS WHERE cliente_id=9601))");
@@ -233,6 +235,31 @@ class PedidoFluxoIntegrationTest {
         pedidos.pagarPedido(segundo.getId());
         pedidos.cancelarPedido(segundo.getId());
         assertThat(pedidos.findById(segundo.getId()).getPedidoFrete()).isEqualTo(ida);
+        assertThat(((Number)valor("SELECT estoque FROM PRODUTOS WHERE id=9601")).intValue()).isEqualTo(100);
+    }
+
+    @Test
+    void cancelamentoDePedidoPagoEstornaEOEventoDoAsaasConclui() {
+        // Arrange: pedido PIX pago (evento de confirmação) e liberado para envio
+        Pedido criado = criar();
+        pedidos.processarEventoCobranca(criado.getId(), eventoCobranca("PAYMENT_CONFIRMED", pedidos.findById(criado.getId())));
+        assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
+        when(cobranca.estornarCobranca(any(), any())).thenReturn(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EstornoCobrancaResponseDto(
+                "pay", "CONFIRMED", List.of(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EstornoCobrancaResponseDto.Estorno("PENDING", new BigDecimal("98.95"), null))));
+
+        // Act: cancela (estorno total pedido ao Asaas, ainda em processamento) e chega o evento de estorno
+        pedidos.cancelarPedido(criado.getId());
+        assertThat(valor("SELECT status FROM ESTORNOS WHERE pagamento_id=(SELECT id FROM PAGAMENTOS WHERE pedido_id="+criado.getId()+")"))
+                .isEqualTo("EM_ANDAMENTO");
+        estornos.processarEventoEstorno(criado.getId(), traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
+                "evt_estorno_"+criado.getId(), "PAYMENT_REFUNDED", LocalDateTime.now(),
+                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment("pay", null, criado.getId().toString()), null)));
+
+        // Assert
+        assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("ESTORNADO");
+        assertThat(valor("SELECT status FROM ESTORNOS WHERE pagamento_id=(SELECT id FROM PAGAMENTOS WHERE pedido_id="+criado.getId()+")"))
+                .isEqualTo("CONCLUIDO");
         assertThat(((Number)valor("SELECT estoque FROM PRODUTOS WHERE id=9601")).intValue()).isEqualTo(100);
     }
 

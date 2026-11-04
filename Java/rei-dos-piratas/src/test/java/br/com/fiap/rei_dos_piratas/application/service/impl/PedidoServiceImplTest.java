@@ -52,6 +52,7 @@ class PedidoServiceImplTest {
     private GatewayPagamento gatewayPagamento;
     private CartaoService cartaoService;
     private ExecutorTransacionalFalso executor;
+    private br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService estornoPagamentoService;
 
     /** Executa na hora e registra se o trecho está dentro de uma transação. */
     static class ExecutorTransacionalFalso implements ExecutorTransacional {
@@ -90,13 +91,14 @@ class PedidoServiceImplTest {
         when(gatewayPagamento.criarCobranca(any())).thenReturn(cobrancaCriada("pay_000001", new BigDecimal("219.20")));
         this.cartaoService = mock(CartaoService.class);
         this.executor = new ExecutorTransacionalFalso();
+        this.estornoPagamentoService = mock(br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService.class);
         this.pedidoService = servicoComBoletoVencendoEm(3);
     }
 
     private PedidoService servicoComBoletoVencendoEm(int diasVencimento) {
         RegraParcelamento regraParcelamento = new RegraParcelamento(new BigDecimal("100.00"), 3);
         return new PedidoServiceImpl(pedidoRepository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, gatewayFrete, clienteService, gatewayPagamento, usuarioAtual,
-                cartaoService, regraParcelamento, new RegraBoleto(diasVencimento), executor);
+                cartaoService, regraParcelamento, new RegraBoleto(diasVencimento), executor, estornoPagamentoService);
     }
 
     /** Cobrança de boleto criada: id, valor líquido e URL do PDF. */
@@ -1605,5 +1607,105 @@ class PedidoServiceImplTest {
 
         // Act & Assert
         assertThat(pedidoService.imprimirEtiquetasEnvio(List.of(1L))).isEqualTo("https://example.com/etiquetas.pdf");
+    }
+
+    // ---- Cancelamento: cobrança pendente é cancelada no fornecedor; pagamento feito é estornado ----
+
+    private Pedido pedidoParaCancelar(StatusEnum status, StatusPagamentoEnum statusPagamento, String idCobranca) {
+        Pedido pedido = pedidoDeCartaoAguardandoPagamento(1L, 8, 2);
+        pedido.setStatus(status);
+        pedido.getPagamento().setTipo(TipoPagamentoEnum.PIX);
+        pedido.getPagamento().setStatus(statusPagamento);
+        pedido.getPagamento().setIdCobranca(idCobranca);
+        pedido.getPagamento().setValor(new BigDecimal("221.19"));
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        return pedido;
+    }
+
+    @Test
+    void cancelarPedido_PendenteDeveCancelarACobrancaForaDeTransacaoEMarcarPagamentoCancelado() {
+        // Arrange
+        Pedido pedido = pedidoParaCancelar(StatusEnum.AGUARDANDO_PAGAMENTO, StatusPagamentoEnum.PENDENTE, "pay_p");
+        List<Boolean> cancelouEmTransacao = new ArrayList<>();
+        doAnswer(inv -> {
+            cancelouEmTransacao.add(executor.dentroDeTransacao);
+            return null;
+        }).when(gatewayPagamento).cancelarCobranca("pay_p");
+
+        // Act
+        Pedido resultado = pedidoService.cancelarPedido(1L);
+
+        // Assert
+        assertThat(cancelouEmTransacao).containsExactly(false);
+        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(pedido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.CANCELADO);
+        assertThat(pedido.getProdutosAdicionados().getFirst().getProduto().getEstoque()).isEqualTo(10);
+        verifyNoInteractions(estornoPagamentoService);
+    }
+
+    @Test
+    void cancelarPedido_PendenteComFalhaAoCancelarACobrancaDeveCancelarOPedidoMesmoAssim() {
+        // Arrange: se o cliente pagar depois, o pagamento tardio é estornado
+        Pedido pedido = pedidoParaCancelar(StatusEnum.AGUARDANDO_PAGAMENTO, StatusPagamentoEnum.PENDENTE, "pay_p");
+        doThrow(new br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException("Asaas fora"))
+                .when(gatewayPagamento).cancelarCobranca(any());
+
+        // Act
+        Pedido resultado = pedidoService.cancelarPedido(1L);
+
+        // Assert
+        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(pedido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.CANCELADO);
+    }
+
+    @Test
+    void cancelarPedido_PendenteSemCobrancaNaoDeveChamarOFornecedor() {
+        // Arrange
+        pedidoParaCancelar(StatusEnum.AGUARDANDO_PAGAMENTO, StatusPagamentoEnum.PENDENTE, null);
+
+        // Act
+        pedidoService.cancelarPedido(1L);
+
+        // Assert
+        verify(gatewayPagamento, never()).cancelarCobranca(any());
+    }
+
+    @Test
+    void cancelarPedido_PagoDeveEstornarOValorTotalComFreteDevolvendoOEstoque() {
+        // Arrange
+        Pedido pedido = pedidoParaCancelar(StatusEnum.PREPARANDO_ENVIO, StatusPagamentoEnum.RECEBIDO, "pay_r");
+        when(estornoPagamentoService.estornar(eq(1L), any(), any())).thenAnswer(inv -> {
+            java.util.function.Function<Pedido, Estorno> registrar = inv.getArgument(1);
+            registrar.apply(pedido);
+            return pedido;
+        });
+
+        // Act
+        Pedido resultado = pedidoService.cancelarPedido(1L);
+
+        // Assert
+        verify(estornoPagamentoService).estornar(eq(1L), any(), eq("Cancelamento do pedido 1"));
+        assertThat(resultado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(pedido.getProdutosAdicionados().getFirst().getProduto().getEstoque()).isEqualTo(10);
+        assertThat(pedido.getPagamento().getEstornos()).singleElement().satisfies(estorno -> {
+            assertThat(estorno.getOrigem()).isEqualTo(OrigemEstornoEnum.CANCELAMENTO);
+            assertThat(estorno.getValor()).isEqualByComparingTo("221.19");
+        });
+        verify(gatewayPagamento, never()).cancelarCobranca(any());
+    }
+
+    @Test
+    void cancelarPedido_CartaoAprovadoAindaAguardandoPagamentoDeveSerEstornado() {
+        // Arrange: cartão aprovado na criação; o pedido só sai de AGUARDANDO_PAGAMENTO com o evento
+        Pedido pedido = pedidoParaCancelar(StatusEnum.AGUARDANDO_PAGAMENTO, StatusPagamentoEnum.CONFIRMADO, "pay_c");
+        when(estornoPagamentoService.estornar(eq(1L), any(), any())).thenReturn(pedido);
+
+        // Act
+        pedidoService.cancelarPedido(1L);
+
+        // Assert
+        verify(estornoPagamentoService).estornar(eq(1L), any(), any());
+        verify(gatewayPagamento, never()).cancelarCobranca(any());
     }
 }

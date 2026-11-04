@@ -3,6 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.config.pedido;
 import br.com.fiap.rei_dos_piratas.application.service.CartaoService;
 import br.com.fiap.rei_dos_piratas.application.service.ClienteService;
 import br.com.fiap.rei_dos_piratas.application.service.EnderecoService;
+import br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService;
 import br.com.fiap.rei_dos_piratas.application.service.FreteService;
 import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
@@ -34,9 +35,10 @@ public class PedidoServiceConfig {
                                        CartaoService cartaoService,
                                        RegraParcelamento regraParcelamento,
                                        RegraBoleto regraBoleto,
-                                       ExecutorTransacional executorTransacional) {
+                                       ExecutorTransacional executorTransacional,
+                                       EstornoPagamentoService estornoPagamentoService) {
         return new PedidoServiceImpl(repository, produtoRepository, enderecoService, dadosEmpresaRepository, freteService, gatewayFrete, clienteService, gatewayPagamento, usuarioAtual,
-                cartaoService, regraParcelamento, regraBoleto, executorTransacional);
+                cartaoService, regraParcelamento, regraBoleto, executorTransacional, estornoPagamentoService);
     }
 
 }
