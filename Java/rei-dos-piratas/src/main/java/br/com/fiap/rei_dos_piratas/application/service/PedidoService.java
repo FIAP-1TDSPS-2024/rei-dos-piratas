@@ -6,7 +6,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.PagamentoCartao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
+import br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento;
 import br.com.fiap.rei_dos_piratas.domain.gateway.QrCodePix;
 
 import java.util.List;
@@ -31,5 +31,5 @@ public interface PedidoService {
     QrCodePix obterQrCodeCobrancaPix(Long id);
     /** Linha digitável, código de barras, URL e vencimento do boleto do pedido. */
     DadosBoleto obterBoleto(Long id);
-    void processarEventoCobranca(Long pedidoId, EventoCobrancaDto evento);
+    void processarEventoCobranca(Long pedidoId, EventoPagamento evento);
 }

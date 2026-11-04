@@ -20,7 +20,6 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.consulta.FreteServiceDto
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.PedidoFreteResponseDto;
 import br.com.fiap.rei_dos_piratas.domain.gateway.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
 import org.mockito.ArgumentCaptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -643,9 +642,8 @@ class PedidoServiceImplTest {
                 LocalDateTime.now(), LocalDateTime.now()));
     }
 
-    private EventoCobrancaDto eventoCobranca(String evento, Long pedidoId) {
-        return new EventoCobrancaDto("evt_000001", evento, LocalDateTime.now(),
-                new EventoCobrancaDto.Payment("pay_000001", null, pedidoId.toString()), null);
+    private EventoPagamento eventoCobranca(TipoEventoPagamento tipo, Long pedidoId) {
+        return eventoCobranca(tipo, pedidoId, null);
     }
 
     @Test
@@ -656,7 +654,7 @@ class PedidoServiceImplTest {
         prepararCriacaoDeFrete();
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_CONFIRMED", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.CONFIRMADA, 1L));
 
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
@@ -671,16 +669,15 @@ class PedidoServiceImplTest {
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_RECEIVED", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECEBIDA, 1L));
 
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.EM_TRANSITO);
         verify(freteService, never()).criarPedidoFrete(any());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"PAYMENT_CREDIT_CARD_CAPTURE_REFUSED", "PAYMENT_REPROVED_BY_RISK_ANALYSIS"})
-    void processarEventoCobranca_CartaoRecusadoDeveCancelarPedidoEDevolverEstoque(String evento) {
+    @Test
+    void processarEventoCobranca_CartaoRecusadoDeveCancelarPedidoEDevolverEstoque() {
         // Arrange
         Pedido pedido = pedidoDeCartaoAguardandoPagamento(1L, 8, 2);
         Produto produto = pedido.getProdutosAdicionados().getFirst().getProduto();
@@ -688,7 +685,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca(evento, 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECUSADA, 1L));
 
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.CANCELADO);
@@ -920,10 +917,9 @@ class PedidoServiceImplTest {
 
     // ---- Status do pagamento nos eventos do Asaas ----
 
-    private EventoCobrancaDto eventoCobranca(String evento, Long pedidoId, String motivoRecusa) {
-        return new EventoCobrancaDto("evt_000002", evento, LocalDateTime.now(),
-                new EventoCobrancaDto.Payment("pay_000001", null, pedidoId.toString()),
-                new EventoCobrancaDto.AdditionalInfo(motivoRecusa));
+    private EventoPagamento eventoCobranca(TipoEventoPagamento tipo, Long pedidoId, String motivoRecusa) {
+        return new EventoPagamento("evt_000002", tipo, "PAYMENT_" + tipo.name(), LocalDateTime.now(),
+                "pay_000001", pedidoId, motivoRecusa);
     }
 
     @Test
@@ -934,7 +930,7 @@ class PedidoServiceImplTest {
         prepararCriacaoDeFrete();
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_CONFIRMED", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.CONFIRMADA, 1L));
 
         // Assert
         assertThat(pedido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.CONFIRMADO);
@@ -950,7 +946,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_RECEIVED", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECEBIDA, 1L));
 
         // Assert
         assertThat(ultimoPedidoGravado().getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.RECEBIDO);
@@ -965,7 +961,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_CREDIT_CARD_CAPTURE_REFUSED", 1L, "Saldo insuficiente"));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECUSADA, 1L, "Saldo insuficiente"));
 
         // Assert
         Pagamento pagamento = ultimoPedidoGravado().getPagamento();
@@ -982,7 +978,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_CREDIT_CARD_CAPTURE_REFUSED", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECUSADA, 1L));
 
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.CANCELADO);
@@ -1160,7 +1156,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_OVERDUE", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.VENCIDA, 1L));
 
         // Assert
         Pedido gravado = ultimoPedidoGravado();
@@ -1177,7 +1173,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_OVERDUE", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.VENCIDA, 1L));
 
         // Assert
         verify(produtoRepository, never()).update(any());
@@ -1192,7 +1188,7 @@ class PedidoServiceImplTest {
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
 
         // Act
-        pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_OVERDUE", 1L));
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.VENCIDA, 1L));
 
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
@@ -1218,7 +1214,7 @@ class PedidoServiceImplTest {
 
         try {
             // Act
-            pedidoService.processarEventoCobranca(1L, eventoCobranca("PAYMENT_RECEIVED", 1L));
+            pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECEBIDA, 1L));
 
             // Assert
             Pedido gravado = ultimoPedidoGravado();

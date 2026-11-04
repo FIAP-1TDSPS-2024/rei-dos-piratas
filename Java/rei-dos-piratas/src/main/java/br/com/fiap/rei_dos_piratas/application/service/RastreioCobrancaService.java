@@ -1,7 +1,7 @@
 package br.com.fiap.rei_dos_piratas.application.service;
 
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
+import br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento;
 
 public interface RastreioCobrancaService {
-    void processarEvento(EventoCobrancaDto evento, String payload);
+    void processarEvento(EventoPagamento evento, String payload);
 }

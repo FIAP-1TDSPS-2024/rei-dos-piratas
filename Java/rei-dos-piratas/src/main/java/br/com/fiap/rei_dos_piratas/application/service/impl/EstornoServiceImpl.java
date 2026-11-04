@@ -7,7 +7,7 @@ import br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Devolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Pedido;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto;
+import br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Comparator;
@@ -27,8 +27,8 @@ public class EstornoServiceImpl implements EstornoService {
     }
 
     @Override
-    public void processarEventoEstorno(Long pedidoId, EventoCobrancaDto evento) {
-        log.info("Processando evento de estorno para pedido ID={} — evento={}", pedidoId, evento.event());
+    public void processarEventoEstorno(Long pedidoId, EventoPagamento evento) {
+        log.info("Processando evento de estorno para pedido ID={} — evento={}", pedidoId, evento.tipoOriginal());
 
         Pedido pedido = pedidoService.findById(pedidoId);
 
@@ -38,7 +38,7 @@ public class EstornoServiceImpl implements EstornoService {
         else {
             List<Devolucao> devolucoes = devolucaoService.findAllByPedidoId(pedidoId);
             if (devolucoes.isEmpty()) {
-                log.info("Nenhuma devolução encontrada para o pedido ID={} — evento={}", pedidoId, evento.event());
+                log.info("Nenhuma devolução encontrada para o pedido ID={} — evento={}", pedidoId, evento.tipoOriginal());
             } else {
                 Optional<Devolucao> ultimaDevolucao = devolucoes.stream()
                         .filter(d -> d.getDataConclusao() != null)
@@ -54,24 +54,20 @@ public class EstornoServiceImpl implements EstornoService {
         }
     }
 
-    private void tratarEvento(Long pedidoId, EventoCobrancaDto evento, OrigemEstornoEnum origem, Long devolucaoId) {
-        log.info("Estorno [origem={}] pedido ID={} devolução ID={} — evento={}", origem, pedidoId, devolucaoId, evento.event());
+    private void tratarEvento(Long pedidoId, EventoPagamento evento, OrigemEstornoEnum origem, Long devolucaoId) {
+        log.info("Estorno [origem={}] pedido ID={} devolução ID={} — evento={}", origem, pedidoId, devolucaoId, evento.tipoOriginal());
 
-        switch (evento.event()) {
-            case "PAYMENT_REFUNDED":
-                log.info("Estorno feito com sucesso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
-                break;
-            case "PAYMENT_PARTIALLY_REFUNDED":
-                log.info("Estorno parcial feito com sucesso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
-                break;
-            case "PAYMENT_REFUND_IN_PROGRESS":
-                log.info("Estorno em progresso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
-                break;
-            case "PAYMENT_REFUND_DENIED":
-                log.info("Estorno negado [origem={}] pedido ID={} devolução ID={} — motivo: {}", origem, pedidoId, devolucaoId, evento.additionalInfo().denialReason());
-                break;
-            default:
-                log.warn("Evento desconhecido [origem={}] pedido ID={} devolução ID={} — evento={}", origem, pedidoId, devolucaoId, evento.event());
+        switch (evento.tipo()) {
+            case ESTORNADA ->
+                    log.info("Estorno feito com sucesso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
+            case ESTORNO_PARCIAL ->
+                    log.info("Estorno parcial feito com sucesso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
+            case ESTORNO_EM_ANDAMENTO ->
+                    log.info("Estorno em progresso [origem={}] pedido ID={} devolução ID={}", origem, pedidoId, devolucaoId);
+            case ESTORNO_NEGADO ->
+                    log.info("Estorno negado [origem={}] pedido ID={} devolução ID={} — motivo: {}", origem, pedidoId, devolucaoId, evento.motivoRecusa());
+            default ->
+                    log.warn("Evento sem tratamento [origem={}] pedido ID={} devolução ID={} — evento={}", origem, pedidoId, devolucaoId, evento.tipoOriginal());
         }
     }
 }

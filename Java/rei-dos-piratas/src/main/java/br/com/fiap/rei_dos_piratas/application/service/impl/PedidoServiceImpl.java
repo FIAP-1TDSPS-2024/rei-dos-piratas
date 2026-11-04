@@ -26,7 +26,6 @@ import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pagamento.CompraFreteRes
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.pedido.*;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -619,62 +618,43 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     /** Recusa do cartão pelo Asaas (captura ou análise de risco): cancela e devolve o estoque uma única vez. */
-    private void registrarRecusaPorEvento(Long pedidoId, EventoCobrancaDto evento) {
+    private void registrarRecusaPorEvento(Long pedidoId, EventoPagamento evento) {
         Pedido pedido = this.findById(pedidoId);
         if (pedido.getStatus() != StatusEnum.AGUARDANDO_PAGAMENTO) {
             log.info("Recusa ignorada para pedido ID={} — status atual={}", pedidoId, pedido.getStatus());
             return;
         }
 
-        String motivo = evento.additionalInfo() != null && evento.additionalInfo().denialReason() != null
-                ? evento.additionalInfo().denialReason()
-                : "Pagamento recusado pela operadora (" + evento.event() + ")";
-        this.registrarRecusa(pedido, motivo);
+        this.registrarRecusa(pedido, evento.motivoRecusaOuPadrao());
     }
 
     @Transactional
     @Override
-    public void processarEventoCobranca(Long pedidoId, EventoCobrancaDto evento) {
-        log.info("Processando evento de cobrança para pedido ID={} — evento={}", pedidoId, evento.event());
+    public void processarEventoCobranca(Long pedidoId, EventoPagamento evento) {
+        log.info("Processando evento de cobrança para pedido ID={} — evento={} ({})", pedidoId, evento.tipo(), evento.tipoOriginal());
 
-        switch (evento.event()) {
-            case "PAYMENT_RECEIVED":
+        switch (evento.tipo()) {
+            case RECEBIDA -> {
                 log.info("Pagamento recebido para pedido ID={}", pedidoId);
                 this.registrarPagamento(pedidoId, StatusPagamentoEnum.RECEBIDO);
-                break;
-
-            case "PAYMENT_CREDIT_CARD_CAPTURE_REFUSED":
-            case "PAYMENT_REPROVED_BY_RISK_ANALYSIS":
-                log.warn("Pagamento com cartão recusado para pedido ID={} — evento={}", pedidoId, evento.event());
-                this.registrarRecusaPorEvento(pedidoId, evento);
-                break;
-
-            case "PAYMENT_OVERDUE":
-                log.info("Cobrança vencida sem pagamento para pedido ID={}", pedidoId);
-                this.registrarVencimento(pedidoId);
-                break;
-
-            case "PAYMENT_CREATED":
-                log.info("Cobrança criada para pedido ID={}", pedidoId);
-                break;
-
-            case "PAYMENT_AUTHORIZED":
-                log.info("Pagamento autorizado para pedido ID={}", pedidoId);
-                break;
-
-            case "PAYMENT_CONFIRMED":
-                // Cartão: confirmado já libera o envio; o RECEIVED só chega quando o valor é creditado (~30 dias)
+            }
+            case CONFIRMADA -> {
+                // Cartão: confirmado já libera o envio; o RECEBIDA só chega quando o valor é creditado (~30 dias)
                 log.info("Pagamento confirmado para pedido ID={} — liberando para envio", pedidoId);
                 this.registrarPagamento(pedidoId, StatusPagamentoEnum.CONFIRMADO);
-                break;
-
-            case "PAYMENT_DELETED":
-                log.info("Cobrança deletada para pedido ID={}", pedidoId);
-                break;
-
-            default:
-                log.warn("Evento de cobrança desconhecido recebido: event={}, pedido ID={}", evento.event(), pedidoId);
-                break;
+            }
+            case RECUSADA -> {
+                log.warn("Pagamento com cartão recusado para pedido ID={} — evento={}", pedidoId, evento.tipoOriginal());
+                this.registrarRecusaPorEvento(pedidoId, evento);
+            }
+            case VENCIDA -> {
+                log.info("Cobrança vencida sem pagamento para pedido ID={}", pedidoId);
+                this.registrarVencimento(pedidoId);
+            }
+            case CRIADA, AUTORIZADA, REMOVIDA ->
+                    log.info("Evento {} sem efeito no pedido ID={}", evento.tipoOriginal(), pedidoId);
+            default ->
+                    log.warn("Evento de cobrança sem tratamento recebido: event={}, pedido ID={}", evento.tipoOriginal(), pedidoId);
         }
     }
 

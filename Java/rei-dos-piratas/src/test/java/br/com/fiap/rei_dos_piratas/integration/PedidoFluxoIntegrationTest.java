@@ -314,18 +314,23 @@ class PedidoFluxoIntegrationTest {
         assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("CONFIRMADO");
         assertThat(valor("SELECT ultimos_digitos FROM CARTOES_CLIENTE WHERE cliente_id=9601")).isEqualTo("1234");
 
-        pedidos.processarEventoCobranca(criado.getId(), new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto(
+        pedidos.processarEventoCobranca(criado.getId(), traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
                 "evt_fluxo","PAYMENT_CONFIRMED",LocalDateTime.now(),
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto.Payment("pay_000009601",null,criado.getId().toString()),null));
+                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment("pay_000009601",null,criado.getId().toString()),null)));
 
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
     }
 
-    br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto eventoCobranca(String nome, Pedido pedido) {
-        return new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto(
+    /** Evento como chega do Asaas, passando pelo mesmo tradutor do listener. */
+    br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento traduzir(br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto evento) {
+        return new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.TradutorEventoAsaas().traduzir(evento).orElseThrow();
+    }
+
+    br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento eventoCobranca(String nome, Pedido pedido) {
+        return traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
                 "evt_"+nome+"_"+pedido.getId(),nome,LocalDateTime.now(),
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.pagamento.EventoCobrancaDto.Payment(
-                        pedido.getPagamento().getIdCobranca(),null,pedido.getId().toString()),null);
+                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment(
+                        pedido.getPagamento().getIdCobranca(),null,pedido.getId().toString()),null));
     }
 
     @Test
