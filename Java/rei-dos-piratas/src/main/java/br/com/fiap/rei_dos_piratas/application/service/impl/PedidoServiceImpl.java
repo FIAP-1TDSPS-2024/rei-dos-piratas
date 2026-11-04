@@ -22,8 +22,6 @@ import br.com.fiap.rei_dos_piratas.domain.repository.DadosEmpresaRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.PedidoRepository;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.domain.gateway.*;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -478,78 +476,72 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Transactional
     @Override
-    public void rastreioPedidoWebhook(Pedido pedido, RastreioWebhookDto rastreio) {
-        log.debug("Webhook de rastreio recebido — validando assinatura HMAC");
-        RastreioDataDto data = rastreio.data();
+    public void rastreioPedidoWebhook(Pedido pedido, EventoRastreio evento) {
 
         // Sempre atualiza o status de entrega com o status vindo do payload
-        pedido.setStatusEnvio(data.status());
+        pedido.setStatusEnvio(evento.statusEnvio());
 
         //Define variáveis de tracking quando elas chegam
         //Pode levar até um dia
-        pedido.setTracking(data.tracking());
-        pedido.setTrackingUrl(data.trackingUrl());
+        pedido.setTracking(evento.codigoRastreio());
+        pedido.setTrackingUrl(evento.urlRastreio());
 
-        switch (rastreio.event()) {
+        switch (evento.tipo()) {
 
-            case "order.created":
+            case CRIADO:
 
                 log.info("Etiqueta criada para pedido ID={} — protocolo={}, tracking={}",
-                        pedido.getId(), data.protocol(), data.tracking());
+                        pedido.getId(), evento.protocolo(), evento.codigoRastreio());
                 break;
 
-            case "order.released":
+            case PAGO:
                 // Etiqueta paga — status interno já gerenciado pelo fluxo de organizarPedidosParaEnvio
                 log.debug("Etiqueta paga (order.released) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
                 break;
 
-            case "order.generated":
+            case ETIQUETA_GERADA:
                 // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
                 log.debug("Etiqueta gerada (order.generated) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
                 break;
 
-            case "order.ready-to-print":
-                // Etiqueta gerada — status interno já gerenciado pelo fluxo de gerarEtiquetasParaEnvio
-                log.debug("Etiqueta pronta para impressão (order.ready-to-print) para pedido ID={} — nenhuma ação interna necessária", pedido.getId());
-                break;
 
-            case "order.received":
+            case RECEBIDO_PONTO:
                 // Encomenda recebida em ponto de distribuição Pegaki — sem mudança de status interno
                 log.info("Encomenda recebida em ponto de distribuição para pedido ID={}", pedido.getId());
                 break;
 
-            case "order.posted":
+            case POSTADO:
                 // Encomenda postada → transita internamente para EM_TRANSITO
                 pedido.setStatus(StatusEnum.EM_TRANSITO);
                 log.info("Encomenda postada — pedido ID={} atualizado para EM_TRANSITO", pedido.getId());
                 break;
 
-            case "order.delivered":
+            case ENTREGUE:
                 // Encomenda entregue → status ENTREGUE + data de entrega vinda da API
                 pedido.setStatus(StatusEnum.ENTREGUE);
-                if (data.deliveredAt() != null) {
-                    pedido.setDataEntrega(data.deliveredAt().atZoneSameInstant(FUSO_LOJA).toLocalDate());
+                if (evento.dataEntrega() != null) {
+                    pedido.setDataEntrega(evento.dataEntrega());
                 }
                 log.info("Encomenda entregue — pedido ID={} atualizado para ENTREGUE em {}", pedido.getId(), pedido.getDataEntrega());
                 break;
 
-            case "order.undelivered":
+            case NAO_ENTREGUE:
                 // Tentativa de entrega falhou — apenas statusEnvio atualizado (já feito acima)
                 log.warn("Tentativa de entrega falhou (order.undelivered) para pedido ID={} — statusEnvio atualizado para '{}'",
-                        pedido.getId(), data.status());
+                        pedido.getId(), evento.statusEnvio());
                 break;
 
-            case "order.paused":
+            case PAUSADO:
                 // Entrega interrompida, aguardando ação do destinatário — apenas statusEnvio
                 log.warn("Entrega pausada (order.paused) para pedido ID={} — ação do destinatário necessária", pedido.getId());
                 break;
 
-            case "order.suspended":
+            case SUSPENSO:
                 // Encomenda suspensa — apenas statusEnvio
                 log.warn("Encomenda suspensa (order.suspended) para pedido ID={}", pedido.getId());
                 break;
 
-            case "order.canceled":
+            case CANCELADO:
                 // Etiqueta cancelada (falha interna de nota, não cancelamento do pedido)
                 // Retrocede para PREPARANDO_ENVIO para permitir geração de nova etiqueta
                 pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
@@ -560,7 +552,7 @@ public class PedidoServiceImpl implements PedidoService {
                         pedido.getId());
                 break;
 
-            case "order.expired":
+            case EXPIRADO:
                 // Etiqueta expirada sem postagem (falha interna de nota, não cancelamento do pedido)
                 // Mesmo tratamento do canceled: reabre o pedido para nova emissão de etiqueta
                 pedido.setStatus(StatusEnum.PREPARANDO_ENVIO);
@@ -572,12 +564,12 @@ public class PedidoServiceImpl implements PedidoService {
                 break;
 
             default:
-                log.warn("Evento de rastreio desconhecido recebido: event={}, pedidoFrete UUID={}", rastreio.event(), data.id());
+                log.warn("Evento de rastreio desconhecido recebido: event={}, pedidoFrete UUID={}", evento.tipoOriginal(), evento.envio());
                 break;
         }
 
         this.repository.update(pedido);
-        log.debug("Pedido ID={} persistido após processamento do evento '{}'", pedido.getId(), rastreio.event());
+        log.debug("Pedido ID={} persistido após processamento do evento '{}'", pedido.getId(), evento.tipoOriginal());
     }
 
     @Override

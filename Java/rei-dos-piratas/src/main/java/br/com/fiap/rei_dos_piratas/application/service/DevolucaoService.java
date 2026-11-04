@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.application.service;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Devolucao;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
+import br.com.fiap.rei_dos_piratas.domain.entity.EventoRastreio;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,5 +22,5 @@ public interface DevolucaoService {
     Devolucao recusarDevolucao(Long id);
     Devolucao concluirDevolucao(Long id);
     Optional<Devolucao> findByPedidoFrete(UUID pedidoFrete);
-    void rastreioDevolucaoWebhook(Devolucao devolucao, RastreioWebhookDto rastreio);
+    void rastreioDevolucaoWebhook(Devolucao devolucao, EventoRastreio evento);
 }

@@ -1010,23 +1010,20 @@ class PedidoServiceImplTest {
     // ---- Data de entrega no fuso da loja ----
 
     @Test
-    void rastreioPedidoWebhook_EntregaDepoisDas21hDeveUsarADataDoBrasil() {
-        // Arrange: 23:30 em Brasília = 02:30 do dia seguinte em UTC (como o Jackson entrega o OffsetDateTime)
+    void rastreioPedidoWebhook_EntregueDeveMarcarEntregueComADataDoEvento() {
+        // Arrange: a conversão de UTC para o fuso da loja é do tradutor (TradutorEventoRastreioTest)
         Pedido pedido = pedidoDoCliente(1L, criarCliente());
         pedido.setStatus(StatusEnum.EM_TRANSITO);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        java.time.OffsetDateTime entregueEmUtc = java.time.OffsetDateTime.parse("2026-10-24T02:30:00Z");
-        var data = new br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto(
-                UUID.randomUUID().toString(), "PROTOCOLO", "delivered", "TRACK123", null,
-                null, null, null, null, entregueEmUtc, null, null, "https://example.com/tracking");
 
         // Act
-        pedidoService.rastreioPedidoWebhook(pedido,
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto("order.delivered", data));
+        pedidoService.rastreioPedidoWebhook(pedido, new EventoRastreio(TipoEventoRastreio.ENTREGUE, "order.delivered",
+                UUID.randomUUID(), "delivered", "PROTOCOLO", "TRACK123", "https://example.com/tracking", LocalDate.of(2026, 10, 23)));
 
         // Assert
         assertThat(pedido.getStatus()).isEqualTo(StatusEnum.ENTREGUE);
         assertThat(pedido.getDataEntrega()).isEqualTo(LocalDate.of(2026, 10, 23));
+        assertThat(pedido.getTracking()).isEqualTo("TRACK123");
     }
 
     // ---- Boleto ----

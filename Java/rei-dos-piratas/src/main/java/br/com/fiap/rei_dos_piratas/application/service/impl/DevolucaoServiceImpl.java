@@ -11,8 +11,6 @@ import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayFrete;
 import br.com.fiap.rei_dos_piratas.domain.gateway.ResultadoCompraEnvios;
 import br.com.fiap.rei_dos_piratas.domain.gateway.SolicitacaoEnvioReverso;
 import br.com.fiap.rei_dos_piratas.domain.repository.DevolucaoRepository;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -202,73 +200,71 @@ devolucao.setAprovada(true);
 
     @Transactional
     @Override
-    public void rastreioDevolucaoWebhook(Devolucao devolucao, RastreioWebhookDto rastreio) {
-        RastreioDataDto data = rastreio.data();
+    public void rastreioDevolucaoWebhook(Devolucao devolucao, EventoRastreio evento) {
 
-        devolucao.setStatusEnvio(data.status());
-        devolucao.setTracking(data.tracking());
-        devolucao.setTrackingUrl(data.trackingUrl());
+        devolucao.setStatusEnvio(evento.statusEnvio());
+        devolucao.setTracking(evento.codigoRastreio());
+        devolucao.setTrackingUrl(evento.urlRastreio());
 
-        if (data.protocol() != null && !data.protocol().isBlank()) {
-            devolucao.setProtocoloEnvio(data.protocol());
+        if (evento.protocolo() != null && !evento.protocolo().isBlank()) {
+            devolucao.setProtocoloEnvio(evento.protocolo());
         }
 
-        switch (rastreio.event()) {
-            case "order.created":
+        switch (evento.tipo()) {
+            case CRIADO:
                 log.info("[SERVICE-DEVOLUCAO] Etiqueta de devolução criada - devolucaoId={}, pedidoFrete={}, protocolo={}",
                         devolucao.getId(), devolucao.getPedidoFrete(), devolucao.getProtocoloEnvio());
                 break;
 
-            case "order.released":
-            case "order.generated":
-            case "order.ready-to-print":
+            case PAGO:
+            case ETIQUETA_GERADA:
                 log.debug("[SERVICE-DEVOLUCAO] Evento '{}' recebido para devolucaoId={} sem transição interna adicional",
-                        rastreio.event(), devolucao.getId());
+                        evento.tipoOriginal(), devolucao.getId());
                 break;
 
-            case "order.received":
+            case RECEBIDO_PONTO:
                 log.info("[SERVICE-DEVOLUCAO] Encomenda de devolução recebida no ponto de distribuição - devolucaoId={}", devolucao.getId());
                 break;
 
-            case "order.posted":
+            case POSTADO:
                 devolucao.setStatus(StatusDevolucaoEnum.EM_RETORNO);
                 log.info("[SERVICE-DEVOLUCAO] Devolução postada - devolucaoId={} atualizada para EM_RETORNO", devolucao.getId());
                 break;
 
-            case "order.delivered":
+            case ENTREGUE:
                 devolucao.setStatus(StatusDevolucaoEnum.RETORNADO);
-                if (data.deliveredAt() != null) {
-                    devolucao.setDataConclusao(data.deliveredAt().atZoneSameInstant(FUSO_LOJA).toLocalDate());
+                if (evento.dataEntrega() != null) {
+                    devolucao.setDataConclusao(evento.dataEntrega());
                 }
                 log.info("[SERVICE-DEVOLUCAO] Devolução entregue - devolucaoId={} atualizada para RETORNADO em {}",
                         devolucao.getId(), devolucao.getDataConclusao());
                 break;
 
-            case "order.undelivered":
-            case "order.paused":
-            case "order.suspended":
+            case NAO_ENTREGUE:
+            case PAUSADO:
+            case SUSPENSO:
                 log.warn("[SERVICE-DEVOLUCAO] Evento '{}' recebido para devolucaoId={} - status de envio atualizado para '{}'",
-                        rastreio.event(), devolucao.getId(), data.status());
+                        evento.tipoOriginal(), devolucao.getId(), evento.statusEnvio());
                 break;
 
-            case "order.canceled":
-            case "order.expired":
+            case CANCELADO:
+            case EXPIRADO:
                 devolucao.setStatus(StatusDevolucaoEnum.AGUARDANDO_POSTAGEM_RETORNO);
                 devolucao.setStatusEnvio(null);
                 devolucao.setTracking(null);
                 devolucao.setTrackingUrl(null);
                 log.warn("[SERVICE-DEVOLUCAO] Etiqueta de devolução {} - devolucaoId={} revertida para AGUARDANDO_POSTAGEM_RETORNO",
-                        rastreio.event(), devolucao.getId());
+                        evento.tipoOriginal(), devolucao.getId());
                 break;
 
             default:
                 log.warn("[SERVICE-DEVOLUCAO] Evento de rastreio desconhecido recebido: event={}, pedidoFrete UUID={}",
-                        rastreio.event(), data.id());
+                        evento.tipoOriginal(), evento.envio());
                 break;
         }
 
         repository.update(devolucao);
-        log.debug("[SERVICE-DEVOLUCAO] Devolução ID={} persistida após processamento do evento '{}'", devolucao.getId(), rastreio.event());
+        log.debug("[SERVICE-DEVOLUCAO] Devolução ID={} persistida após processamento do evento '{}'", devolucao.getId(), evento.tipoOriginal());
     }
 
     /** Usa o servico gravado na devolucao; devolucoes antigas (sem servico) usam o configurado. */

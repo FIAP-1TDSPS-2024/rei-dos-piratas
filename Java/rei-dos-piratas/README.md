@@ -176,6 +176,12 @@ Aplicacao disponivel em `http://localhost:8080`.
 - Sandbox: `4444 4444 4444 4444` (validade futura, CCV `123`) aprova; `5184019740373151` e
   `4916561358240741` sao recusados de proposito (HTTP 422 "Pagamento recusado").
 
+## Observacoes sobre o webhook de rastreio (Melhor Envio)
+
+- `POST /rastreio/webhook` valida o header `x-me-signature` (HMAC-SHA256 do corpo com `ME_SECRET`).
+  Respostas: 200 (processado, ou ignorado quando o corpo nao identifica um envio), 401 (assinatura
+  ausente ou invalida) e 500 (falha ao processar; o evento nao e descartado em silencio).
+
 ## Observacoes sobre pagamento com boleto (Asaas)
 
 - Vencimento em `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` dias corridos (padrao `3`); o estoque fica reservado nesse periodo.

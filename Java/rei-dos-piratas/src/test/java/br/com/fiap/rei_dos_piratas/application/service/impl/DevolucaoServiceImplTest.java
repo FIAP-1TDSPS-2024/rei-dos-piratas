@@ -235,20 +235,17 @@ class DevolucaoServiceImplTest {
     }
 
     @Test
-    void rastreioDevolucaoWebhook_EntregaDepoisDas21hDeveUsarADataDoBrasil() {
-        // Arrange: 23:30 em Brasília = 02:30 do dia seguinte em UTC (como o Jackson entrega o OffsetDateTime)
+    void rastreioDevolucaoWebhook_EntregueDeveMarcarRetornadoComADataDoEvento() {
+        // Arrange: a conversão de UTC para o fuso da loja é do tradutor (TradutorEventoRastreioTest)
         Devolucao devolucao = new Devolucao();
         devolucao.setId(1L);
         devolucao.setStatus(StatusDevolucaoEnum.EM_RETORNO);
         when(repository.update(any(Devolucao.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        var data = new br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioDataDto(
-                UUID.randomUUID().toString(), "PROTOCOLO", "delivered", "TRACK123", null,
-                null, null, null, null, java.time.OffsetDateTime.parse("2026-10-24T02:30:00Z"), null, null,
-                "https://example.com/tracking");
 
         // Act
-        service.rastreioDevolucaoWebhook(devolucao,
-                new br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.RastreioWebhookDto("order.delivered", data));
+        service.rastreioDevolucaoWebhook(devolucao, new br.com.fiap.rei_dos_piratas.domain.entity.EventoRastreio(
+                br.com.fiap.rei_dos_piratas.domain.Enum.TipoEventoRastreio.ENTREGUE, "order.delivered", UUID.randomUUID(),
+                "delivered", "PROTOCOLO", "TRACK123", "https://example.com/tracking", java.time.LocalDate.of(2026, 10, 23)));
 
         // Assert
         assertThat(devolucao.getStatus()).isEqualTo(StatusDevolucaoEnum.RETORNADO);

@@ -23,6 +23,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("Acesso negado"));
     }
 
+    @ExceptionHandler(AssinaturaInvalidaException.class)
+    public ResponseEntity<ErrorResponse> handleAssinaturaInvalida(AssinaturaInvalidaException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(e.getMessage()));
+    }
+
     @ExceptionHandler(CredenciaisInvalidasException.class)
     public ResponseEntity<Map<String, String>> handleCredenciaisInvalidas(CredenciaisInvalidasException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));

@@ -6,7 +6,6 @@ import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.repository.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.*;
 import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto.*;
-import br.com.fiap.rei_dos_piratas.interfaces.dto.frete.webhook.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
@@ -36,7 +35,7 @@ class PedidoFluxoIntegrationTest {
     @Autowired PedidoService pedidos;
     @Autowired DevolucaoService devolucoes;
     @Autowired CarrinhoService carrinhos;
-    @Autowired RastreioService rastreios;
+    @Autowired br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.WebhookRastreioMelhorEnvio webhookRastreio;
     @Autowired HmacUtil hmac;
     @Autowired ObjectMapper json;
     @Autowired ClienteRepository clientes;
@@ -146,7 +145,7 @@ class PedidoFluxoIntegrationTest {
                 OffsetDateTime.now(),OffsetDateTime.now(),OffsetDateTime.now(),OffsetDateTime.now(),
                 OffsetDateTime.now(),null,null,trackingUrl);
         String body = json.writeValueAsString(new RastreioWebhookDto(nome,data));
-        rastreios.rastreioWebhook(hmac.generateHmac(body),body);
+        webhookRastreio.receber(hmac.generateHmac(body),body);
     }
     Devolucao solicitar(Pedido pedido, String codigo) {
         MotivoDevolucao motivo = banco(() -> motivos.findById(((Number)em.createNativeQuery(
