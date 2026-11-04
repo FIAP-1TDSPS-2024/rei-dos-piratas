@@ -1,4 +1,4 @@
-package br.com.fiap.rei_dos_piratas.interfaces.dto.frete.token;
+package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto;
 
 public record TokenRequestDto(
         String grant_type,

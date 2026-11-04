@@ -1,6 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.feign;
 
-import br.com.fiap.rei_dos_piratas.application.service.TokenService;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.ProvedorTokenMelhorEnvio;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import feign.RequestInterceptor;
 import feign.codec.ErrorDecoder;
@@ -14,9 +14,9 @@ import org.springframework.context.annotation.Bean;
 public class FreteFeignConfig {
 
     @Bean
-    public RequestInterceptor bearerAuthRequestInterceptor(TokenService tokenService) {
+    public RequestInterceptor bearerAuthRequestInterceptor(ProvedorTokenMelhorEnvio provedorToken) {
         return template -> {
-            Token token = tokenService.findLastToken();
+            Token token = provedorToken.tokenValido();
             if (token != null && token.getToken() != null && !token.getToken().isBlank()) {
                 template.header("Authorization", "Bearer " + token.getToken());
             }

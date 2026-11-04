@@ -1,6 +1,5 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio;
 
-import br.com.fiap.rei_dos_piratas.application.service.TokenService;
 import br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
@@ -48,12 +47,12 @@ class GatewayFreteMelhorEnvioTest {
     }
 
     @Autowired GatewayFrete gateway;
-    @MockBean TokenService tokenService;
+    @MockBean ProvedorTokenMelhorEnvio provedorToken;
     private final ObjectMapper json = new ObjectMapper();
 
     @BeforeEach
     void tokenValido() {
-        when(tokenService.findLastToken()).thenReturn(new Token("tok_me", "ref_me", 2_592_000));
+        when(provedorToken.tokenValido()).thenReturn(new Token("tok_me", "ref_me", 2_592_000));
     }
 
     private List<ItemProdutoPedido> itens() {
