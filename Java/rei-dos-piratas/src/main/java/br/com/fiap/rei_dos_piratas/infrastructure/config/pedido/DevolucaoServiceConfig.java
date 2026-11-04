@@ -14,8 +14,9 @@ public class DevolucaoServiceConfig {
     @Bean
     public DevolucaoService devolucaoService(DevolucaoRepository devolucaoRepository,
                                              GatewayFrete gatewayFrete,
+                                             br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService estornoPagamentoService,
                                              @Value("${ME_SERVICE_DEVOLUCAO:#{null}}") Long servicoEntregaDevolucao) {
-        return new DevolucaoServiceImpl(devolucaoRepository, gatewayFrete, servicoEntregaDevolucao);
+        return new DevolucaoServiceImpl(devolucaoRepository, gatewayFrete, servicoEntregaDevolucao, estornoPagamentoService);
     }
 }
 

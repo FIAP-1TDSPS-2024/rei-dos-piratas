@@ -1,7 +1,10 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.DevolucaoService;
+import br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException;
+import br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
@@ -31,7 +34,11 @@ public class DevolucaoServiceImpl implements DevolucaoService {
     /** Id do servico de entrega (Melhor Envio) usado nas devolucoes; vem de ME_SERVICE_DEVOLUCAO. */
     private final Long servicoEntregaDevolucao;
 
-    public DevolucaoServiceImpl(DevolucaoRepository repository, GatewayFrete gatewayFrete, Long servicoEntregaDevolucao) {
+    private final EstornoPagamentoService estornoPagamentoService;
+
+    public DevolucaoServiceImpl(DevolucaoRepository repository, GatewayFrete gatewayFrete, Long servicoEntregaDevolucao,
+                                EstornoPagamentoService estornoPagamentoService) {
+        this.estornoPagamentoService = estornoPagamentoService;
         this.servicoEntregaDevolucao = servicoEntregaDevolucao;
         this.repository = repository;
         this.gatewayFrete = gatewayFrete;
@@ -185,11 +192,25 @@ devolucao.setAprovada(true);
     }
 
     @Override
+    /**
+     * O funcionário conclui a devolução depois de receber e conferir os itens: o cliente é reembolsado
+     * pelo valor dos itens (e do frete de ida no arrependimento do pedido inteiro). Uma vez por devolução.
+     */
     public Devolucao concluirDevolucao(Long id) {
         log.info("[SERVICE-DEVOLUCAO] Concluindo devolução ID={}", id);
-        // Regras de negócio serão implementadas aqui
         Devolucao devolucao = repository.findById(id);
-        return repository.update(devolucao);
+        if (devolucao.getStatus() != StatusDevolucaoEnum.RETORNADO) {
+            log.warn("[SERVICE-DEVOLUCAO] Devolução ID={} no status {} não pode ser concluída", id, devolucao.getStatus());
+            throw new WrongStatusException("A devolução só pode ser concluída depois que os itens retornarem à loja.");
+        }
+
+        Long pedidoId = devolucao.getPedido().getId();
+        BigDecimal valor = devolucao.valorAReembolsar();
+        log.info("[SERVICE-DEVOLUCAO] Reembolsando R${} da devolução ID={} do pedido ID={}", valor, id, pedidoId);
+        this.estornoPagamentoService.estornar(pedidoId,
+                pedido -> pedido.getPagamento().solicitarEstorno(OrigemEstornoEnum.DEVOLUCAO, id, valor),
+                "Devolução " + id + " do pedido " + pedidoId);
+        return devolucao;
     }
 
     @Override

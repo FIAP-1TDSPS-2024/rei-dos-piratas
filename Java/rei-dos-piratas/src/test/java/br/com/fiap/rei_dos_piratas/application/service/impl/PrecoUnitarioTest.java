@@ -66,7 +66,7 @@ class PrecoUnitarioTest {
         when(repository.update(devolucao)).thenReturn(devolucao);
         when(frete.criarEnvioReverso(any())).thenReturn(
                 new EnvioCriado(java.util.UUID.randomUUID(), "protocolo", BigDecimal.TEN, null));
-        new DevolucaoServiceImpl(repository, frete, 2L).aprovarDevolucao(1L);
+        new DevolucaoServiceImpl(repository, frete, 2L, mock(br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService.class)).aprovarDevolucao(1L);
         assertThat(devolucao.getValorTotal()).isEqualByComparingTo("61.00");
         verify(frete).criarEnvioReverso(argThat(solicitacao -> solicitacao.valorSeguro().compareTo(new BigDecimal("51.00")) == 0));
     }
@@ -105,7 +105,7 @@ class PrecoUnitarioTest {
         DevolucaoRepository repository = mock(DevolucaoRepository.class);
         when(repository.findAllByPedidoId(1L)).thenReturn(List.of());
         when(repository.create(devolucao)).thenReturn(devolucao);
-        new DevolucaoServiceImpl(repository, mock(GatewayFrete.class), 2L).solicitarDevolucao(devolucao);
+        new DevolucaoServiceImpl(repository, mock(GatewayFrete.class), 2L, mock(br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService.class)).solicitarDevolucao(devolucao);
         assertThat(item.getPrecoUnitario()).isEqualByComparingTo("25.50");
         assertThat(devolucao.getValorTotal()).isEqualByComparingTo("51.00");
     }

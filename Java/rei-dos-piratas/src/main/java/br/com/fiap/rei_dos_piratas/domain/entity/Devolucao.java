@@ -106,6 +106,30 @@ public class Devolucao {
         validarDatasEMotivos();
     }
 
+    /**
+     * Valor a devolver ao cliente: os itens devolvidos pelo preço pago. Na devolução por arrependimento do pedido
+     * inteiro, também o frete de ida. O frete de volta é da loja e nunca é cobrado do cliente.
+     */
+    public BigDecimal valorAReembolsar() {
+        BigDecimal itens = this.itens.stream()
+                .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        boolean arrependimento = this.motivo != null && Boolean.TRUE.equals(this.motivo.getArrependimento());
+        if (arrependimento && this.devolvePedidoInteiro() && this.pedido.getValorFrete() != null) {
+            return itens.add(this.pedido.getValorFrete());
+        }
+        return itens;
+    }
+
+    /** Todos os itens do pedido, na quantidade comprada. */
+    private boolean devolvePedidoInteiro() {
+        Map<Long, Integer> devolvidos = this.itens.stream()
+                .collect(Collectors.groupingBy(item -> item.getItemPedido().getId(), Collectors.summingInt(ItemDevolucao::getQuantidade)));
+        return this.pedido.getProdutosAdicionados().stream()
+                .allMatch(comprado -> comprado.getQuantidade() <= devolvidos.getOrDefault(comprado.getId(), 0));
+    }
+
     private void validarDatasEMotivos(){
         long diferencaDias = ChronoUnit.DAYS.between(this.getPedido().getDataEntrega(), this.getDataSolicitacao());
 

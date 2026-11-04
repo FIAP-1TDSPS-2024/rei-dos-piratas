@@ -31,12 +31,14 @@ class DevolucaoServiceImplTest {
     private DevolucaoRepository repository;
     private GatewayFrete gatewayFrete;
     private DevolucaoServiceImpl service;
+    private br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService estornoPagamentoService;
 
     @BeforeEach
     void setUp() {
         repository = mock(DevolucaoRepository.class);
         gatewayFrete = mock(GatewayFrete.class);
-        service = new DevolucaoServiceImpl(repository, gatewayFrete, SERVICO_DEVOLUCAO_CONFIGURADO);
+        estornoPagamentoService = mock(br.com.fiap.rei_dos_piratas.application.service.EstornoPagamentoService.class);
+        service = new DevolucaoServiceImpl(repository, gatewayFrete, SERVICO_DEVOLUCAO_CONFIGURADO, estornoPagamentoService);
     }
 
     private Devolucao prepararDevolucao(List<Long> ids) {
@@ -208,7 +210,7 @@ class DevolucaoServiceImplTest {
     @Test
     void aprovarDevolucao_SemServicoNaDevolucaoESemConfiguracaoDeveFalharComMensagemClara() {
         devolucaoAprovavelSemServicoDeEntrega();
-        DevolucaoServiceImpl semConfiguracao = new DevolucaoServiceImpl(repository, gatewayFrete, null);
+        DevolucaoServiceImpl semConfiguracao = new DevolucaoServiceImpl(repository, gatewayFrete, null, estornoPagamentoService);
 
         assertThatThrownBy(() -> semConfiguracao.aprovarDevolucao(1L))
                 .isInstanceOf(IllegalStateException.class)
@@ -250,5 +252,67 @@ class DevolucaoServiceImplTest {
         // Assert
         assertThat(devolucao.getStatus()).isEqualTo(StatusDevolucaoEnum.RETORNADO);
         assertThat(devolucao.getDataConclusao()).isEqualTo(java.time.LocalDate.of(2026, 10, 23));
+    }
+
+    // ---- Conclusão da devolução: estorno do valor dos itens (e do frete de ida no arrependimento total) ----
+
+    private Devolucao devolucaoRetornada(br.com.fiap.rei_dos_piratas.domain.Enum.StatusDevolucaoEnum status) {
+        br.com.fiap.rei_dos_piratas.domain.entity.Produto produto = new br.com.fiap.rei_dos_piratas.domain.entity.Produto();
+        produto.setPreco(new BigDecimal("45.90"));
+        br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido comprado =
+                new br.com.fiap.rei_dos_piratas.domain.entity.ItemProdutoPedido(1L, produto, 2, new BigDecimal("45.90"));
+        Pedido pedido = new Pedido();
+        pedido.setId(10L);
+        pedido.setProdutosAdicionados(List.of(comprado));
+        pedido.setValorFrete(new BigDecimal("21.19"));
+        MotivoDevolucao motivo = new MotivoDevolucao();
+        motivo.setArrependimento(false);
+        Devolucao devolucao = new Devolucao();
+        devolucao.setId(7L);
+        devolucao.setPedido(pedido);
+        devolucao.setMotivo(motivo);
+        devolucao.setStatus(status);
+        devolucao.setItens(List.of(new br.com.fiap.rei_dos_piratas.domain.entity.ItemDevolucao(null, comprado, 1)));
+        when(repository.findById(7L)).thenReturn(devolucao);
+        return devolucao;
+    }
+
+    @Test
+    void concluirDevolucao_RetornadaDeveEstornarOValorDosItensNoPagamentoDoPedido() {
+        // Arrange
+        devolucaoRetornada(StatusDevolucaoEnum.RETORNADO);
+        br.com.fiap.rei_dos_piratas.domain.entity.Pagamento pagamento =
+                br.com.fiap.rei_dos_piratas.domain.entity.Pagamento.pendente(br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum.PIX);
+        pagamento.setValor(new BigDecimal("113.00"));
+        pagamento.setStatus(br.com.fiap.rei_dos_piratas.domain.Enum.StatusPagamentoEnum.RECEBIDO);
+        Pedido pedidoDoPagamento = new Pedido();
+        pedidoDoPagamento.setPagamento(pagamento);
+        when(estornoPagamentoService.estornar(eq(10L), any(), any())).thenAnswer(inv -> {
+            java.util.function.Function<Pedido, br.com.fiap.rei_dos_piratas.domain.entity.Estorno> registrar = inv.getArgument(1);
+            registrar.apply(pedidoDoPagamento);
+            return pedidoDoPagamento;
+        });
+
+        // Act
+        service.concluirDevolucao(7L);
+
+        // Assert
+        verify(estornoPagamentoService).estornar(eq(10L), any(), eq("Devolução 7 do pedido 10"));
+        assertThat(pagamento.getEstornos()).singleElement().satisfies(estorno -> {
+            assertThat(estorno.getOrigem()).isEqualTo(br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum.DEVOLUCAO);
+            assertThat(estorno.getDevolucaoId()).isEqualTo(7L);
+            assertThat(estorno.getValor()).isEqualByComparingTo("45.90");
+        });
+    }
+
+    @Test
+    void concluirDevolucao_QueAindaNaoRetornouDeveSerRecusadaSemEstornar() {
+        // Arrange: o funcionário só conclui depois de receber e conferir o produto
+        devolucaoRetornada(StatusDevolucaoEnum.EM_RETORNO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> service.concluirDevolucao(7L))
+                .isInstanceOf(br.com.fiap.rei_dos_piratas.domain.exceptions.WrongStatusException.class);
+        verifyNoInteractions(estornoPagamentoService);
     }
 }

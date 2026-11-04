@@ -99,6 +99,9 @@ public class Pagamento {
         if (valor == null || valor.signum() <= 0) {
             throw new RegraDeNegocioException("O valor do estorno deve ser maior que zero.");
         }
+        if (devolucaoId != null && this.estornos.stream().anyMatch(estorno -> devolucaoId.equals(estorno.getDevolucaoId()))) {
+            throw new RegraDeNegocioException("Esta devolução já foi reembolsada ou está em reembolso.");
+        }
         BigDecimal comprometido = this.estornos.stream()
                 .filter(estorno -> estorno.getStatus() == StatusEstornoEnum.CONCLUIDO || estorno.getStatus().emAberto())
                 .map(Estorno::getValor)
