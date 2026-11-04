@@ -1202,36 +1202,76 @@ class PedidoServiceImplTest {
     // ---- Pagamento depois do cancelamento (compensação atrasada) ----
 
     @Test
-    void processarEventoCobranca_PagamentoDePedidoCanceladoRegistraRecebidoSemReativarESinalizaEstorno() {
-        // Arrange
+    void processarEventoCobranca_PagamentoDePedidoCanceladoRegistraRecebidoSemReativarEEstornaAutomaticamente() {
+        // Arrange: boleto pago depois do cancelamento (antes: log de erro pedindo estorno manual)
         Pedido pedido = pedidoAguardandoPagamento(TipoPagamentoEnum.BOLETO, 10);
         pedido.setStatus(StatusEnum.CANCELADO);
+        pedido.getPagamento().setValor(new BigDecimal("221.19"));
         Produto produto = pedido.getProdutosAdicionados().getFirst().getProduto();
         when(pedidoRepository.findById(1L)).thenReturn(pedido);
         when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        ch.qos.logback.classic.Logger logger =
-                (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(PedidoServiceImpl.class);
-        ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> logs = new ch.qos.logback.core.read.ListAppender<>();
-        logs.start();
-        logger.addAppender(logs);
+        List<Boolean> estornouEmTransacao = new ArrayList<>();
+        when(estornoPagamentoService.estornar(eq(1L), any(), any())).thenAnswer(inv -> {
+            estornouEmTransacao.add(executor.dentroDeTransacao);
+            java.util.function.Function<Pedido, Estorno> registrar = inv.getArgument(1);
+            registrar.apply(pedido);
+            return pedido;
+        });
 
-        try {
-            // Act
-            pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECEBIDA, 1L));
+        // Act
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECEBIDA, 1L));
 
-            // Assert
-            Pedido gravado = ultimoPedidoGravado();
-            assertThat(gravado.getStatus()).isEqualTo(StatusEnum.CANCELADO);
-            assertThat(gravado.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.RECEBIDO);
-            assertThat(produto.getEstoque()).isEqualTo(10);
-            verify(gatewayFrete, never()).criarEnvio(any());
-            assertThat(logs.list)
-                    .filteredOn(evento -> evento.getLevel() == ch.qos.logback.classic.Level.ERROR)
-                    .extracting(ch.qos.logback.classic.spi.ILoggingEvent::getFormattedMessage)
-                    .anyMatch(mensagem -> mensagem.contains("estorno"));
-        } finally {
-            logger.detachAppender(logs);
-        }
+        // Assert
+        assertThat(pedido.getStatus()).isEqualTo(StatusEnum.CANCELADO);
+        assertThat(pedido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.RECEBIDO);
+        assertThat(produto.getEstoque()).isEqualTo(10);
+        verify(gatewayFrete, never()).criarEnvio(any());
+        verify(estornoPagamentoService).estornar(eq(1L), any(), eq("Pagamento recebido após o cancelamento do pedido 1"));
+        assertThat(estornouEmTransacao).containsExactly(false);
+        assertThat(pedido.getPagamento().getEstornos()).singleElement().satisfies(estorno -> {
+            assertThat(estorno.getOrigem()).isEqualTo(OrigemEstornoEnum.CANCELAMENTO);
+            assertThat(estorno.getValor()).isEqualByComparingTo(pedido.getPagamento().getValor());
+        });
+    }
+
+    @Test
+    void processarEventoCobranca_NovoEventoDePagamentoDePedidoCanceladoJaEmEstornoNaoEstornaDeNovo() {
+        // Arrange: cartão — CONFIRMED gerou o estorno; o RECEIVED chega ~30 dias depois
+        Pedido pedido = pedidoAguardandoPagamento(TipoPagamentoEnum.CREDIT_CARD, 10);
+        pedido.setStatus(StatusEnum.CANCELADO);
+        pedido.getPagamento().setValor(new BigDecimal("221.19"));
+        pedido.getPagamento().setStatus(StatusPagamentoEnum.CONFIRMADO);
+        pedido.getPagamento().solicitarEstorno(OrigemEstornoEnum.CANCELAMENTO, null, new BigDecimal("221.19"))
+                .setStatus(StatusEstornoEnum.EM_ANDAMENTO);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECEBIDA, 1L));
+
+        // Assert
+        verifyNoInteractions(estornoPagamentoService);
+        assertThat(pedido.getPagamento().getEstornos()).hasSize(1);
+    }
+
+    @Test
+    void processarEventoCobranca_PagamentoJaEstornadoNaoVoltaParaRecebido() {
+        // Arrange: evento de pagamento atrasado depois do estorno concluído
+        Pedido pedido = pedidoAguardandoPagamento(TipoPagamentoEnum.PIX, 10);
+        pedido.setStatus(StatusEnum.CANCELADO);
+        pedido.getPagamento().setValor(new BigDecimal("221.19"));
+        pedido.getPagamento().setStatus(StatusPagamentoEnum.RECEBIDO);
+        Estorno estorno = pedido.getPagamento().solicitarEstorno(OrigemEstornoEnum.CANCELAMENTO, null, new BigDecimal("221.19"));
+        pedido.getPagamento().concluirEstorno(estorno);
+        when(pedidoRepository.findById(1L)).thenReturn(pedido);
+        when(pedidoRepository.update(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        pedidoService.processarEventoCobranca(1L, eventoCobranca(TipoEventoPagamento.RECEBIDA, 1L));
+
+        // Assert
+        assertThat(pedido.getPagamento().getStatus()).isEqualTo(StatusPagamentoEnum.ESTORNADO);
+        verifyNoInteractions(estornoPagamentoService);
     }
 
     // ---- Cartão: cobrança fora da transação (T1 grava o pedido -> cobra sem transação -> T2 registra) ----

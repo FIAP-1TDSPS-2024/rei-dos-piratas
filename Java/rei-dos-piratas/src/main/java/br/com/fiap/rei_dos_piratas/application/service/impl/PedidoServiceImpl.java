@@ -9,6 +9,7 @@ import br.com.fiap.rei_dos_piratas.application.service.PedidoService;
 import br.com.fiap.rei_dos_piratas.application.service.UsuarioAtualService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.OrigemEstornoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEnum;
+import br.com.fiap.rei_dos_piratas.domain.Enum.StatusEstornoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.StatusPagamentoEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoConta;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoPagamentoEnum;
@@ -693,15 +694,20 @@ public class PedidoServiceImpl implements PedidoService {
     /**
      * Marca o pagamento e libera o pedido para envio; idempotente (eventos podem repetir ou chegar fora de ordem).
      * Se a criação da cobrança ficou sem resposta, o pagamento não tem id da cobrança: usa o do evento.
+     *
+     * @return true quando o pagamento chegou para um pedido já cancelado e ainda não há estorno dele
+     *         (o estorno é feito depois do commit, fora da transação do evento)
      */
-    private void registrarPagamento(Long pedidoId, StatusPagamentoEnum status, String idCobrancaDoEvento) {
+    private boolean registrarPagamento(Long pedidoId, StatusPagamentoEnum status, String idCobrancaDoEvento) {
         Pedido pedido = this.findById(pedidoId);
         Pagamento pagamento = pedido.getPagamento();
         if (pagamento != null && pagamento.getIdCobranca() == null && idCobrancaDoEvento != null) {
             log.info("Pagamento do pedido ID={} sem cobrança registrada — usando a cobrança {} do evento", pedidoId, idCobrancaDoEvento);
             pagamento.setIdCobranca(idCobrancaDoEvento);
         }
-        if (pagamento != null && pagamento.getStatus() != StatusPagamentoEnum.RECEBIDO) {
+        // RECEBIDO não volta para CONFIRMADO; ESTORNADO não volta a ser pago
+        if (pagamento != null && pagamento.getStatus() != StatusPagamentoEnum.RECEBIDO
+                && pagamento.getStatus() != StatusPagamentoEnum.ESTORNADO) {
             pagamento.setStatus(status);
             if (pagamento.getDataConfirmacao() == null) {
                 pagamento.setDataConfirmacao(LocalDateTime.now());
@@ -713,11 +719,28 @@ public class PedidoServiceImpl implements PedidoService {
 
         if (pedido.getStatus() == StatusEnum.AGUARDANDO_PAGAMENTO) {
             this.pagarPedido(pedidoId);
-        } else if (pedido.getStatus() == StatusEnum.CANCELADO) {
-            // Ex.: boleto compensado depois do vencimento. Não reativa (o estoque pode já ter sido vendido).
-            log.error("Pagamento recebido para pedido CANCELADO ID={} (cobrança {}) — estorno manual necessário",
-                    pedidoId, pagamento != null ? pagamento.getIdCobranca() : null);
+            return false;
         }
+        if (pedido.getStatus() == StatusEnum.CANCELADO && pagamento != null) {
+            // Ex.: boleto compensado depois do vencimento. Não reativa (o estoque pode já ter sido vendido): estorna.
+            boolean semEstornoAtivo = pagamento.getEstornos().stream()
+                    .noneMatch(estorno -> estorno.getStatus() == StatusEstornoEnum.CONCLUIDO || estorno.getStatus().emAberto());
+            boolean pago = pagamento.getStatus() == StatusPagamentoEnum.CONFIRMADO || pagamento.getStatus() == StatusPagamentoEnum.RECEBIDO;
+            if (semEstornoAtivo && pago) {
+                log.warn("Pagamento recebido para pedido CANCELADO ID={} (cobrança {}) — estornando automaticamente",
+                        pedidoId, pagamento.getIdCobranca());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Estorno total do pagamento que chegou depois do cancelamento do pedido. */
+    private void estornarPagamentoTardio(Long pedidoId) {
+        this.estornoPagamentoService.estornar(pedidoId,
+                pedido -> pedido.getPagamento().solicitarEstorno(
+                        OrigemEstornoEnum.CANCELAMENTO, null, pedido.getPagamento().getValor()),
+                "Pagamento recebido após o cancelamento do pedido " + pedidoId);
     }
 
     /** Cobrança vencida sem pagamento (boleto/PIX): cancela e devolve o estoque uma única vez. */
@@ -748,20 +771,30 @@ public class PedidoServiceImpl implements PedidoService {
         this.registrarRecusa(pedido, evento.motivoRecusaOuPadrao());
     }
 
-    @Transactional
+    /**
+     * Não é {@code @Transactional}: o evento é aplicado numa transação do {@link ExecutorTransacional} e, se for
+     * pagamento de pedido já cancelado, o estorno roda depois do commit (sem chamar o fornecedor dentro da transação).
+     */
     @Override
     public void processarEventoCobranca(Long pedidoId, EventoPagamento evento) {
         log.info("Processando evento de cobrança para pedido ID={} — evento={} ({})", pedidoId, evento.tipo(), evento.tipoOriginal());
 
+        boolean estornar = this.executorTransacional.emTransacao(() -> this.aplicarEventoCobranca(pedidoId, evento));
+        if (estornar) {
+            this.estornarPagamentoTardio(pedidoId);
+        }
+    }
+
+    private boolean aplicarEventoCobranca(Long pedidoId, EventoPagamento evento) {
         switch (evento.tipo()) {
             case RECEBIDA -> {
                 log.info("Pagamento recebido para pedido ID={}", pedidoId);
-                this.registrarPagamento(pedidoId, StatusPagamentoEnum.RECEBIDO, evento.idCobranca());
+                return this.registrarPagamento(pedidoId, StatusPagamentoEnum.RECEBIDO, evento.idCobranca());
             }
             case CONFIRMADA -> {
                 // Cartão: confirmado já libera o envio; o RECEBIDA só chega quando o valor é creditado (~30 dias)
                 log.info("Pagamento confirmado para pedido ID={} — liberando para envio", pedidoId);
-                this.registrarPagamento(pedidoId, StatusPagamentoEnum.CONFIRMADO, evento.idCobranca());
+                return this.registrarPagamento(pedidoId, StatusPagamentoEnum.CONFIRMADO, evento.idCobranca());
             }
             case RECUSADA -> {
                 log.warn("Pagamento com cartão recusado para pedido ID={} — evento={}", pedidoId, evento.tipoOriginal());
@@ -776,6 +809,7 @@ public class PedidoServiceImpl implements PedidoService {
             default ->
                     log.warn("Evento de cobrança sem tratamento recebido: event={}, pedido ID={}", evento.tipoOriginal(), pedidoId);
         }
+        return false;
     }
 
     private void verificaEAtualizaEstoqueparaPedido(Pedido pedido) {
