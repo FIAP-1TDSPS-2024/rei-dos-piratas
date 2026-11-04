@@ -25,7 +25,7 @@ Você é o desenvolvedor de front-end web (Thymeleaf) do e-commerce **Rei dos Pi
 - Formulário de cartão: nada no modelo/flash/log; `autocomplete="off"`, `data-dd-privacy="hidden"`; IP do comprador com `IpDoComprador.de(request)`.
 - Simulador de eventos: só com `APP_SIMULADOR_EVENTOS=true`; botões condicionados a `${@environment.getProperty('app.simulador-eventos.enabled') == 'true'}`; usa o mesmo caminho dos webhooks reais.
 - Ambiente: em HTTP fora do `localhost` (VM de teste) o login exige `AUTH_COOKIE_SECURE=false` e a renovação usa o lease no `localStorage` do `web-auth.js` (fallback do `navigator.locks`). Não grave tokens via JS nem no `localStorage`; mudança no `web-auth.js` sempre com teste em `src/test/js/web-auth.test.cjs` (`node --test`).
-- Arquivos: `.java` com CRLF; templates UTF-8; `application.properties` e o README do projeto Java em ISO-8859-1.
+- Arquivos: `.java` com CRLF; templates UTF-8; `application.properties` em ISO-8859-1; README do projeto Java em UTF-8.
 
 ## Ao terminar
 Suíte verde (`./mvnw test` a partir de `Java/rei-dos-piratas`; nesta máquina use Bash com `JAVA_HOME` no JDK 21 do Adoptium e o settings sem mirror), README (seção "Telas web") atualizado, e relatório: telas e rotas, sequência TDD, o que não foi testado, pendências.

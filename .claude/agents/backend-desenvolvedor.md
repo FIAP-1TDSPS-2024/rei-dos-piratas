@@ -27,7 +27,7 @@ Você é o desenvolvedor de back-end do e-commerce **Rei dos Piratas** (Spring B
 - **Dinheiro e fornecedor**: chamada que cobra/estorna fora de transação (T1 → chamada → T2 que relê o agregado e não rebaixa status), via `ExecutorTransacional` ou `EstornoPagamentoService`. Sem resposta do fornecedor → não repetir.
 - **Domínio**: Bean Validation com mensagem pt-BR (sem `${validatedValue}` em dado sensível); invariantes no domínio com `RegraDeNegocioException`; filha do agregado não referencia a raiz; altere a filha existente, não substitua por `new` sem id.
 - **Migrations**: `V<próximo>__descricao.SQL` (confira a última), compatível com PostgreSQL e H2, `CHECK` em enum textual, constraints nomeadas; nunca edite migration aplicada; ao adicionar FK nova, ajuste as limpezas dos testes de integração (ordem de `DELETE`).
-- **Arquivos**: `.java` com CRLF — preserve ao editar; `application.properties` e o `README.md` do projeto Java estão em ISO-8859-1.
+- **Arquivos**: `.java` com CRLF — preserve ao editar; `application.properties` está em ISO-8859-1; o `README.md` do projeto Java é UTF-8.
 - **Logs**: prefixo de contexto (`[ESTORNO]`, `[ASAAS]`...), só ids e quantidades; nunca cartão, token, CPF completo, corpo de webhook ou payload HTTP.
 - **Config nova**: `${VARIAVEL:padrao-seguro}` no properties (o `src/test/resources/application.properties` substitui o principal nos testes — inclua lá também quando a propriedade não tiver padrão), documente no `AGENTS.md` e no README.
 

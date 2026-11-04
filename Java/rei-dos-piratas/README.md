@@ -1,369 +1,314 @@
-# Rei Dos Piratas
+# Rei dos Piratas — API e painel web
 
-> API REST para Back-End da aplicacao Rei dos Piratas, um e-commerce de mangas usados e lancamentos.
+> Back-end do e-commerce **Rei dos Piratas**, uma loja de mangás novos e usados com foco em One Piece. A loja hoje vende pela [Shopee](https://shopee.com.br/rei_dos_piratas).
 
----
+Este projeto Spring Boot tem duas frentes:
 
-## Video explicativo da solucao
+- uma **API REST**, consumida pelo [app mobile](https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas-mobile);
+- o **painel web Thymeleaf**, com a área do funcionário e a área do cliente.
 
-[Video Explicativo no YouTube](https://www.youtube.com/watch?v=wSOUlz6PsAY)
-
-## Integrantes do Grupo - CATECH
-
-- **RM561144**: Jonas Oliveira - Java e banco de dados
-- **RM559336**: Wendell Dourado - Mobile e DevOps
-- **RM559622**: Daniel Batista - .NET, IoT e QA
+O objetivo, o escopo e o diagrama de arquitetura estão no [README principal](../../README.md). As convenções de código estão em [AGENTS.md](../../AGENTS.md).
 
 ---
 
-## Diagrama da Aplicacao
+## Stack
 
-[Diagrama da Aplicacao no Lucidchart](https://lucid.app/lucidchart/8cb61c77-643b-4269-a160-0be5cca49936/edit)
+| Item | Versão |
+|---|---|
+| Java | 21 |
+| Spring Boot | 3.3.4 (Web, Data JPA, Security, Validation, HATEOAS, Thymeleaf) |
+| Spring Cloud | 2023.0.5 (OpenFeign) |
+| Spring Cloud AWS | 3.2.1 (SQS) |
+| Banco | PostgreSQL 18 · H2 em modo PostgreSQL nos testes |
+| Migrations | Flyway (`src/main/resources/db.migracao`) |
+| Autenticação | JWT (jjwt 0.12.5) + refresh token + sessões persistidas |
+| Documentação | springdoc-openapi 2.6 (Swagger UI) |
+| Logs | Logback + logstash-logback-encoder 8.0 (JSON) |
+| Testes | JUnit 5, Mockito, ArchUnit 1.3, WireMock 3.9, JaCoCo 0.8 |
 
----
-
-## Repositório e vídeo do projeto mobile integrado à API
-
-https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas-mobile
-
-https://youtu.be/12ezMQBmk4s
-
----
-
-## Cronograma de Desenvolvimento - Sprint 3 (atualizado)
-
-| Sem | Dias          | Foco | Entrega |
-| --- |---------------| ---- | ------- |
-| 1 | 24/03 - 29/03 | API Melhor Envio | Cotacao de frete, criacao/organizacao de pedidos de frete e geracao de etiquetas |
-| 1 | 29/03 - 01/04 | Fluxo de pedidos | Ajustes de status: pagamento, preparacao, postagem, envio e entrega |
-| 1 | 01/04 - 03/04 | Perfis e roles | Reforma de autorizacao baseada em permissoes |
-| 2 | 03/04 - 06/04 | Front de produtos | Tela e fluxo web para cadastro/edicao/listagem |
-| 2 | 06/04 - 08/04 | Front de pedidos | Tela e fluxo web para acompanhamento e impressao de etiquetas |
-| 2 | 08/04 - 12/04 | Stabilization | Hardening, testes integrados e ajustes finais de documentacao |
-
-## Cronograma de Desenvolvimento - Sprint 4
-
-> Periodo planejado: **07/05 a 20/05** (duas semanas antes de 21/05).
-
-| Sem | Datas | Foco | Entrega |
-| --- | ----- | ---- | ------- |
-| 1 | 07/05 - 09/05 | Webhooks de pedidos | Recebimento e processamento de eventos para acompanhamento de pedidos |
-| 1 | 10/05 - 12/05 | Login e autenticacao | Aprimoramento do fluxo de login com eventos/webhook e maior rastreabilidade |
-| 1 | 13/05 - 14/05 | Seguranca | Melhorias de seguranca no fluxo de autenticacao e autorizacao |
-| 2 | 15/05 - 17/05 | Cancelamento | Revisao de regras e fluxo de cancelamento com validacoes de status |
-| 2 | 18/05 - 19/05 | Envio reverso | Implementacao de fluxo de logistica reversa e acompanhamento |
-| 2 | 20/05 | Fechamento | Testes de ponta a ponta, ajustes finais e preparacao para marco de 21/05 |
+Organização em Clean Architecture (`domain`, `application`, `interfaces` e `infrastructure`), com as regras de camada verificadas pelo `ArquiteturaTest`.
 
 ---
 
-## Como executar a aplicacao
+## Como executar
 
-### 1) Clonar e acessar a pasta
+### Pré-requisitos
+
+- JDK 21
+- Docker, para o PostgreSQL local
+
+Os comandos abaixo rodam a partir de `Java/rei-dos-piratas`. No PowerShell, use `.\mvnw.cmd`.
 
 ```bash
-git clone https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas.git
-cd rei-dos-piratas/Java/rei-dos-piratas
+docker compose up -d postgres     # PostgreSQL local na porta 5432
+./mvnw spring-boot:run            # sobe a aplicação em http://localhost:8080
 ```
 
-### 2) Definir variaveis de ambiente
+As variáveis de ambiente podem ficar num arquivo `.env`. O `compose.yaml` já o referencia, e ele **nunca é versionado**.
 
-A aplicacao usa variaveis de ambiente para conexao com banco, JWT e integracao com Melhor Envio.
+### Variáveis de ambiente
 
-Variaveis obrigatorias para banco:
+| Grupo | Variáveis | Observação |
+|---|---|---|
+| Banco | `DB_URL`, `DB_USER`, `DB_PASSWORD`, `FLYWAY_ENABLED` | `FLYWAY_ENABLED=true` aplica as migrations na subida |
+| JWT | `JWT_SECRET`, `JWT_EXPIRATION` | `JWT_SECRET` é obrigatória: use um valor longo e aleatório. Expiração padrão: 900000 ms |
+| Asaas | `COBRANCA_URL`, `COBRANCA_API_KEY` | Sandbox: `https://api-sandbox.asaas.com` |
+| Melhor Envio | `ME_URL`, `ME_CLIENT_ID`, `ME_SECRET`, `ME_REDIRECT_URI`, `ME_SERVICE_DEVOLUCAO` | `ME_SERVICE_DEVOLUCAO` é o id do serviço de entrega usado no frete reverso |
+| Parcelamento | `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO`, `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` | Padrões: `100.00` (abaixo disso, só à vista) e `3` parcelas |
+| Boleto | `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` | Padrão: `3` dias corridos |
+| SQS | `SQS_ENABLED`, `SQS_QUEUE_NAME`, `AWS_REGION` | O listener só existe com `SQS_ENABLED=true`. Região padrão: `sa-east-1`. Credenciais pela cadeia padrão da AWS (IAM role em produção). Ajuste fino: `SQS_MAX_CONCURRENT_MESSAGES`, `SQS_MAX_MESSAGES_PER_POLL`, `SQS_POLL_TIMEOUT`, `SQS_VISIBILITY_TIMEOUT` |
+| Eventos | `EVENTOS_EXTERNOS_LEASE_SEGUNDOS` | Padrão: `300`. Lease que impede processar o mesmo evento em paralelo |
+| Web | `AUTH_COOKIE_SECURE`, `APP_ALLOWED_ORIGINS`, `APP_SIMULADOR_EVENTOS` | Veja [Telas web](#telas-web-thymeleaf) |
+| Datadog RUM | `DD_RUM_CLIENT_TOKEN`, `DD_RUM_APPLICATION_ID` | Opcionais |
+| Logs | `JPA_SHOW_SQL` | Padrão: `false`. Use `true` só para depuração local |
 
-- `DB_URL`
-- `DB_USER`
-- `DB_PASSWORD`
+### Migrations
 
-Variavel para controle de migration:
-
-- `FLYWAY_ENABLED` (`true` para executar migrations, `false` para nao executar)
-
-Variaveis obrigatorias para API Melhor Envio:
-
-- `ME_URL`
-- `ME_CLIENT_ID`
-- `ME_SECRET`
-- `ME_REDIRECT_URI`
-- `ME_SERVICE_DEVOLUCAO` (id do servico de entrega usado no frete reverso das devolucoes)
-
-Variaveis de seguranca JWT:
-
-- `JWT_SECRET` (**obrigatoria**: sem ela a aplicacao nao sobe; use um valor longo e aleatorio)
-- `JWT_EXPIRATION` (opcional, padrao 900000 ms)
-
-Variaveis de parcelamento no cartao (opcionais):
-
-- `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO` (padrao `100.00`: abaixo disso, so a vista)
-- `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` (padrao `3`)
-
-Variavel de boleto (opcional):
-
-- `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` (padrao `3`, dias corridos)
-
-Variavel de log:
-
-- `JPA_SHOW_SQL` (opcional, padrao `false`; use `true` apenas para depuracao local)
-
-Exemplo de configuracao no PowerShell (sessao atual):
-
-```powershell
-$env:DB_URL = "jdbc:postgresql://localhost:5432/reidospiratas"
-$env:DB_USER = "seu_usuario"
-$env:DB_PASSWORD = "sua_senha"
-$env:FLYWAY_ENABLED = "true"
-
-$env:ME_URL = "https://sandbox.melhorenvio.com.br"
-$env:ME_CLIENT_ID = "seu_client_id"
-$env:ME_SECRET = "seu_client_secret"
-$env:ME_REDIRECT_URI = "https://sua-url-de-retorno"
-
-$env:JWT_SECRET = "defina-um-segredo-forte"
-$env:JWT_EXPIRATION = "86400000"
-```
-
-> Se estiver usando Docker Compose, o `compose.yaml` ja referencia um arquivo `.env` (`env_file`), entao voce pode colocar essas mesmas variaveis nele.
-
-### 3) Executar migrations
-
-As migrations Flyway estao em `src/main/resources/db.migracao` e so rodam quando `FLYWAY_ENABLED=true`.
-
-Os scripts foram convertidos para PostgreSQL e devem ser aplicados em uma base vazia. Esta alteracao nao transfere dados do Oracle nem reaproveita seu historico Flyway. Para bases existentes, planeje a exportacao/importacao dos dados e o ajuste das sequences separadamente.
-
-Os testes H2 usam os mesmos scripts, em modo PostgreSQL.
-
-Para validar as migrations e a persistencia em PostgreSQL real, use uma base exclusiva de testes vazia:
-
-```powershell
-$env:TEST_DB_URL = "jdbc:postgresql://localhost:5432/reidospiratas_test"
-$env:TEST_DB_USER = "seu_usuario"
-$env:TEST_DB_PASSWORD = "sua_senha"
-mvn test "-Dtest=DatabaseMigrationIntegrationTest" "-Dspring.profiles.active=postgresql-test"
-```
-
-Esse teste aplica V1-V30 e verifica IDs apos os seeds, filtro de enderecos ativos e leitura/escrita de tokens longos. Nao aponte para uma base de producao.
-
-Fluxo recomendado:
-
-1. Primeira subida do ambiente/base: usar `FLYWAY_ENABLED=true`.
-2. Base ja estruturada: pode usar `FLYWAY_ENABLED=false` se nao quiser validar/aplicar scripts no startup.
-
-### 4) Compilar e subir a aplicacao
+- O schema é gerenciado só pelo Flyway (`ddl-auto=validate`), e os mesmos scripts rodam em PostgreSQL e no H2 dos testes.
+- Nunca edite uma migration já aplicada: crie a próxima `V<n>__descricao.SQL`.
+- Para validar as migrations num PostgreSQL real, use uma base **vazia e exclusiva de teste**, nunca a de produção:
 
 ```bash
-mvn clean install
-mvn spring-boot:run
+./mvnw test -Dtest=DatabaseMigrationIntegrationTest -Dspring.profiles.active=postgresql-test
+# requer TEST_DB_URL, TEST_DB_USER e TEST_DB_PASSWORD
 ```
 
-Aplicacao disponivel em `http://localhost:8080`.
+### Testes
+
+```bash
+./mvnw test                                  # suíte completa (H2; Asaas, Melhor Envio e SQS mockados)
+./mvnw clean verify                          # build + testes + relatório JaCoCo em target/site/jacoco
+node --test src/test/js/web-auth.test.cjs    # testes do web-auth.js
+```
+
+### Docker
+
+O `Dockerfile` faz o build em múltiplos estágios (JRE 21, usuário não root, porta 8080) e **pula os testes**: eles precisam rodar no CI antes. O `buildspec.yml` da raiz gera a imagem no AWS CodeBuild e a publica no ECR.
 
 ---
 
-## Observacoes sobre pagamento com cartao (Asaas)
+## Documentação da API
 
-- O Asaas exige o IP do comprador (`remoteIp`) na tokenizacao e na cobranca com cartao. A API usa o
-  primeiro IP do header `X-Forwarded-For` (quando ha load balancer/proxy na frente) ou, sem ele, o IP
-  da conexao. O proxy precisa repassar esse header.
-- Timeout de leitura do cliente Asaas: 60s (o cartao e processado na propria requisicao).
-- O pedido e gravado antes da cobranca e o resultado e registrado depois, em outra transacao (nunca ha
-  cobranca sem pedido). Respostas do `POST /pedidos` com cartao:
-  - aprovado ou em analise de risco: 201, pagamento `CONFIRMADO` ou `PENDENTE`;
-  - recusado: 422, pedido `CANCELADO` e pagamento `RECUSADO`, estoque devolvido;
-  - erro do Asaas que nao e recusa: 502, pedido `CANCELADO` e pagamento `CANCELADO`, estoque devolvido;
-  - Asaas sem resposta (timeout): 201 com pedido `AGUARDANDO_PAGAMENTO` e pagamento `PENDENTE`. Nao ha
-    nova tentativa automatica (risco de cobranca duplicada); o webhook do Asaas confirma o pagamento e
-    preenche o id da cobranca.
-- Sandbox: `4444 4444 4444 4444` (validade futura, CCV `123`) aprova; `5184019740373151` e
-  `4916561358240741` sao recusados de proposito (HTTP 422 "Pagamento recusado").
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI: `http://localhost:8080/v3/api-docs`
+- [Coleção do Postman](API%20Rei%20dos%20Piratas.postman_collection.json)
 
-## Observacoes sobre o webhook de rastreio (Melhor Envio)
+O JSON usa **snake_case**. As listagens paginadas aceitam `pageNumber` (padrão `0`) e `pageSize` (padrão `10`), e respondem `204` quando a página vem vazia.
 
-- `POST /rastreio/webhook` valida o header `x-me-signature` (HMAC-SHA256 do corpo com `ME_SECRET`).
-  Respostas: 200 (processado, ou ignorado quando o corpo nao identifica um envio), 401 (assinatura
-  ausente ou invalida) e 500 (falha ao processar; o evento nao e descartado em silencio).
+Os erros seguem o `GlobalExceptionHandler`:
+
+| Status | Quando acontece | Corpo |
+|---|---|---|
+| `400` | Validação | Mapa `{campo: mensagem}` |
+| `400` | Regra de negócio, estoque insuficiente, status inválido, recurso não encontrado e dado duplicado | `{message}` |
+| `401` | Não autenticado, credenciais inválidas ou assinatura de webhook inválida | |
+| `403` | Sem permissão | |
+| `422` | Pagamento com cartão recusado | |
+| `502` | Falha do fornecedor externo (Asaas ou Melhor Envio) | |
+
+### Autenticação
+
+- **API e app:** `POST /auth/login` devolve o JWT e o refresh token. Envie `Authorization: Bearer <token>` nas chamadas.
+- **Web:** usa cookies `HttpOnly` e CSRF, por `/web/auth/*`.
+- As permissões vêm do perfil da conta (roles). O **cliente** tem `CARRINHO_MANAGE`, `ENDERECO_MANAGE`, `PEDIDO_CREATE`, `PEDIDO_READ`, `PEDIDO_PAGAMENTO` e `PEDIDO_CANCEL`. As roles de **funcionário** são `PRODUTO_WRITE`, `PEDIDO_WRITE` e `FUNCIONARIO_WRITE`, conforme o perfil.
+
+## Endpoints
+
+### Autenticação — `/auth`
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| POST | `/auth/login` | público | Login, que devolve o token e o refresh token |
+| POST | `/auth/cadastro` | público | Cadastro de cliente |
+| POST | `/auth/refresh` | público | Renova o token pelo refresh token |
+| POST | `/auth/logout` | autenticado | Revoga a sessão |
+
+### Produtos — `/produtos`
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/produtos` | público | Lista os produtos (paginado) |
+| GET | `/produtos/{id}` | público | Busca um produto |
+| POST | `/produtos` | `PRODUTO_WRITE` | Cria um produto |
+| PUT | `/produtos` | `PRODUTO_WRITE` | Atualiza um produto |
+| DELETE | `/produtos/{id}` | `PRODUTO_WRITE` | Remove um produto |
+
+### Carrinho — `/carrinho` (cliente)
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/carrinho` | Mostra o carrinho do cliente logado |
+| PUT | `/carrinho/adicionar` | Adiciona um item (`produto_id`, `quantidade`) |
+| PUT | `/carrinho/remover` | Remove um item |
+| PUT | `/carrinho/limpar` | Esvazia o carrinho |
+| PUT | `/carrinho/finalizar` | Gera o pedido a partir do carrinho (`frete_service_id`, `endereco_entrega_id`, `tipo_pagamento`). Cartão ainda não é aceito aqui: use o `POST /pedidos` |
+
+Todas as rotas exigem `ENDERECO_MANAGE`.
+
+### Endereços e cartões (cliente)
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/enderecos` | Lista os endereços ativos do cliente logado |
+| GET | `/enderecos/{id}` | Busca um endereço do cliente |
+| POST | `/enderecos` | Cria um endereço |
+| PUT | `/enderecos/{id}` | Atualiza um endereço |
+| GET | `/cartoes` | Lista os cartões salvos: id, bandeira e 4 últimos dígitos |
+
+- Todas as rotas exigem `ENDERECO_MANAGE`, e os funcionários recebem `403`.
+- O token do Asaas nunca sai da API: o app usa o `id` do cartão como `cartao_id` no pedido.
+- Não há endpoint para cadastrar cartão: a tokenização acontece dentro do pedido.
+
+### Frete — `/frete`
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| POST | `/frete` | público | Cota as opções de frete (Melhor Envio) para um CEP e uma lista de produtos |
+
+### Pedidos — `/pedidos`
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/pedidos` | `PEDIDO_READ` | Lista os pedidos do cliente logado (paginado) |
+| GET | `/pedidos/status/{status}` | `PEDIDO_WRITE` | Lista os pedidos por status (funcionário, paginado) |
+| GET | `/pedidos/{id}` | `PEDIDO_READ` | Busca um pedido (o dono ou um funcionário) |
+| GET | `/pedidos/{id}/pix-qrcode` | `PEDIDO_READ` | QR Code e copia-e-cola do PIX |
+| GET | `/pedidos/{id}/boleto` | `PEDIDO_READ` | Linha digitável, código de barras, URL e vencimento do boleto |
+| GET | `/pedidos/{id}/estornos` | `PEDIDO_READ` | Estornos do pedido |
+| POST | `/pedidos` | `PEDIDO_CREATE` | Faz o pedido com PIX, boleto ou cartão (salvo ou novo, parcelado ou à vista) |
+| PUT | `/pedidos/cancelamento/{id}` | `PEDIDO_CANCEL` | Cancela o pedido: estorna se já foi pago, ou cancela a cobrança pendente |
+| PUT | `/pedidos/organizar-pedidos` | `PEDIDO_WRITE` | Compra o frete dos pedidos pagos (corpo: lista de ids) |
+| PUT | `/pedidos/gerar-etiquetas` | `PEDIDO_WRITE` | Gera as etiquetas no Melhor Envio |
+| PUT | `/pedidos/imprimir-etiquetas` | `PEDIDO_WRITE` | Devolve o link de impressão das etiquetas |
+
+O status do pedido avança sozinho pelos eventos do Asaas (pagamento) e do Melhor Envio (postagem e entrega). Não há endpoint para marcar pagamento ou envio manualmente.
+
+### Devoluções — `/devolucoes`
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| POST | `/devolucoes` | `PEDIDO_READ` | O cliente solicita a devolução de itens de um pedido entregue |
+| GET | `/devolucoes` | `PEDIDO_READ`/`PEDIDO_WRITE` | Lista as devoluções (paginado) |
+| GET | `/devolucoes/{id}` | `PEDIDO_READ`/`PEDIDO_WRITE` | Busca uma devolução |
+| GET | `/devolucoes/status/{status}` | `PEDIDO_READ`/`PEDIDO_WRITE` | Lista por status (paginado) |
+| GET | `/devolucoes/pedido/{pedidoId}` | `PEDIDO_READ`/`PEDIDO_WRITE` | Devoluções de um pedido (paginado) |
+| GET | `/devolucoes/pedido/{pedidoId}/todas` | `PEDIDO_READ`/`PEDIDO_WRITE` | Todas as devoluções de um pedido |
+| PUT | `/devolucoes/{id}/aprovar` | `PEDIDO_WRITE` | Aprova e cria o envio reverso (status `PREPARANDO_RETORNO`) |
+| PUT | `/devolucoes/{id}/recusar` | `PEDIDO_WRITE` | Recusa a devolução |
+| PUT | `/devolucoes/organizar-devolucoes` | `PEDIDO_WRITE` | Paga o frete de retorno das devoluções em `PREPARANDO_RETORNO` (corpo: lista de ids) e as leva para `AGUARDANDO_POSTAGEM_RETORNO` |
+| PUT | `/devolucoes/{id}/concluir` | `PEDIDO_WRITE` | Conclui a devolução recebida (`RETORNADO`) e estorna o cliente |
+
+No `organizar-devolucoes`, só os ids no status elegível são processados. Se o Melhor Envio devolver erro, os status não avançam: a resposta é `400` para erro do fornecedor e `502` para falha de comunicação.
+
+### Clientes e funcionários
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/clientes` | autenticado | Lista os clientes (paginado) |
+| GET | `/clientes/{id}` | autenticado | Busca um cliente |
+| PUT | `/clientes` | cliente | Atualiza os dados do próprio cliente logado |
+| DELETE | `/clientes` | cliente | Desativa a própria conta |
+| GET | `/funcionarios` | autenticado | Lista os funcionários (paginado) |
+| GET | `/funcionarios/{id}` | autenticado | Busca um funcionário |
+| POST | `/funcionarios` | `FUNCIONARIO_WRITE` | Cria um funcionário |
+| PUT | `/funcionarios` | `FUNCIONARIO_WRITE` | Atualiza um funcionário |
+| PUT | `/funcionarios/{id}` | `FUNCIONARIO_WRITE` | Ativa ou desativa um funcionário |
+
+O primeiro administrador vem da migration (`admin@reidospiratas.com.br`). Troque a senha dele antes de usar o sistema em qualquer ambiente compartilhado.
+
+### Webhooks e saúde
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | `/rastreio/webhook` | Webhook de rastreio do Melhor Envio, com assinatura HMAC no header `x-me-signature` |
+| GET | `/health` | Health check |
+
+Os eventos de cobrança do **Asaas** não chegam por HTTP: eles entram pela fila **SQS** (`SQS_QUEUE_NAME`).
+
+---
+
+## Regras de pagamento e estorno (Asaas)
+
+### Cartão de crédito
+
+- O Asaas exige o IP do comprador (`remoteIp`) na tokenização e na cobrança. A API usa o primeiro IP do `X-Forwarded-For`; sem esse header, usa o IP da conexão. O proxy precisa repassar o header.
+- O pedido é gravado antes da cobrança, e o resultado é registrado depois, em outra transação. Assim nunca existe cobrança sem pedido.
+
+Respostas do `POST /pedidos` com cartão:
+
+| Resultado | Resposta | Pedido | Pagamento |
+|---|---|---|---|
+| Aprovado | `201` | | `CONFIRMADO` |
+| Em análise de risco | `201` | | `PENDENTE` |
+| Recusado | `422` | `CANCELADO` (estoque devolvido) | `RECUSADO` |
+| Erro do Asaas que não é recusa | `502` | `CANCELADO` (estoque devolvido) | `CANCELADO` |
+| Sem resposta (timeout) | `201` | `AGUARDANDO_PAGAMENTO` | `PENDENTE` |
+
+- No timeout, não há nova tentativa, para evitar cobrança duplicada: o webhook confirma o resultado depois. O timeout de leitura do cliente do Asaas é de 60 s.
+- Sandbox: o cartão `4444 4444 4444 4444` (validade futura, CCV `123`) é aprovado. Os cartões `5184019740373151` e `4916561358240741` são recusados de propósito.
+
+### Boleto e PIX
+
+- O boleto vence em `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` dias. O registro é cancelado 1 dia depois do vencimento, então ele não pode mais ser pago. O estoque fica reservado durante esse prazo.
+- Cobrança vencida (boleto ou PIX) cancela o pedido e devolve o estoque.
+- Pagamento que chega com o pedido já cancelado não reativa o pedido: ele é estornado automaticamente.
+- Sandbox: `POST /v3/sandbox/payment/{id}/confirm`, na API do Asaas, simula o pagamento do boleto.
+
+### Estornos
+
+- **Cancelamento de pedido pago:** estorna o valor total, frete incluído.
+- **Devolução:** o estorno acontece quando o funcionário conclui a devolução. O valor é o dos itens devolvidos, pelo preço pago; no arrependimento do pedido inteiro, entra também o frete de ida. O frete de volta é sempre da loja.
+- **PIX e cartão:** são estornados pela API. No cartão, o estorno pode levar até 10 dias úteis para aparecer na fatura.
+- **Boleto:** o Asaas gera um link em que o cliente informa os dados bancários (estorno `AGUARDANDO_CLIENTE`).
+- **Status do estorno:** `SOLICITADO`, `EM_ANDAMENTO`, `AGUARDANDO_CLIENTE`, `CONCLUIDO`, `NEGADO` ou `FALHOU`. Os dois últimos precisam de ação manual no painel do Asaas (ex.: saldo insuficiente para estornar um PIX).
+
+## Frete e rastreio (Melhor Envio)
+
+- Para comprar e imprimir etiquetas, a conta da integração precisa estar autorizada no Melhor Envio, com token e refresh token válidos.
+- O `POST /rastreio/webhook` valida o `x-me-signature`: um HMAC-SHA256 do corpo com `ME_SECRET`, comparado em tempo constante. As respostas são:
+
+| Status | Quando acontece |
+|---|---|
+| `200` | Evento processado, ou ignorado quando o corpo não identifica um envio |
+| `401` | Assinatura ausente ou inválida |
+| `500` | Falha ao processar; o evento não é descartado em silêncio |
+
+- As datas de entrega usam o fuso da loja (`America/Sao_Paulo`).
+
+---
 
 ## Telas web (Thymeleaf)
 
-- Publico: `/web/login` e `/web/cadastro` (criacao de conta de cliente; ao concluir ja entra logado).
-  Ainda nao ha recuperacao de senha.
-- Cliente (`/web/conta/**`, so perfil CLIENT): carrinho, checkout (endereco, frete, PIX/boleto/cartao),
-  pagamento (QR Code PIX, linha digitavel do boleto, status do cartao), meus pedidos, cancelamento,
-  estornos (com o link de dados bancarios do boleto) e pedido de devolucao.
-- Funcionario: `/web/pedidos` (painel de envio; o detalhe mostra pagamento, estornos e cancelamento) e
-  `/web/devolucoes` (aprovar, recusar, pagar frete de retorno, concluir com estorno).
-- Simulador de eventos (`APP_SIMULADOR_EVENTOS=true`, so funcionario): no detalhe do pedido e da devolucao,
-  simula pagamento confirmado/recebido/vencido, cartao recusado, estorno concluido/negado e rastreio
-  postado/entregue/cancelado, pelo mesmo caminho dos webhooks reais. Util sem SQS/webhook local.
-  **Nunca ligar em producao.**
-- Acesso por HTTP fora do `localhost` (ex.: VM de teste em `http://<IP>:8080`): defina `AUTH_COOKIE_SECURE=false`,
-  senao o navegador descarta os cookies de sessao e o login volta para a tela inicial. Sem HTTPS o navegador
-  tambem nao oferece Web Locks; o `web-auth.js` usa entao um lease no `localStorage` (sem tokens) para que so
-  uma aba renove a sessao por vez. Em producao use HTTPS e `AUTH_COOKIE_SECURE=true`.
+- **Público:**
+  - `/web/produtos`, a vitrine;
+  - `/web/login`;
+  - `/web/cadastro`, a criação de conta de cliente (ao concluir, o cliente já entra logado).
+  
+  Ainda não há recuperação de senha.
+- **Cliente** (`/web/conta/**`):
+  - carrinho;
+  - checkout: endereço, frete e PIX, boleto ou cartão;
+  - pagamento: QR Code do PIX, linha digitável do boleto e status do cartão;
+  - meus pedidos e cancelamento;
+  - estornos, com o link de dados bancários do boleto;
+  - pedido de devolução.
+- **Funcionário:**
+  - `/web/produtos/novo|editar|excluir`, a gestão de produtos;
+  - `/web/pedidos`, o painel de envio (o detalhe mostra pagamento, estornos e cancelamento);
+  - `/web/devolucoes`, onde o funcionário aprova, recusa, paga o frete de retorno e conclui com estorno.
+- **Simulador de eventos** (`APP_SIMULADOR_EVENTOS=true`, só funcionário). Fica no detalhe do pedido e da devolução, e simula, pelo mesmo caminho dos webhooks reais:
+  - pagamento confirmado, recebido ou vencido;
+  - cartão recusado;
+  - estorno concluído ou negado;
+  - rastreio postado, entregue ou cancelado.
+  
+  É útil sem SQS ou webhook local. **Nunca ligue em produção.**
 
-## Observacoes sobre estornos (Asaas)
+### Acesso por HTTP fora do `localhost`
 
-- Cancelamento (`PUT /pedidos/cancelamento/{id}`) de pedido ja pago estorna o valor total, frete incluido;
-  pedido ainda nao pago tem a cobranca cancelada no Asaas.
-- Devolucao: o estorno acontece quando o funcionario conclui a devolucao (`PUT /devolucoes/{id}/concluir`,
-  so com a devolucao `RETORNADO`). Valor: itens devolvidos pelo preco pago; no arrependimento do pedido
-  inteiro, tambem o frete de ida. O frete de volta e da loja.
-- PIX e cartao sao estornados pela API (cartao pode levar ate 10 dias uteis para aparecer na fatura).
-  Boleto: o Asaas gera um link para o cliente informar os dados bancarios.
-- `GET /pedidos/{id}/estornos` (dono do pedido ou funcionario): `origem`, `devolucao_id`, `valor`, `status`
-  (`SOLICITADO`, `EM_ANDAMENTO`, `AGUARDANDO_CLIENTE`, `CONCLUIDO`, `NEGADO`, `FALHOU`), `url_estorno_boleto`,
-  `data_solicitacao` e `data_conclusao`.
-- `FALHOU` (ex.: saldo insuficiente no Asaas para estornar PIX) precisa de acao manual.
+Isso vale, por exemplo, para uma VM de teste em `http://<IP>:8080`.
 
-## Observacoes sobre pagamento com boleto (Asaas)
+- Defina `AUTH_COOKIE_SECURE=false`. Sem isso, o navegador descarta os cookies de sessão.
+- Sem HTTPS, o navegador também não oferece Web Locks. Nesse caso, o `web-auth.js` usa um lease no `localStorage` (que não guarda tokens) para que só uma aba renove a sessão por vez.
 
-- Vencimento em `PAGAMENTO_BOLETO_DIAS_VENCIMENTO` dias corridos (padrao `3`); o estoque fica reservado nesse periodo.
-- O registro do boleto e cancelado 1 dia apos o vencimento (nao pode ser pago depois).
-- `GET /pedidos/{id}/boleto` retorna `linha_digitavel`, `codigo_barras`, `url_boleto` e `data_vencimento`
-  (dono do pedido ou funcionario). O JSON do pedido tambem traz `url_boleto`.
-- Cobranca vencida (boleto ou PIX) cancela o pedido e devolve o estoque. Pagamento recebido com o pedido ja
-  cancelado nao reativa o pedido: e estornado automaticamente.
-- Sandbox: `POST /v3/sandbox/payment/{id}/confirm` (API do Asaas) simula o pagamento do boleto.
-
-## Observacao importante sobre etiquetas (Melhor Envio)
-
-Para gerar e **imprimir etiquetas de envio**, e necessario que exista login/autorizacao valida no Melhor Envio (token/refresh token validos para a conta usada na integracao).
-
-Sem essa autorizacao, as operacoes de frete podem falhar na etapa de organizacao, geracao ou impressao das etiquetas.
-
----
-
-## Endpoints disponiveis
-
-### Funcionarios
-
-| Metodo | Endpoint | Descricao |
-| ------ | -------- | --------- |
-| GET | /vendedores | Listar funcionarios |
-| GET | /funcionarios/{id} | Buscar funcionario por id |
-| POST | /funcionarios | Criar funcionario |
-| PUT | /funcionarios | Atualizar funcionario |
-| PUT | /funcionarios/{id} | Ativar/Desativar funcionario |
-
-### Clientes
-
-| Metodo | Endpoint | Descricao |
-| ------ | -------- | --------- |
-| GET | /clientes?pageNumber={n}&pageSize={m} | Listar clientes paginados |
-| GET | /clientes | Buscar clientes |
-| GET | /clientes/{id} | Buscar cliente por id |
-| POST | /clientes | Criar cliente |
-| PUT | /clientes | Atualizar cliente |
-| DELETE | /info?id={id} | Remover cliente (rota presente na colecao Postman) |
-
-### Produtos
-
-| Metodo | Endpoint | Descricao |
-| ------ | -------- | --------- |
-| GET | /produtos | Listar produtos |
-| GET | /produtos/{id} | Buscar produto por id |
-| POST | /produtos | Criar produto |
-| PUT | /produtos | Atualizar produto |
-| DELETE | /produtos/{id} | Remover produto |
-
-### Pedidos
-
-| Metodo | Endpoint | Descricao |
-| ------ | -------- | --------- |
-| GET | /pedidos | Listar pedidos |
-| GET | /pedidos/{id} | Buscar pedido por id |
-| POST | /pedidos | Criar pedido |
-| PUT | /pedidos/pagamento/{id} | Marcar pagamento do pedido |
-| PUT | /pedidos/envio/{id} | Marcar envio/entrega do pedido |
-| PUT | /pedidos/cancelamento/{id} | Cancelar pedido |
-
-### Organização de devoluções (API)
-
-Após a aprovação e criação do pedido de frete reverso, a devolução fica em
-`PREPARANDO_RETORNO`. Para pagar os fretes, envie:
-
-```http
-PUT /devolucoes/organizar-devolucoes
-Authorization: Bearer <token>
-Content-Type: application/json
-
-[1, 2, 3]
-```
-
-A operação exige a permissão `PEDIDO_WRITE` e utiliza `FreteService.organizarFretes`.
-Assim como na organização de pedidos, somente os IDs encontrados no status elegível
-são processados. Após sucesso, passam para `AGUARDANDO_POSTAGEM_RETORNO`, sem etapa
-de geração de novas notas; a nota existente é reutilizada.
-
-- `200`, sem corpo: fretes organizados.
-- `400`: lista inválida, nenhuma devolução elegível, ausência de pedido de frete ou erro retornado pelo provedor.
-- `502`: falha de comunicação com o serviço de frete.
-
-Em caso de erro do provedor, os status não avançam. Devoluções já persistidas em
-`AGUARDANDO_POSTAGEM_RETORNO` não são reprocessadas por este endpoint.
-
-### Cartoes salvos
-
-| Metodo | Endpoint | Descricao |
-| ------ | -------- | --------- |
-| GET | /cartoes | Lista os cartoes ativos do cliente logado (bandeira e 4 ultimos digitos) |
-
-Somente clientes (role `ENDERECO_MANAGE`) acessam; funcionarios recebem `403`. O token do Asaas
-nunca e exposto: o app usa o `id` retornado como `cartao_id` ao fazer o pedido. Nao ha endpoint
-para cadastrar cartao: a tokenizacao acontece dentro do fluxo de pedido.
-
-### Carrinho
-
-| Metodo | Endpoint | Descricao |
-| ------ | -------- | --------- |
-| GET | /carrinho | Ver carrinho do usuario |
-| PUT | /carrinho/adicionar | Adicionar item ao carrinho |
-| PUT | /carrinho/remover | Remover item do carrinho |
-| PUT | /carrinho/limpar | Limpar carrinho |
-| PUT | /carrinho/finalizar | Finalizar pedido a partir do carrinho |
-
-### Authentication
-
-| Metodo | Endpoint | Descricao |
-| ------ | -------- | --------- |
-| POST | /auth/login | Autenticacao / login (gera token) |
-| POST | /auth/cadastro | Cadastro de usuario (apenas clientes) |
-
----
-
-## Colecao Postman
-
-[Link do arquivo JSON da colecao Postman para teste dos endpoints](API%20Rei%20dos%20Piratas.postman_collection.json)
-
-## Tecnologias utilizadas
-
-- Java 17
-- Spring Boot 3.5.6
-- Maven
-- Banco de dados: PostgreSQL (principal) e H2 (testes)
-
-## Dependencias principais
-
-- `org.springframework.boot:spring-boot-starter-data-jpa`
-- `org.springframework.boot:spring-boot-starter-web`
-- `org.springframework.boot:spring-boot-starter-validation`
-- `org.postgresql:postgresql` (runtime)
-- `org.projectlombok:lombok` (optional)
-
-Ferramentas adicionais:
-
-- `org.springframework.boot:spring-boot-devtools` (runtime, optional)
-- `org.springframework.boot:spring-boot-starter-test` (test)
-- `com.h2database:h2` (test)
-
-Plugins do build:
-
-- `maven-compiler-plugin`
-- `jacoco-maven-plugin`
-- `spring-boot-maven-plugin`
-
----
-
-## Observacoes
-
-- O usuario administrador deve existir previamente no banco para criacao de novos funcionarios.
-- O modulo web (front para gestao de produtos e pedidos) esta no mesmo projeto Spring Boot via templates MVC.
+Em produção, use sempre HTTPS e `AUTH_COOKIE_SECURE=true`.
