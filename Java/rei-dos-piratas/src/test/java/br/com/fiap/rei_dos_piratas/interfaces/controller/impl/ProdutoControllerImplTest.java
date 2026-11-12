@@ -11,6 +11,9 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UrlPreassinadaOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UploadImagemProdutoOutDto;
+import br.com.fiap.rei_dos_piratas.application.service.UrlUploadGerada;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -80,6 +83,17 @@ class ProdutoControllerImplTest {
         assertThat(dto.id()).isEqualTo(1L);
         assertThat(dto.autor()).isEqualTo("Eiichiro Oda");
         assertThat(dto.categoria()).isEqualTo(CategoriaEnum.AVENTURA);
+    }
+
+    @Test
+    void gerarUrlPreAssinadaUpload_DeveRetornarKeyEUrlGeradasPeloServico() {
+        when(produtoService.gerarUrlPreAssinadaUpload())
+                .thenReturn(new UrlUploadGerada("produtos/capas/capa.png", "https://exemplo.com/capa.png?assinatura=temporaria"));
+
+        UploadImagemProdutoOutDto resultado = produtoController.gerarUrlPreAssinadaUpload();
+
+        assertThat(resultado.key()).isEqualTo("produtos/capas/capa.png");
+        assertThat(resultado.url()).isEqualTo("https://exemplo.com/capa.png?assinatura=temporaria");
     }
 
     @Test

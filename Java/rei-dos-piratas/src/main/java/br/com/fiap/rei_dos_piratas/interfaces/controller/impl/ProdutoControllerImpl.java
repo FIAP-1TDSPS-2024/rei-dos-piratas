@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.interfaces.controller.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.FuncionarioService;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UrlUploadGerada;
 import br.com.fiap.rei_dos_piratas.domain.entity.Funcionario;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
@@ -9,6 +10,8 @@ import br.com.fiap.rei_dos_piratas.interfaces.mapper.negocio.ProdutoDtoMapper;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UrlPreassinadaOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UploadImagemProdutoOutDto;
 
 import java.util.List;
 
@@ -68,5 +71,16 @@ public class ProdutoControllerImpl implements ProdutoController {
     @Override
     public void delete(Long id) {
         this.service.delete(id);
+    }
+
+    @Override
+    public UploadImagemProdutoOutDto gerarUrlPreAssinadaUpload() {
+        UrlUploadGerada upload = this.service.gerarUrlPreAssinadaUpload();
+        return new UploadImagemProdutoOutDto(upload.key(), upload.url());
+    }
+
+    @Override
+    public UrlPreassinadaOutDto gerarUrlPreAssinadaVisualizacao(String key) {
+        return new UrlPreassinadaOutDto(this.service.gerarUrlPreAssinadaVisualizacao(key));
     }
 }

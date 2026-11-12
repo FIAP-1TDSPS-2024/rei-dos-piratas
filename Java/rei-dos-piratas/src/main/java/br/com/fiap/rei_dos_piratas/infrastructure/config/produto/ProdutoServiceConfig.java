@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.config.produto;
 
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.application.service.impl.ProdutoServiceImpl;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayArquivo;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import jakarta.validation.Validator;
 import org.springframework.context.annotation.Bean;
@@ -11,8 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class ProdutoServiceConfig {
 
     @Bean
-    public ProdutoService produtoService(ProdutoRepository repository, Validator validator) {
-        return new ProdutoServiceImpl(repository, validator);
+    public ProdutoService produtoService(ProdutoRepository repository, Validator validator, GatewayArquivo gatewayArquivo) {
+        return new ProdutoServiceImpl(repository, validator, gatewayArquivo);
     }
 }
-

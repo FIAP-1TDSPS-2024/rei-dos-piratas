@@ -4,6 +4,8 @@ import br.com.fiap.rei_dos_piratas.application.service.RastreioService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoEventoRastreio;
 import br.com.fiap.rei_dos_piratas.domain.entity.EventoRastreio;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.AssinaturaInvalidaException;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.TradutorEventoRastreio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.WebhookRastreioMelhorEnvio;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

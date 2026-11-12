@@ -3,7 +3,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.mvc;
 import br.com.fiap.rei_dos_piratas.application.service.RastreioCobrancaService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.*;
 import br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.WebhookRastreioMelhorEnvio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.WebhookRastreioMelhorEnvio;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.DevolucaoController;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;

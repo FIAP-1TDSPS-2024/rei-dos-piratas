@@ -2,7 +2,8 @@ package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas;
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoEventoPagamento;
 import br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.TradutorEventoAsaas;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.dto.EventoCobrancaDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

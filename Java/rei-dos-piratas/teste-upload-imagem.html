@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Teste de upload de imagem para o S3</title>
+    <link rel="stylesheet" href="teste-upload-imagem.css">
+    <script src="teste-upload-imagem.js" defer></script>
+</head>
+<body>
+<main class="painel">
+    <header>
+        <p class="sobretitulo">Rei dos Piratas · ferramenta local</p>
+        <h1>Teste de upload para o S3</h1>
+        <p class="descricao">
+            Informe a key e a URL pré-assinada retornadas pela API e selecione a imagem.
+            O navegador envia o arquivo diretamente ao S3.
+        </p>
+    </header>
+
+    <form id="form-upload">
+        <label for="key">Key do objeto</label>
+        <input id="key" name="key" type="text" placeholder="produtos/uuid-capa.png" required>
+        <small>A key deve corresponder ao objeto para o qual a URL foi assinada.</small>
+
+        <label for="url">URL pré-assinada de upload</label>
+        <textarea id="url" name="url" rows="4" placeholder="https://..." required></textarea>
+
+        <label for="imagem">Imagem</label>
+        <input id="imagem" name="imagem" type="file" accept="image/*" required>
+
+        <button id="enviar" type="submit">Enviar imagem ao S3</button>
+    </form>
+
+    <p id="resultado" class="resultado" role="status" aria-live="polite">
+        Preencha os campos para iniciar o teste.
+    </p>
+
+    <aside>
+        <strong>Se o navegador bloquear a requisição:</strong>
+        verifique se o CORS do bucket permite a origem desta página, o método PUT e o cabeçalho Content-Type.
+        Para testar sem servidor local, abra este arquivo no navegador; dependendo da configuração do bucket,
+        pode ser necessário servir a página por HTTP local para que a origem seja permitida.
+    </aside>
+</main>
+</body>
+</html>

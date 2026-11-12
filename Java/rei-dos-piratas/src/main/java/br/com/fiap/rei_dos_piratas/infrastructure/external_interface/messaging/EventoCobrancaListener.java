@@ -1,8 +1,8 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.messaging;
 
 import br.com.fiap.rei_dos_piratas.application.service.RastreioCobrancaService;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.TradutorEventoAsaas;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.TradutorEventoAsaas;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.dto.EventoCobrancaDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.awspring.cloud.sqs.annotation.SqsListener;

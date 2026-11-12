@@ -4,9 +4,11 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 
 public interface ProdutoService {
-    public Produto findById(Long id);
-    public Page<Produto> findAll(int pageNumber, int pageSize);
-    public Produto create(Produto produto);
-    public Produto update(Produto produto);
-    public void delete(Long id);
+    Produto findById(Long id);
+    Page<Produto> findAll(int pageNumber, int pageSize);
+    Produto create(Produto produto);
+    Produto update(Produto produto);
+    void delete(Long id);
+    UrlUploadGerada gerarUrlPreAssinadaUpload();
+    String gerarUrlPreAssinadaVisualizacao(String key);
 }

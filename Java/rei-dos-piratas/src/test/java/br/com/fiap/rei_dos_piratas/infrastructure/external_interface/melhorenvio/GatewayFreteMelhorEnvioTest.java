@@ -6,6 +6,7 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ApiExternaException;
 import br.com.fiap.rei_dos_piratas.domain.entity.Volume;
 import br.com.fiap.rei_dos_piratas.domain.gateway.*;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.ProvedorTokenMelhorEnvio;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
@@ -47,7 +48,8 @@ class GatewayFreteMelhorEnvioTest {
     }
 
     @Autowired GatewayFrete gateway;
-    @MockBean ProvedorTokenMelhorEnvio provedorToken;
+    @MockBean
+    ProvedorTokenMelhorEnvio provedorToken;
     private final ObjectMapper json = new ObjectMapper();
 
     @BeforeEach

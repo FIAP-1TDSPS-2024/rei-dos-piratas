@@ -1,15 +1,15 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.mvc;
 
 import br.com.fiap.rei_dos_piratas.application.service.RastreioCobrancaService;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.WebhookRastreioMelhorEnvio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.WebhookRastreioMelhorEnvio;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.HmacUtil;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.DevolucaoController;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.PedidoController;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.TradutorEventoAsaas;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto.RastreioDataDto;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto.RastreioWebhookDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.TradutorEventoAsaas;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.dto.EventoCobrancaDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.dto.RastreioDataDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.dto.RastreioWebhookDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.PedidoOutDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;

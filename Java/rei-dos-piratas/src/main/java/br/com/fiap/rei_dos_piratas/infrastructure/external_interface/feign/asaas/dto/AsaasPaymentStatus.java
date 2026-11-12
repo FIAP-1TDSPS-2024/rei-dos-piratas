@@ -1,0 +1,17 @@
+package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.dto;
+
+public enum AsaasPaymentStatus {
+    PENDING,
+    RECEIVED,
+    CONFIRMED,
+    OVERDUE,
+    REFUNDED,
+    RECEIVED_IN_CASH,
+    REFUND_REQUESTED,
+    CHARGEBACK_REQUESTED,
+    CHARGEBACK_DISPUTE,
+    AWAITING_CHARGEBACK_REVERSAL,
+    DUNNING_REQUESTED,
+    DUNNING_RECEIVED,
+    AWAITING_RISK_ANALYSIS
+}

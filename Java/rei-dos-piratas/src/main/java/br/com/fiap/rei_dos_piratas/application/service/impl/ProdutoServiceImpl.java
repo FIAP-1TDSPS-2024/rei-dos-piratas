@@ -1,19 +1,23 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
+import br.com.fiap.rei_dos_piratas.application.service.UrlUploadGerada;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ValidacaoException;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayArquivo;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,10 +25,12 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     private final ProdutoRepository repository;
     private final Validator validator;
+    private final GatewayArquivo gatewayArquivo;
 
-    public ProdutoServiceImpl(ProdutoRepository repository, Validator validator) {
+    public ProdutoServiceImpl(ProdutoRepository repository, Validator validator, GatewayArquivo gatewayArquivo) {
         this.repository = repository;
         this.validator = validator;
+        this.gatewayArquivo = gatewayArquivo;
     }
 
     @Override
@@ -75,6 +81,21 @@ public class ProdutoServiceImpl implements ProdutoService {
         log.info("[PRODUTO] Removendo produto ID={}", id);
         this.repository.delete(id);
         log.info("[PRODUTO] Produto ID={} removido com sucesso", id);
+    }
+
+    @Override
+    public UrlUploadGerada gerarUrlPreAssinadaUpload() {
+        log.info("[PRODUTO] Gerando URL para upload de imagem para produto");
+
+        String key = "produtos/" + UUID.randomUUID() + "/capa.png";
+        String url = gatewayArquivo.gerarUrlPreAssinadaUpload("produtos", key, Duration.ofMinutes(5)).toString();
+
+        return new UrlUploadGerada(key, url);
+    }
+
+    @Override
+    public String gerarUrlPreAssinadaVisualizacao(String key) {
+        return gatewayArquivo.gerarUrlPreAssinadaVisualizacao(key, Duration.ofHours(2)).toString();
     }
 
     /**

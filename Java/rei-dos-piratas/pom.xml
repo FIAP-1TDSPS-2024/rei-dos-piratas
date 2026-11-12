@@ -207,6 +207,12 @@
 			<artifactId>sqs</artifactId>
 		</dependency>
 
+		<!-- Integração com Amazon S3 -->
+		<dependency>
+			<groupId>io.awspring.cloud</groupId>
+			<artifactId>spring-cloud-aws-starter-s3</artifactId>
+		</dependency>
+
 		<!-- Logstash JSON Encoder para correlação de logs com Datadog APM -->
 		<dependency>
 			<groupId>net.logstash.logback</groupId>

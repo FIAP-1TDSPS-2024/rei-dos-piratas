@@ -1,6 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.WebhookRastreioMelhorEnvio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.WebhookRastreioMelhorEnvio;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -1,8 +1,8 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.pagamento;
 
 import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayPagamento;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.CobrancaAppClient;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.GatewayPagamentoAsaas;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.GatewayPagamentoAsaas;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

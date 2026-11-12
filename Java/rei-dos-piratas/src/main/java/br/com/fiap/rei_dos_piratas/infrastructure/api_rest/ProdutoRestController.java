@@ -5,6 +5,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UrlPreassinadaOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UploadImagemProdutoOutDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -51,6 +53,25 @@ public class ProdutoRestController {
     public ResponseEntity<ProdutoOutDto> findById(@PathVariable("id") Long id) {
         ProdutoOutDto produto = this.controller.findById(id);
         return ResponseEntity.ok(produto);
+    }
+
+    @Operation(summary = "Gerar URL pré-assinada para visualizar a imagem")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "URL pré-assinada gerada")
+    })
+    @GetMapping("/imagem/visualizar")
+    public ResponseEntity<UrlPreassinadaOutDto> gerarUrlPreAssinadaVisualizacao(
+            @RequestParam("key") String key) {
+        return ResponseEntity.ok(this.controller.gerarUrlPreAssinadaVisualizacao(key));
+    }
+
+    @Operation(summary = "Gerar URL pré-assinada para upload de imagem")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "URL pré-assinada gerada")
+    })
+    @PostMapping("/imagem/upload")
+    public ResponseEntity<UploadImagemProdutoOutDto> gerarUrlPreAssinadaUpload() {
+        return ResponseEntity.ok(this.controller.gerarUrlPreAssinadaUpload());
     }
 
     @Operation(summary = "Criar produto", description = "Inserção de um novo produto na loja, acessível para funcionários")

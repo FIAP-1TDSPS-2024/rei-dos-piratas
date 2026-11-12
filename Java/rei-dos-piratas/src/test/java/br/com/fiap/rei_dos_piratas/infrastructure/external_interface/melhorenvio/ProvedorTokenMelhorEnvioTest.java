@@ -3,8 +3,11 @@ package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvi
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
 import br.com.fiap.rei_dos_piratas.domain.repository.TokenRepository;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto.TokenRequestDto;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto.TokenResponseDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.CredenciaisMelhorEnvio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.FreteTokenClient;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.ProvedorTokenMelhorEnvio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.dto.TokenRequestDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.dto.TokenResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

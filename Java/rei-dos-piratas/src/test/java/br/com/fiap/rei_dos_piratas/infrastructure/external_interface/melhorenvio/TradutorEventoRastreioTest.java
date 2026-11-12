@@ -2,6 +2,7 @@ package br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvi
 
 import br.com.fiap.rei_dos_piratas.domain.Enum.TipoEventoRastreio;
 import br.com.fiap.rei_dos_piratas.domain.entity.EventoRastreio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.TradutorEventoRastreio;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.junit.jupiter.api.Test;

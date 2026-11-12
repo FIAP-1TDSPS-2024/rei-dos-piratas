@@ -8,19 +8,25 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
+import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayArquivo;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
+import br.com.fiap.rei_dos_piratas.application.service.UrlUploadGerada;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.net.URL;
 import java.time.LocalDate;
+import java.time.Duration;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class ProdutoServiceImplTest {
@@ -28,14 +34,16 @@ class ProdutoServiceImplTest {
     private ProdutoService produtoService;
     private ProdutoRepository produtoRepository;
     private Validator validator;
+    private GatewayArquivo gatewayArquivo;
 
     @BeforeEach
     void setUp() {
         this.produtoRepository = mock(ProdutoRepository.class);
+        this.gatewayArquivo = mock(GatewayArquivo.class);
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             this.validator = factory.getValidator();
         }
-        this.produtoService = new ProdutoServiceImpl(produtoRepository, validator);
+        this.produtoService = new ProdutoServiceImpl(produtoRepository, validator, gatewayArquivo);
     }
 
     private Funcionario criarFuncionario() {
@@ -100,6 +108,31 @@ class ProdutoServiceImplTest {
                 .hasMessageContaining("Não foi possível encontrar um produto com o id 999");
 
         verify(produtoRepository, times(1)).findById(999L);
+    }
+
+    @Test
+    void gerarUrlPreAssinadaUpload_DeveRetornarKeyEUrlParaEnvioDiretoAoS3() throws Exception {
+        URL urlAssinada = new URL("https://exemplo.com/capa.png?assinatura=temporaria");
+        when(gatewayArquivo.gerarUrlPreAssinadaUpload(anyString(), anyString(), eq(Duration.ofMinutes(5))))
+                .thenReturn(urlAssinada);
+
+        UrlUploadGerada resultado = produtoService.gerarUrlPreAssinadaUpload();
+
+        assertThat(resultado.url()).isEqualTo(urlAssinada.toString());
+        assertThat(resultado.key()).startsWith("produtos/").endsWith(".png");
+        verify(gatewayArquivo).gerarUrlPreAssinadaUpload(eq("produtos"), eq(resultado.key()), eq(Duration.ofMinutes(5)));
+    }
+
+    @Test
+    void gerarUrlPreAssinadaVisualizacao_DeveAssinarKeyInformada() throws Exception {
+        URL urlAssinada = new URL("https://exemplo.com/capa.jpg?assinatura=temporaria");
+        when(gatewayArquivo.gerarUrlPreAssinadaVisualizacao("produtos/capas/capa.jpg", Duration.ofMinutes(5)))
+                .thenReturn(urlAssinada);
+
+        String resultado = produtoService.gerarUrlPreAssinadaVisualizacao("produtos/capas/capa.jpg");
+
+        assertThat(resultado).isEqualTo(urlAssinada.toString());
+        verify(gatewayArquivo).gerarUrlPreAssinadaVisualizacao("produtos/capas/capa.jpg", Duration.ofMinutes(5));
     }
 
     @Test

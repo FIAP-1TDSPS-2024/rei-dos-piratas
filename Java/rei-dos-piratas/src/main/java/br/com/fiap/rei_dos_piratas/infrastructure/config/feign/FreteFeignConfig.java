@@ -1,6 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.config.feign;
 
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.ProvedorTokenMelhorEnvio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.ProvedorTokenMelhorEnvio;
 import br.com.fiap.rei_dos_piratas.domain.entity.Token;
 import feign.RequestInterceptor;
 import feign.codec.ErrorDecoder;

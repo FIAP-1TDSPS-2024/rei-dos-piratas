@@ -4,8 +4,13 @@ import br.com.fiap.rei_dos_piratas.application.service.*;
 import br.com.fiap.rei_dos_piratas.domain.Enum.*;
 import br.com.fiap.rei_dos_piratas.domain.entity.*;
 import br.com.fiap.rei_dos_piratas.domain.repository.*;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.CobrancaAppClient;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.TradutorEventoAsaas;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.asaas.dto.*;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.WebhookRastreioMelhorEnvio;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.dto.RastreioDataDto;
+import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.feign.melhorenvio.dto.RastreioWebhookDto;
 import br.com.fiap.rei_dos_piratas.infrastructure.security.*;
-import br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
@@ -35,7 +40,8 @@ class PedidoFluxoIntegrationTest {
     @Autowired PedidoService pedidos;
     @Autowired DevolucaoService devolucoes;
     @Autowired CarrinhoService carrinhos;
-    @Autowired br.com.fiap.rei_dos_piratas.infrastructure.external_interface.melhorenvio.WebhookRastreioMelhorEnvio webhookRastreio;
+    @Autowired
+    WebhookRastreioMelhorEnvio webhookRastreio;
     @Autowired HmacUtil hmac;
     @Autowired ObjectMapper json;
     @Autowired ClienteRepository clientes;
@@ -47,7 +53,8 @@ class PedidoFluxoIntegrationTest {
     @MockBean FreteService fretes;
     @Autowired EstornoService estornos;
     @MockBean br.com.fiap.rei_dos_piratas.domain.gateway.GatewayFrete envios;
-    @MockBean br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.CobrancaAppClient cobranca;
+    @MockBean
+    CobrancaAppClient cobranca;
     TransactionTemplate tx;
     final UUID ida = UUID.fromString("123e4567-e89b-12d3-a456-426614174010");
     final UUID volta = UUID.fromString("123e4567-e89b-12d3-a456-426614174011");
@@ -81,14 +88,14 @@ class PedidoFluxoIntegrationTest {
             return null;
         });
         clienteLogado();
-        when(cobranca.criarNovoCliente(any())).thenReturn(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.ClienteCobrancaResponseDto(
+        when(cobranca.criarNovoCliente(any())).thenReturn(new ClienteCobrancaResponseDto(
                 "customer","cus_000009601",LocalDate.now(),"Cliente Fluxo","52998224725","fluxo@example.com",null,
                 "11987654321","Rua Fluxo","100","Centro","01001000","9601",true));
         // id_cobranca e unico em PAGAMENTOS: cada cobranca recebe um id novo, como no Asaas
         var proximaCobranca = new java.util.concurrent.atomic.AtomicInteger(9601);
         // Como no Asaas, a resposta traz o PDF do boleto (bankSlipUrl); só é usado quando o pedido é boleto
         // Como no Asaas, a resposta sempre traz o status: cartão aprovado na criação (CONFIRMED), PIX/boleto pendentes
-        when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.PagamentoCobrancaResponseDto(
+        when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> new PagamentoCobrancaResponseDto(
                 null,"pay_00000"+proximaCobranca.get(),null,null,null,null,null,new BigDecimal("98.95"),
                 null,null,null,null,null,statusAsaas(inv.getArgument(0)),null,null,null,null,null,null,null,null,
                 null,null,null,null,null,null,null,"https://sandbox.asaas.com/b/pdf/pay_00000"+proximaCobranca.getAndIncrement(),null,null));
@@ -244,16 +251,16 @@ class PedidoFluxoIntegrationTest {
         Pedido criado = criar();
         pedidos.processarEventoCobranca(criado.getId(), eventoCobranca("PAYMENT_CONFIRMED", pedidos.findById(criado.getId())));
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
-        when(cobranca.estornarCobranca(any(), any())).thenReturn(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EstornoCobrancaResponseDto(
-                "pay", "CONFIRMED", List.of(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EstornoCobrancaResponseDto.Estorno("PENDING", new BigDecimal("98.95"), null))));
+        when(cobranca.estornarCobranca(any(), any())).thenReturn(new EstornoCobrancaResponseDto(
+                "pay", "CONFIRMED", List.of(new EstornoCobrancaResponseDto.Estorno("PENDING", new BigDecimal("98.95"), null))));
 
         // Act: cancela (estorno total pedido ao Asaas, ainda em processamento) e chega o evento de estorno
         pedidos.cancelarPedido(criado.getId());
         assertThat(valor("SELECT status FROM ESTORNOS WHERE pagamento_id=(SELECT id FROM PAGAMENTOS WHERE pedido_id="+criado.getId()+")"))
                 .isEqualTo("EM_ANDAMENTO");
-        estornos.processarEventoEstorno(criado.getId(), traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
+        estornos.processarEventoEstorno(criado.getId(), traduzir(new EventoCobrancaDto(
                 "evt_estorno_"+criado.getId(), "PAYMENT_REFUNDED", LocalDateTime.now(),
-                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment("pay", null, criado.getId().toString()), null)));
+                new EventoCobrancaDto.Payment("pay", null, criado.getId().toString()), null)));
 
         // Assert
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.CANCELADO);
@@ -313,40 +320,40 @@ class PedidoFluxoIntegrationTest {
         assertThat(salva.getAprovada()).isTrue();
     }
 
-    private static br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.AsaasPaymentStatus statusAsaas(
-            br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.PagamentoCobrancaRequestDto request) {
+    private static AsaasPaymentStatus statusAsaas(
+            PagamentoCobrancaRequestDto request) {
         // request nulo: chamada feita pelo próprio when(...) ao trocar o stub em outro teste
         return request != null && request.billingType() == TipoPagamentoEnum.CREDIT_CARD
-                ? br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.AsaasPaymentStatus.CONFIRMED
-                : br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.AsaasPaymentStatus.PENDING;
+                ? AsaasPaymentStatus.CONFIRMED
+                : AsaasPaymentStatus.PENDING;
     }
 
     @Test
     void pedidoComCartaoAprovadoChegaAPreparandoEnvioPeloEventoDeConfirmacao() {
         when(cobranca.tokenizarCartao(any())).thenReturn(
-                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+                new TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
 
         Pedido criado = pedidos.fazerPedido(novoPedido(TipoPagamentoEnum.CREDIT_CARD), cartaoNovo());
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.AGUARDANDO_PAGAMENTO);
         assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("CONFIRMADO");
         assertThat(valor("SELECT ultimos_digitos FROM CARTOES_CLIENTE WHERE cliente_id=9601")).isEqualTo("1234");
 
-        pedidos.processarEventoCobranca(criado.getId(), traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
+        pedidos.processarEventoCobranca(criado.getId(), traduzir(new EventoCobrancaDto(
                 "evt_fluxo","PAYMENT_CONFIRMED",LocalDateTime.now(),
-                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment("pay_000009601",null,criado.getId().toString()),null)));
+                new EventoCobrancaDto.Payment("pay_000009601",null,criado.getId().toString()),null)));
 
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
     }
 
     /** Evento como chega do Asaas, passando pelo mesmo tradutor do listener. */
-    br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento traduzir(br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto evento) {
-        return new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.TradutorEventoAsaas().traduzir(evento).orElseThrow();
+    br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento traduzir(EventoCobrancaDto evento) {
+        return new TradutorEventoAsaas().traduzir(evento).orElseThrow();
     }
 
     br.com.fiap.rei_dos_piratas.domain.entity.EventoPagamento eventoCobranca(String nome, Pedido pedido) {
-        return traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
+        return traduzir(new EventoCobrancaDto(
                 "evt_"+nome+"_"+pedido.getId(),nome,LocalDateTime.now(),
-                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment(
+                new EventoCobrancaDto.Payment(
                         pedido.getPagamento().getIdCobranca(),null,pedido.getId().toString()),null));
     }
 
@@ -380,7 +387,7 @@ class PedidoFluxoIntegrationTest {
     @Test
     void pedidoComCartaoRecusadoFicaCanceladoComEstoqueRestauradoEPagamentoRecusado() {
         when(cobranca.tokenizarCartao(any())).thenReturn(
-                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+                new TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
         when(cobranca.criarNovaCobranca(any())).thenThrow(
                 new br.com.fiap.rei_dos_piratas.domain.exceptions.PagamentoRecusadoException("Transacao nao autorizada"));
 
@@ -394,7 +401,7 @@ class PedidoFluxoIntegrationTest {
 
     @Test
     void cartaoSemRespostaDoAsaasFicaPendenteGravadoForaDeTransacaoEOEventoCompletaACobranca() {
-        when(cobranca.tokenizarCartao(any())).thenReturn(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
+        when(cobranca.tokenizarCartao(any())).thenReturn(new TokenizacaoCartaoResponseDto("1234","VISA","tok_fluxo"));
         List<Boolean> cobrouDentroDeTransacao = new ArrayList<>();
         when(cobranca.criarNovaCobranca(any())).thenAnswer(inv -> {
             cobrouDentroDeTransacao.add(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
@@ -411,9 +418,9 @@ class PedidoFluxoIntegrationTest {
         assertThat(valor("SELECT status FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("PENDENTE");
         assertThat(valor("SELECT id_cobranca FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isNull();
 
-        pedidos.processarEventoCobranca(criado.getId(), traduzir(new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto(
+        pedidos.processarEventoCobranca(criado.getId(), traduzir(new EventoCobrancaDto(
                 "evt_sem_resposta","PAYMENT_CONFIRMED",LocalDateTime.now(),
-                new br.com.fiap.rei_dos_piratas.infrastructure.external_interface.asaas.dto.EventoCobrancaDto.Payment("pay_sem_resposta",null,criado.getId().toString()),null)));
+                new EventoCobrancaDto.Payment("pay_sem_resposta",null,criado.getId().toString()),null)));
 
         assertThat(pedidos.findById(criado.getId()).getStatus()).isEqualTo(StatusEnum.PREPARANDO_ENVIO);
         assertThat(valor("SELECT id_cobranca FROM PAGAMENTOS WHERE pedido_id="+criado.getId())).isEqualTo("pay_sem_resposta");

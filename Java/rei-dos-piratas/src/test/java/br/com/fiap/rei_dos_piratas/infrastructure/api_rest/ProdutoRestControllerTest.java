@@ -7,6 +7,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.interfaces.controller.ProdutoController;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoInDto;
 import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.ProdutoOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UrlPreassinadaOutDto;
+import br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UploadImagemProdutoOutDto;
 import br.com.fiap.rei_dos_piratas.interfaces.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -110,6 +112,30 @@ class ProdutoRestControllerTest {
                 .andExpect(jsonPath("$.nome", is("Produto Teste Número 01")))
                 .andExpect(jsonPath("$.preco", is(100)))
                 .andExpect(jsonPath("$.condicao", is("NOVO")));
+    }
+
+    @Test
+    void gerarUrlPreAssinadaVisualizacao() throws Exception {
+        when(produtoController.gerarUrlPreAssinadaVisualizacao("produtos/capas/capa.jpg"))
+                .thenReturn(new UrlPreassinadaOutDto("https://exemplo.com/capa.jpg?assinatura=temporaria"));
+
+        this.mockMvc.perform(get("/produtos/imagem/visualizar")
+                        .param("key", "produtos/capas/capa.jpg"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.url", is("https://exemplo.com/capa.jpg?assinatura=temporaria")));
+    }
+
+    @Test
+    void gerarUrlPreAssinadaUpload() throws Exception {
+        when(produtoController.gerarUrlPreAssinadaUpload())
+                .thenReturn(new UploadImagemProdutoOutDto(
+                        "produtos/capas/capa.png",
+                        "https://exemplo.com/capa.png?assinatura=temporaria"));
+
+        this.mockMvc.perform(post("/produtos/imagem/upload"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.key", is("produtos/capas/capa.png")))
+                .andExpect(jsonPath("$.url", is("https://exemplo.com/capa.png?assinatura=temporaria")));
     }
 
     @Test
@@ -223,4 +249,3 @@ class ProdutoRestControllerTest {
                 .andExpect(status().isNoContent());
     }
 }
-

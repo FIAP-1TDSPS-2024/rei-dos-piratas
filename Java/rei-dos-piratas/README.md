@@ -130,6 +130,8 @@ Os erros seguem o `GlobalExceptionHandler`:
 |---|---|---|---|
 | GET | `/produtos` | público | Lista os produtos (paginado) |
 | GET | `/produtos/{id}` | público | Busca um produto |
+| GET | `/produtos/imagem/visualizar?key={key}` | público | Gera URL pré-assinada temporária para visualizar uma imagem no S3 |
+| POST | `/produtos/imagem/upload` | `PRODUTO_WRITE` | Gera URL pré-assinada e key para o front-end enviar a imagem diretamente ao S3 |
 | POST | `/produtos` | `PRODUTO_WRITE` | Cria um produto |
 | PUT | `/produtos` | `PRODUTO_WRITE` | Atualiza um produto |
 | DELETE | `/produtos/{id}` | `PRODUTO_WRITE` | Remove um produto |
