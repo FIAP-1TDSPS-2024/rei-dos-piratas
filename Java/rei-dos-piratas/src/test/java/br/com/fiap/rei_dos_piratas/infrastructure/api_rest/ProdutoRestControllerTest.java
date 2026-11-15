@@ -1,5 +1,7 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ArmazenamentoArquivoException;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
@@ -127,15 +129,68 @@ class ProdutoRestControllerTest {
 
     @Test
     void gerarUrlPreAssinadaUpload() throws Exception {
-        when(produtoController.gerarUrlPreAssinadaUpload())
+        when(produtoController.gerarUrlPreAssinadaUpload("image/png"))
                 .thenReturn(new UploadImagemProdutoOutDto(
                         "produtos/capas/capa.png",
                         "https://exemplo.com/capa.png?assinatura=temporaria"));
 
-        this.mockMvc.perform(post("/produtos/imagem/upload"))
+        this.mockMvc.perform(post("/produtos/imagem/upload")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"content_type\":\"image/png\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.key", is("produtos/capas/capa.png")))
                 .andExpect(jsonPath("$.url", is("https://exemplo.com/capa.png?assinatura=temporaria")));
+    }
+
+    @Test
+    void gerarUrlPreAssinadaUpload_SemContentTypeResponde400() throws Exception {
+        this.mockMvc.perform(post("/produtos/imagem/upload")
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void gerarUrlPreAssinadaUpload_FormatoNaoSuportadoResponde400ComAMensagem() throws Exception {
+        when(produtoController.gerarUrlPreAssinadaUpload("application/pdf"))
+                .thenThrow(new RegraDeNegocioException("Formato de imagem não suportado. Use PNG, JPEG ou WEBP."));
+
+        this.mockMvc.perform(post("/produtos/imagem/upload")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"content_type\":\"application/pdf\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("Formato de imagem não suportado. Use PNG, JPEG ou WEBP.")));
+    }
+
+    @Test
+    void gerarUrlPreAssinadaUpload_ArmazenamentoIndisponivelResponde502() throws Exception {
+        when(produtoController.gerarUrlPreAssinadaUpload("image/png"))
+                .thenThrow(new ArmazenamentoArquivoException("Não foi possível acessar o armazenamento de imagens agora."));
+
+        this.mockMvc.perform(post("/produtos/imagem/upload")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"content_type\":\"image/png\"}"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.message", is("Não foi possível acessar o armazenamento de imagens agora.")));
+    }
+
+    @Test
+    void gerarUrlPreAssinadaVisualizacao_KeyInvalidaResponde400() throws Exception {
+        when(produtoController.gerarUrlPreAssinadaVisualizacao("financeiro/relatorio.pdf"))
+                .thenThrow(new RegraDeNegocioException("A imagem do produto é inválida."));
+
+        this.mockMvc.perform(get("/produtos/imagem/visualizar").param("key", "financeiro/relatorio.pdf"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void findById_ExpoeAUrlDeExibicaoDaImagem() throws Exception {
+        ProdutoOutDto produto = new ProdutoOutDto(1L, "Produto Teste Número 01", "Descrição", "Autor", CategoriaEnum.AVENTURA,
+                "produtos/3f2b9c1e-8d4a-4b6f-9e2a-1c5d7e9f0a1b/imagem.png", BigDecimal.TEN, BigDecimal.TEN, 1,
+                BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, CondicaoEnum.NOVO)
+                .comUrlImagem("https://exemplo.com/img?assinatura=1");
+        when(produtoController.findById(1L)).thenReturn(produto);
+
+        this.mockMvc.perform(get("/produtos/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.endereco_imagem", is("produtos/3f2b9c1e-8d4a-4b6f-9e2a-1c5d7e9f0a1b/imagem.png")))
+                .andExpect(jsonPath("$.url_imagem", is("https://exemplo.com/img?assinatura=1")));
     }
 
     @Test

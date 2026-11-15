@@ -8,6 +8,8 @@ import br.com.fiap.rei_dos_piratas.domain.entity.Page;
 import br.com.fiap.rei_dos_piratas.domain.entity.Perfil;
 import br.com.fiap.rei_dos_piratas.domain.entity.Produto;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ArmazenamentoArquivoException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.gateway.GatewayArquivo;
 import br.com.fiap.rei_dos_piratas.domain.repository.ProdutoRepository;
 import br.com.fiap.rei_dos_piratas.application.service.UrlUploadGerada;
@@ -31,6 +33,8 @@ import static org.mockito.Mockito.*;
 
 class ProdutoServiceImplTest {
 
+    private static final String CHAVE_IMAGEM = "produtos/3f2b9c1e-8d4a-4b6f-9e2a-1c5d7e9f0a1b/imagem.jpg";
+
     private ProdutoService produtoService;
     private ProdutoRepository produtoRepository;
     private Validator validator;
@@ -43,6 +47,8 @@ class ProdutoServiceImplTest {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             this.validator = factory.getValidator();
         }
+        // Imagem já enviada ao S3, salvo quando o teste diz o contrário
+        when(gatewayArquivo.existe(anyString())).thenReturn(true);
         this.produtoService = new ProdutoServiceImpl(produtoRepository, validator, gatewayArquivo);
     }
 
@@ -67,7 +73,7 @@ class ProdutoServiceImplTest {
                 "Descrição do produto " + nome,
                 autor,
                 CategoriaEnum.valueOf(categoria),
-                "http://imagem.com/" + nome + ".jpg",
+                CHAVE_IMAGEM,
                 preco,
                 preco,
                 estoque,
@@ -116,23 +122,22 @@ class ProdutoServiceImplTest {
         when(gatewayArquivo.gerarUrlPreAssinadaUpload(anyString(), anyString(), eq(Duration.ofMinutes(5))))
                 .thenReturn(urlAssinada);
 
-        UrlUploadGerada resultado = produtoService.gerarUrlPreAssinadaUpload();
+        UrlUploadGerada resultado = produtoService.gerarUrlPreAssinadaUpload("image/png");
 
         assertThat(resultado.url()).isEqualTo(urlAssinada.toString());
         assertThat(resultado.key()).startsWith("produtos/").endsWith(".png");
-        verify(gatewayArquivo).gerarUrlPreAssinadaUpload(eq("produtos"), eq(resultado.key()), eq(Duration.ofMinutes(5)));
+        verify(gatewayArquivo).gerarUrlPreAssinadaUpload(eq(resultado.key()), eq("image/png"), eq(Duration.ofMinutes(5)));
     }
 
     @Test
     void gerarUrlPreAssinadaVisualizacao_DeveAssinarKeyInformada() throws Exception {
         URL urlAssinada = new URL("https://exemplo.com/capa.jpg?assinatura=temporaria");
-        when(gatewayArquivo.gerarUrlPreAssinadaVisualizacao("produtos/capas/capa.jpg", Duration.ofMinutes(5)))
+        when(gatewayArquivo.gerarUrlPreAssinadaVisualizacao(CHAVE_IMAGEM, Duration.ofHours(2)))
                 .thenReturn(urlAssinada);
 
-        String resultado = produtoService.gerarUrlPreAssinadaVisualizacao("produtos/capas/capa.jpg");
+        String resultado = produtoService.gerarUrlPreAssinadaVisualizacao(CHAVE_IMAGEM);
 
         assertThat(resultado).isEqualTo(urlAssinada.toString());
-        verify(gatewayArquivo).gerarUrlPreAssinadaVisualizacao("produtos/capas/capa.jpg", Duration.ofMinutes(5));
     }
 
     @Test
@@ -222,7 +227,7 @@ class ProdutoServiceImplTest {
                 "Descrição produto usado",
                 "Jonas Oliveira",
                 CategoriaEnum.AVENTURA,
-                "http://imagem.com/usado.jpg",
+                CHAVE_IMAGEM,
                 BigDecimal.valueOf(80),
                 BigDecimal.valueOf(80),
                 3,
@@ -239,7 +244,7 @@ class ProdutoServiceImplTest {
                 "Descrição produto usado",
                 "Jonas Oliveira",
                 CategoriaEnum.AVENTURA,
-                "http://imagem.com/usado.jpg",
+                CHAVE_IMAGEM,
                 BigDecimal.valueOf(80),
                 BigDecimal.valueOf(80),
                 3,
@@ -338,7 +343,7 @@ class ProdutoServiceImplTest {
                 "Descrição atualizada",
                 "Jonas Oliveira",
                 CategoriaEnum.AVENTURA,
-                "http://imagem.com/produto.jpg",
+                CHAVE_IMAGEM,
                 BigDecimal.valueOf(80),
                 BigDecimal.valueOf(80),
                 3,
@@ -411,7 +416,7 @@ class ProdutoServiceImplTest {
                 "Nova descrição",
                 "Jonas Oliveira",
                 CategoriaEnum.AVENTURA,
-                "http://nova-imagem.com/produto.jpg",
+                CHAVE_IMAGEM,
                 BigDecimal.valueOf(80),
                 BigDecimal.valueOf(80),
                 30,
@@ -434,5 +439,110 @@ class ProdutoServiceImplTest {
         assertThat(resultado.getPreco()).isEqualTo(BigDecimal.valueOf(80));
         assertThat(resultado.getEstoque()).isEqualTo(30);
         assertThat(resultado.getCondicao()).isEqualTo(CondicaoEnum.USADO);
+    }
+
+    // ---- Imagem do produto (S3) ----
+
+    @Test
+    void gerarUrlPreAssinadaUpload_UsaAExtensaoEOContentTypeDoArquivo() throws Exception {
+        when(gatewayArquivo.gerarUrlPreAssinadaUpload(anyString(), anyString(), any()))
+                .thenReturn(new URL("https://exemplo.com/up?assinatura=1"));
+
+        UrlUploadGerada resultado = produtoService.gerarUrlPreAssinadaUpload("image/jpeg");
+
+        assertThat(resultado.key()).matches("produtos/[0-9a-f-]{36}/imagem[.]jpg");
+        verify(gatewayArquivo).gerarUrlPreAssinadaUpload(resultado.key(), "image/jpeg", Duration.ofMinutes(5));
+    }
+
+    @Test
+    void gerarUrlPreAssinadaUpload_RecusaFormatoNaoSuportadoSemChamarOS3() {
+        assertThatThrownBy(() -> produtoService.gerarUrlPreAssinadaUpload("application/pdf"))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessageContaining("PNG, JPEG ou WEBP");
+        verify(gatewayArquivo, never()).gerarUrlPreAssinadaUpload(any(), any(), any());
+    }
+
+    @Test
+    void gerarUrlPreAssinadaVisualizacao_RecusaKeyForaDasImagensDeProduto() {
+        assertThatThrownBy(() -> produtoService.gerarUrlPreAssinadaVisualizacao("financeiro/relatorio.pdf"))
+                .isInstanceOf(RegraDeNegocioException.class);
+        assertThatThrownBy(() -> produtoService.gerarUrlPreAssinadaVisualizacao(null))
+                .isInstanceOf(RegraDeNegocioException.class);
+        verify(gatewayArquivo, never()).gerarUrlPreAssinadaVisualizacao(any(), any());
+    }
+
+    @Test
+    void urlDaImagem_AssinaAChaveDoProduto() throws Exception {
+        when(gatewayArquivo.gerarUrlPreAssinadaVisualizacao(CHAVE_IMAGEM, Duration.ofHours(2)))
+                .thenReturn(new URL("https://exemplo.com/img?assinatura=2"));
+
+        assertThat(produtoService.urlDaImagem(CHAVE_IMAGEM)).isEqualTo("https://exemplo.com/img?assinatura=2");
+    }
+
+    @Test
+    void urlDaImagem_DevolveAUrlAntigaComoEstaSemChamarOS3() {
+        assertThat(produtoService.urlDaImagem("https://cf.shopee.com.br/file/abc.jpg"))
+                .isEqualTo("https://cf.shopee.com.br/file/abc.jpg");
+        verify(gatewayArquivo, never()).gerarUrlPreAssinadaVisualizacao(any(), any());
+    }
+
+    @Test
+    void urlDaImagem_SemImagemOuComValorInvalidoDevolveNulo() {
+        assertThat(produtoService.urlDaImagem(null)).isNull();
+        assertThat(produtoService.urlDaImagem("")).isNull();
+        assertThat(produtoService.urlDaImagem("javascript:alert(1)")).isNull();
+    }
+
+    @Test
+    void urlDaImagem_FalhaDoS3NaoDerrubaALeituraDoProduto() {
+        when(gatewayArquivo.gerarUrlPreAssinadaVisualizacao(any(), any()))
+                .thenThrow(new ArmazenamentoArquivoException("indisponível"));
+
+        assertThat(produtoService.urlDaImagem(CHAVE_IMAGEM)).isNull();
+    }
+
+    @Test
+    void create_RecusaImagemQueAindaNaoFoiEnviada() {
+        when(gatewayArquivo.existe(CHAVE_IMAGEM)).thenReturn(false);
+        Produto novo = criarProduto(null, "Produto Sem Upload Feito", "Autor", "ACAO", 1, BigDecimal.TEN);
+
+        assertThatThrownBy(() -> produtoService.create(novo))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessageContaining("imagem");
+        verify(produtoRepository, never()).create(any());
+    }
+
+    @Test
+    void create_RecusaUrlNoLugarDaChaveDaImagem() {
+        Produto novo = criarProduto(null, "Produto Com Url Inteira", "Autor", "ACAO", 1, BigDecimal.TEN);
+        novo.setEnderecoImagem("https://bucket.s3.amazonaws.com/produtos/x/imagem.png?X-Amz-Signature=abc");
+
+        assertThatThrownBy(() -> produtoService.create(novo)).isInstanceOf(RegraDeNegocioException.class);
+        verify(produtoRepository, never()).create(any());
+    }
+
+    @Test
+    void update_MantendoAImagemAntigaNaoExigeNovoEnvio() {
+        Produto atual = criarProduto(1L, "Legado", "Autor", "ACAO", 1, BigDecimal.TEN);
+        atual.setEnderecoImagem("https://cf.shopee.com.br/file/abc.jpg");
+        Produto editado = criarProduto(1L, "Legado Editado", "Autor", "ACAO", 2, BigDecimal.TEN);
+        editado.setEnderecoImagem("https://cf.shopee.com.br/file/abc.jpg");
+        when(produtoRepository.findById(1L)).thenReturn(atual);
+        when(produtoRepository.update(editado)).thenReturn(editado);
+
+        assertThat(produtoService.update(editado).getNome()).isEqualTo("Legado Editado");
+        verify(gatewayArquivo, never()).existe(any());
+    }
+
+    @Test
+    void update_TrocandoAImagemExigeQueANovaTenhaSidoEnviada() {
+        Produto atual = criarProduto(1L, "Produto Com Imagem Nova", "Autor", "ACAO", 1, BigDecimal.TEN);
+        atual.setEnderecoImagem("https://cf.shopee.com.br/file/abc.jpg");
+        Produto editado = criarProduto(1L, "Produto Com Imagem Nova", "Autor", "ACAO", 1, BigDecimal.TEN);
+        when(produtoRepository.findById(1L)).thenReturn(atual);
+        when(gatewayArquivo.existe(CHAVE_IMAGEM)).thenReturn(false);
+
+        assertThatThrownBy(() -> produtoService.update(editado)).isInstanceOf(RegraDeNegocioException.class);
+        verify(produtoRepository, never()).update(any());
     }
 }

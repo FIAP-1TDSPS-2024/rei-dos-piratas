@@ -29,7 +29,7 @@ public class ProdutoControllerImpl implements ProdutoController {
     @Override
     public ProdutoOutDto findById(Long id) {
         Produto produto = this.service.findById(id);
-        return ProdutoDtoMapper.toDto(produto);
+        return paraDto(produto);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ProdutoControllerImpl implements ProdutoController {
         List<ProdutoOutDto> produtos = produtosPage
                 .pageItems()
                 .stream()
-                .map(ProdutoDtoMapper::toDto)
+                .map(this::paraDto)
                 .toList();
 
         return new Page<ProdutoOutDto>(
@@ -59,13 +59,18 @@ public class ProdutoControllerImpl implements ProdutoController {
         produtoEntity.setFuncionario(funcionario);
 
         Produto novoProduto = this.service.create(produtoEntity);
-        return ProdutoDtoMapper.toDto(novoProduto);
+        return paraDto(novoProduto);
     }
 
     @Override
     public ProdutoOutDto update(Produto produto) {
         Produto produtoAtualizado = this.service.update(produto);
-        return ProdutoDtoMapper.toDto(produtoAtualizado);
+        return paraDto(produtoAtualizado);
+    }
+
+    /** DTO com a URL de exibição da imagem (o produto guarda só a chave). */
+    private ProdutoOutDto paraDto(Produto produto) {
+        return ProdutoDtoMapper.toDto(produto).comUrlImagem(this.service.urlDaImagem(produto.getEnderecoImagem()));
     }
 
     @Override
@@ -74,8 +79,8 @@ public class ProdutoControllerImpl implements ProdutoController {
     }
 
     @Override
-    public UploadImagemProdutoOutDto gerarUrlPreAssinadaUpload() {
-        UrlUploadGerada upload = this.service.gerarUrlPreAssinadaUpload();
+    public UploadImagemProdutoOutDto gerarUrlPreAssinadaUpload(String contentType) {
+        UrlUploadGerada upload = this.service.gerarUrlPreAssinadaUpload(contentType);
         return new UploadImagemProdutoOutDto(upload.key(), upload.url());
     }
 

@@ -7,6 +7,9 @@ tools: Read, Grep, Glob, Bash
 Você é o analista de back-end do e-commerce **Rei dos Piratas** (Spring Boot 3.3, Java 21, Clean Architecture, TDD).
 Seu trabalho é **entender e planejar**, não implementar: você não edita arquivos. Pode ler código, buscar, rodar testes e comandos de leitura (`git log`, `git diff`).
 
+## Idioma
+Responda **sempre em português (pt-BR)**: relatórios, planos, achados, perguntas e mensagens finais, mesmo que a pergunta, o código ou o contexto venham em inglês. Identificadores de código, comandos e mensagens de erro são citados como estão.
+
 ## Antes de tudo
 1. Leia `AGENTS.md` (regras gerais — prevalece sobre este arquivo em caso de conflito) e `docs/refatoracao-clean-architecture.md` (decisões, etapas e pendências).
 2. Nunca leia, imprima ou cite `.env`, `.env.production` ou credenciais.
@@ -29,6 +32,8 @@ Seu trabalho é **entender e planejar**, não implementar: você não edita arqu
 **Agregados e domínio** — `Pedido` contém `Pagamento` (1–1), que contém `Estorno` (1–N). Repositório só da raiz; para mudar filha, altere o objeto existente. Regras e validações no domínio (Bean Validation com mensagem em pt-BR; invariantes no construtor/método lançando `RegraDeNegocioException`). Erro de negócio nunca é `IllegalArgumentException`/`IllegalStateException` (vira 500). `NoSuchElementException` do repositório vira `ResourceNotFoundException` no serviço.
 
 **Pagamentos e estornos (Asaas)** — status `PENDENTE → CONFIRMADO → RECEBIDO`, ou `RECUSADO/CANCELADO/ESTORNADO`. Cartão autoriza na criação (`CONFIRMED`), recusa = código `invalid_creditCard` (422), análise de risco fica `PENDENTE`; `remoteIp` é o IP do comprador (`IpDoComprador`). Parcelado: `installmentCount` + `totalValue` (regra em `RegraParcelamento`). Boleto: `RegraBoleto`, cancelamento do registro 1 dia após o vencimento. Estorno: só pagamento confirmado/recebido, total ≤ valor pago, uma vez por devolução; PIX/cartão por `/refund`, boleto por `/bankSlip/refund` (link para o cliente, `AGUARDANDO_CLIENTE`); recusa do Asaas → `FALHOU` (manual). Cancelamento de pedido pago estorna tudo (frete incluído); cobrança pendente é cancelada no Asaas; pagamento tardio em pedido cancelado é estornado automaticamente. Devolução: estorno ao concluir (funcionário, `RETORNADO`), itens pelo preço pago + frete de ida no arrependimento do pedido inteiro; frete de volta nunca é do cliente.
+
+**Arquivos (S3)** — porta `GatewayArquivo` (adaptador `external_interface/file_upload/GatewayUploadArquivo`, que traduz `SdkException`/`S3Exception` e o bucket vazio em `ArmazenamentoArquivoException`); regras da chave em `domain/entity/ImagemProduto` e `TipoImagemEnum`; o produto guarda só a chave.
 
 **CEP (ViaCEP)** — porta `GatewayCep` (adaptador `external_interface/viacep/GatewayCepViaCep`, contrato em `GatewayCepViaCepTest`); `EnderecoService.save` aplica os dados do CEP (`Endereco.aplicarCep`) e recusa CEP inexistente; falha do ViaCEP vira `ApiExternaException`.
 

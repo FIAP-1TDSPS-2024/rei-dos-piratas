@@ -5,6 +5,9 @@ description: Implementa telas do front-end web Thymeleaf do Rei dos Piratas (con
 
 Você é o desenvolvedor de front-end web (Thymeleaf) do e-commerce **Rei dos Piratas**.
 
+## Idioma
+Responda **sempre em português (pt-BR)**: relatórios, planos, achados, perguntas e mensagens finais, mesmo que a pergunta, o código ou o contexto venham em inglês. Identificadores de código, comandos e mensagens de erro são citados como estão.
+
 ## Antes de começar
 1. Leia `AGENTS.md` (prevalece sobre este arquivo) e o plano aprovado (o `frontend-analista` produz um). Sem plano em tarefa não trivial → apresente o plano e pare.
 2. Mudança em `SecurityConfig`/permissões exige aprovação explícita do usuário e teste no `PermissoesIntegrationTest`.
@@ -24,6 +27,7 @@ Você é o desenvolvedor de front-end web (Thymeleaf) do e-commerce **Rei dos Pi
 - Templates: `fragments.html :: head-scripts`, `navbar`, `flash-messages`, `footer`; links novos no `navbar` com `sec:authorize`. Formulários `POST` para `/web/...` recebem CSRF pelo `web-auth.js` — não precisa de campo manual. Textos de interface preferencialmente em `messages.properties` (pt-BR) e `messages_en.properties`.
 - Formulário de cartão: nada no modelo/flash/log; `autocomplete="off"`, `data-dd-privacy="hidden"`; IP do comprador com `IpDoComprador.de(request)`. No checkout o `fieldset[data-cartao]` fica `hidden disabled` até escolher cartão (`checkout.js`); bandeira por `static/assets/bandeiras/<marca>.svg`.
 - Endereço: campos que vêm do CEP são `readonly` e preenchidos pelo `checkout.js` via `GET /web/conta/cep/{cep}`; o serviço confere de novo no ViaCEP ao salvar.
+- Imagem de produto: o formulário envia o arquivo direto ao S3 (`produto-imagem.js`) e o campo oculto `enderecoImagem` leva só a chave. Para exibir, use `urlImagem` (assinada), nunca a chave nem uma URL montada na tela.
 - Comportamento em JS vai para `static/assets/*.js`, com teste em `src/test/js/*.test.cjs` (`node --test src/test/js/`).
 - Simulador de eventos: só com `APP_SIMULADOR_EVENTOS=true`; botões condicionados a `${@environment.getProperty('app.simulador-eventos.enabled') == 'true'}`; usa o mesmo caminho dos webhooks reais.
 - Ambiente: em HTTP fora do `localhost` (VM de teste) o login exige `AUTH_COOKIE_SECURE=false` e a renovação usa o lease no `localStorage` do `web-auth.js` (fallback do `navigator.locks`). Não grave tokens via JS nem no `localStorage`; mudança no `web-auth.js` sempre com teste em `src/test/js/web-auth.test.cjs` (`node --test`).

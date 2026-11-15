@@ -89,7 +89,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/produtos/**").hasAnyRole("PRODUTO_WRITE")
                         .requestMatchers(HttpMethod.DELETE, "/produtos/**").hasAnyRole("PRODUTO_WRITE")
                         .requestMatchers("/web/produtos/novo", "/web/produtos/save",
-                                "/web/produtos/*/editar", "/web/produtos/*/excluir").hasRole("PRODUTO_WRITE")
+                                "/web/produtos/*/editar", "/web/produtos/*/excluir",
+                                "/web/produtos/imagem/**").hasRole("PRODUTO_WRITE")
                         // Gerenciamento funcionários
                         .requestMatchers(HttpMethod.PUT, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
                         .requestMatchers(HttpMethod.POST, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")

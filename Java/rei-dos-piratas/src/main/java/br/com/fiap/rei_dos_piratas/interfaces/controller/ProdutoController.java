@@ -13,6 +13,6 @@ public interface ProdutoController {
     public ProdutoOutDto create(ProdutoInDto produto);
     public ProdutoOutDto update(Produto produto);
     public void delete(Long id);
-    UploadImagemProdutoOutDto gerarUrlPreAssinadaUpload();
+    UploadImagemProdutoOutDto gerarUrlPreAssinadaUpload(String contentType);
     UrlPreassinadaOutDto gerarUrlPreAssinadaVisualizacao(String key);
 }

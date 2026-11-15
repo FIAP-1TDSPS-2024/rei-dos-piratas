@@ -1,5 +1,10 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import br.com.fiap.rei_dos_piratas.domain.Enum.TipoImagemEnum;
+import br.com.fiap.rei_dos_piratas.domain.entity.ImagemProduto;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.ArmazenamentoArquivoException;
+import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
+import java.util.Objects;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.application.service.UrlUploadGerada;
 import br.com.fiap.rei_dos_piratas.domain.entity.Page;
@@ -13,11 +18,9 @@ import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,6 +60,7 @@ public class ProdutoServiceImpl implements ProdutoService {
         log.info("[PRODUTO] Criando novo produto - nome='{}', preço={}, estoque={}",
                 produto.getNome(), produto.getPreco(), produto.getEstoque());
         validar(produto);
+        exigirImagemEnviada(produto.getEnderecoImagem());
         Produto produtoCriado = this.repository.create(produto);
         log.info("[PRODUTO] Produto criado com sucesso - ID={}, nome='{}'", produtoCriado.getId(), produtoCriado.getNome());
         return produtoCriado;
@@ -67,6 +71,10 @@ public class ProdutoServiceImpl implements ProdutoService {
     public Produto update(Produto produto) {
         log.info("[PRODUTO] Atualizando produto ID={}", produto.getId());
         validar(produto);
+        Produto atual = buscarAtual(produto.getId());
+        if (atual == null || !Objects.equals(atual.getEnderecoImagem(), produto.getEnderecoImagem())) {
+            exigirImagemEnviada(produto.getEnderecoImagem());
+        }
         Produto produtoAtualizado = this.repository.update(produto);
         if (produtoAtualizado == null) {
             log.error("[PRODUTO] Falha ao atualizar produto ID={} - registro não encontrado", produto.getId());
@@ -84,18 +92,55 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
-    public UrlUploadGerada gerarUrlPreAssinadaUpload() {
-        log.info("[PRODUTO] Gerando URL para upload de imagem para produto");
-
-        String key = "produtos/" + UUID.randomUUID() + "/capa.png";
-        String url = gatewayArquivo.gerarUrlPreAssinadaUpload("produtos", key, Duration.ofMinutes(5)).toString();
-
+    public UrlUploadGerada gerarUrlPreAssinadaUpload(String contentType) {
+        TipoImagemEnum tipo = TipoImagemEnum.doContentType(contentType);
+        String key = ImagemProduto.novaChave(tipo);
+        log.info("[PRODUTO] Gerando URL de upload de imagem - tipo={}", tipo);
+        String url = gatewayArquivo.gerarUrlPreAssinadaUpload(key, tipo.contentType(), ImagemProduto.VALIDADE_UPLOAD).toString();
         return new UrlUploadGerada(key, url);
     }
 
     @Override
     public String gerarUrlPreAssinadaVisualizacao(String key) {
-        return gatewayArquivo.gerarUrlPreAssinadaVisualizacao(key, Duration.ofHours(2)).toString();
+        // Só imagens de produto: o endpoint é público e não pode abrir outros objetos do bucket
+        ImagemProduto.exigirChave(key);
+        return gatewayArquivo.gerarUrlPreAssinadaVisualizacao(key, ImagemProduto.VALIDADE_VISUALIZACAO).toString();
+    }
+
+    @Override
+    public String urlDaImagem(String enderecoImagem) {
+        if (ImagemProduto.ehUrlLegada(enderecoImagem)) {
+            return enderecoImagem;
+        }
+        if (!ImagemProduto.ehChave(enderecoImagem)) {
+            return null;
+        }
+        try {
+            return gatewayArquivo.gerarUrlPreAssinadaVisualizacao(enderecoImagem, ImagemProduto.VALIDADE_VISUALIZACAO).toString();
+        } catch (ArmazenamentoArquivoException e) {
+            // Sem a imagem a vitrine continua funcionando; o detalhe já foi logado no adaptador
+            log.warn("[PRODUTO] Imagem sem URL de visualização: armazenamento indisponível");
+            return null;
+        }
+    }
+
+    private void exigirImagemEnviada(String enderecoImagem) {
+        ImagemProduto.exigirChave(enderecoImagem);
+        if (!gatewayArquivo.existe(enderecoImagem)) {
+            log.warn("[PRODUTO] Imagem informada ainda não foi enviada ao armazenamento");
+            throw new RegraDeNegocioException("A imagem do produto ainda não foi enviada. Selecione a imagem novamente.");
+        }
+    }
+
+    private Produto buscarAtual(Long id) {
+        if (id == null) {
+            return null;
+        }
+        try {
+            return this.repository.findById(id);
+        } catch (NoSuchElementException e) {
+            throw new ResourceNotFoundException("Não foi possível encontrar um produto com o id " + id + ". Crie um novo produto.");
+        }
     }
 
     /**

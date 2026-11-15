@@ -70,6 +70,18 @@ public class ProdutoMvcController {
         return "produto-form";
     }
 
+    /**
+     * URL pré-assinada para o formulário enviar a imagem direto ao S3 (JSON). Erros (formato não
+     * suportado, armazenamento fora) saem pelo GlobalExceptionHandler com a mensagem para o usuário.
+     */
+    @PostMapping(value = "/imagem/upload-url", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    @org.springframework.web.bind.annotation.ResponseBody
+    public br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UploadImagemProdutoOutDto urlDeUpload(
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody
+            br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UploadImagemProdutoInDto pedido) {
+        return controller.gerarUrlPreAssinadaUpload(pedido.contentType());
+    }
+
     @PostMapping("/save")
     public String save(@ModelAttribute("produto") ProdutoWebForm form,
                        @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -91,10 +103,11 @@ public class ProdutoMvcController {
             return form.getId() == null
                     ? "redirect:/web/produtos/novo"
                     : "redirect:/web/produtos/" + form.getId() + "/editar";
-        } catch (Exception e) {
-            log.error("Erro inesperado ao salvar produto", e);
+        } catch (RuntimeException e) {
+            // Erro de domínio (ex.: imagem não enviada, armazenamento fora) mostra a própria mensagem;
+            // qualquer outro vira mensagem genérica e vai para o log (MensagemWeb)
             redirectAttrs.addFlashAttribute("produto", form);
-            redirectAttrs.addFlashAttribute("erroGeral", "Não foi possível salvar o produto. Tente novamente.");
+            redirectAttrs.addFlashAttribute("erroGeral", MensagemWeb.de(e));
             return form.getId() == null
                     ? "redirect:/web/produtos/novo"
                     : "redirect:/web/produtos/" + form.getId() + "/editar";

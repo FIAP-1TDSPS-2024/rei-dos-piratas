@@ -33,6 +33,8 @@ public class ProdutoWebForm {
     private BigDecimal peso;
     private CondicaoEnum condicao;
     private Long funcionarioId;
+    /** Só para exibir a imagem atual (URL pré-assinada); não volta no POST nem é gravada. */
+    private String urlImagem;
 
     public static ProdutoWebForm fromOutDto(ProdutoOutDto dto) {
         if (dto == null) return new ProdutoWebForm();
@@ -51,6 +53,7 @@ public class ProdutoWebForm {
         form.setProfundidade(dto.profundidade());
         form.setPeso(dto.peso());
         form.setCondicao(dto.condicao());
+        form.setUrlImagem(dto.urlImagem());
         return form;
     }
 

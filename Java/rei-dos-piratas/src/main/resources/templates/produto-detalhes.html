@@ -30,10 +30,10 @@
             <!-- Left: Image column -->
             <div class="lg:col-span-4 bg-gray-50 flex items-center justify-center p-8 border-b lg:border-b-0 lg:border-r border-gray-100 min-h-80">
                 <div class="w-full max-w-xs">
-                    <img th:if="${produto.enderecoImagem != null and !#strings.isEmpty(produto.enderecoImagem)}"
-                         th:src="${produto.enderecoImagem}" th:alt="${produto.nome}"
+                    <img th:if="${produto.urlImagem != null and !#strings.isEmpty(produto.urlImagem)}"
+                         th:src="${produto.urlImagem}" th:alt="${produto.nome}"
                          class="w-full object-contain rounded-xl shadow-sm max-h-96"/>
-                    <div th:unless="${produto.enderecoImagem != null and !#strings.isEmpty(produto.enderecoImagem)}"
+                    <div th:unless="${produto.urlImagem != null and !#strings.isEmpty(produto.urlImagem)}"
                          class="flex flex-col items-center justify-center py-16">
                         <svg class="w-24 h-24 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>

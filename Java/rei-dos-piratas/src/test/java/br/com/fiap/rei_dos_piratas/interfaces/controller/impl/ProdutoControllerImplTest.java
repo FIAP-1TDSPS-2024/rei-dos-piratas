@@ -87,13 +87,35 @@ class ProdutoControllerImplTest {
 
     @Test
     void gerarUrlPreAssinadaUpload_DeveRetornarKeyEUrlGeradasPeloServico() {
-        when(produtoService.gerarUrlPreAssinadaUpload())
+        when(produtoService.gerarUrlPreAssinadaUpload("image/png"))
                 .thenReturn(new UrlUploadGerada("produtos/capas/capa.png", "https://exemplo.com/capa.png?assinatura=temporaria"));
 
-        UploadImagemProdutoOutDto resultado = produtoController.gerarUrlPreAssinadaUpload();
+        UploadImagemProdutoOutDto resultado = produtoController.gerarUrlPreAssinadaUpload("image/png");
 
         assertThat(resultado.key()).isEqualTo("produtos/capas/capa.png");
         assertThat(resultado.url()).isEqualTo("https://exemplo.com/capa.png?assinatura=temporaria");
+    }
+
+    @Test
+    void findById_PreencheAUrlDeExibicaoDaImagem() {
+        Produto produto = criarProduto(1L);
+        when(produtoService.findById(1L)).thenReturn(produto);
+        when(produtoService.urlDaImagem(produto.getEnderecoImagem())).thenReturn("https://exemplo.com/img?assinatura=1");
+
+        ProdutoOutDto dto = produtoController.findById(1L);
+
+        assertThat(dto.urlImagem()).isEqualTo("https://exemplo.com/img?assinatura=1");
+        assertThat(dto.enderecoImagem()).isEqualTo(produto.getEnderecoImagem());
+    }
+
+    @Test
+    void findAll_PreencheAUrlDeExibicaoDeCadaProduto() {
+        when(produtoService.findAll(0, 10)).thenReturn(new Page<>(1, 0, List.of(criarProduto(1L), criarProduto(2L))));
+        when(produtoService.urlDaImagem(any())).thenReturn("https://exemplo.com/img?assinatura=2");
+
+        Page<ProdutoOutDto> resultado = produtoController.findAll(0, 10);
+
+        assertThat(resultado.pageItems()).allSatisfy(p -> assertThat(p.urlImagem()).isEqualTo("https://exemplo.com/img?assinatura=2"));
     }
 
     @Test

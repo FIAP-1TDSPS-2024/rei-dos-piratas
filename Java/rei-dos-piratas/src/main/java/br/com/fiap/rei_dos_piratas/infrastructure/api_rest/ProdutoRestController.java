@@ -57,7 +57,9 @@ public class ProdutoRestController {
 
     @Operation(summary = "Gerar URL pré-assinada para visualizar a imagem")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "URL pré-assinada gerada")
+            @ApiResponse(responseCode = "200", description = "URL pré-assinada gerada"),
+            @ApiResponse(responseCode = "400", description = "Key ausente ou fora das imagens de produto"),
+            @ApiResponse(responseCode = "502", description = "Armazenamento de imagens indisponível ou não configurado")
     })
     @GetMapping("/imagem/visualizar")
     public ResponseEntity<UrlPreassinadaOutDto> gerarUrlPreAssinadaVisualizacao(
@@ -67,11 +69,15 @@ public class ProdutoRestController {
 
     @Operation(summary = "Gerar URL pré-assinada para upload de imagem")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "URL pré-assinada gerada")
+            @ApiResponse(responseCode = "200", description = "URL pré-assinada e key gerados"),
+            @ApiResponse(responseCode = "400", description = "Tipo de arquivo ausente ou não suportado (PNG, JPEG ou WEBP)"),
+            @ApiResponse(responseCode = "502", description = "Armazenamento de imagens indisponível ou não configurado")
     })
     @PostMapping("/imagem/upload")
-    public ResponseEntity<UploadImagemProdutoOutDto> gerarUrlPreAssinadaUpload() {
-        return ResponseEntity.ok(this.controller.gerarUrlPreAssinadaUpload());
+    public ResponseEntity<UploadImagemProdutoOutDto> gerarUrlPreAssinadaUpload(
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody
+            br.com.fiap.rei_dos_piratas.interfaces.dto.negocio.UploadImagemProdutoInDto pedido) {
+        return ResponseEntity.ok(this.controller.gerarUrlPreAssinadaUpload(pedido.contentType()));
     }
 
     @Operation(summary = "Criar produto", description = "Inserção de um novo produto na loja, acessível para funcionários")

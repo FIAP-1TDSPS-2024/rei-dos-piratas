@@ -27,10 +27,19 @@ class PermissoesIntegrationTest {
     @Autowired ObjectMapper mapper;
     @Autowired br.com.fiap.rei_dos_piratas.infrastructure.security.UsuarioDetailsService usuarios;
     @Autowired br.com.fiap.rei_dos_piratas.infrastructure.security.JwtUtil jwt;
+    // O S3 nunca é chamado nos testes: a imagem do produto "já foi enviada" e a URL de upload é fixa
+    @org.springframework.boot.test.mock.mockito.MockBean br.com.fiap.rei_dos_piratas.domain.gateway.GatewayArquivo gatewayArquivo;
     private String token;
 
     @BeforeEach
     void loginAdminDaMigracao() throws Exception {
+        org.mockito.Mockito.when(gatewayArquivo.existe(org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
+        org.mockito.Mockito.when(gatewayArquivo.gerarUrlPreAssinadaUpload(org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new java.net.URL("https://bucket-teste.s3.amazonaws.com/upload?X-Amz-Signature=teste"));
+        org.mockito.Mockito.when(gatewayArquivo.gerarUrlPreAssinadaVisualizacao(org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new java.net.URL("https://bucket-teste.s3.amazonaws.com/imagem?X-Amz-Signature=teste"));
         // Mantem a conta e o perfil reais da migracao; troca apenas a senha na transacao do teste.
         em.createNativeQuery("UPDATE FUNCIONARIOS SET senha = :senha WHERE id = 1")
                 .setParameter("senha", encoder.encode("SenhaSegura123")).executeUpdate();
@@ -148,12 +157,56 @@ class PermissoesIntegrationTest {
     }
 
     @Test
+    void urlDeUploadDeImagemNaWebEhSoDeQuemCadastraProduto() throws Exception {
+        mvc.perform(post("/auth/cadastro").contentType(MediaType.APPLICATION_JSON).content("""
+                {"user_name":"cliente_upload", "nome_completo":"Cliente Upload", "email":"cliente-upload@example.com",
+                 "senha":"SenhaSegura123", "data_nascimento":"1990-01-01", "sexo":"F",
+                 "cpf":"11144477735", "celular":"11987654322"}
+                """))
+                .andExpect(status().isCreated());
+        em.flush();
+        em.clear();
+        String clienteToken = mapper.readTree(mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"cliente-upload@example.com\",\"password\":\"SenhaSegura123\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("token").asText();
+
+        // Cliente logado, com CSRF válido: o 403 vem da permissão, não do CSRF
+        Cookie cliente = new Cookie("jwt_token", clienteToken);
+        var csrfCliente = mvc.perform(get("/web/auth/csrf").cookie(cliente)).andReturn().getResponse();
+        var dadosCliente = mapper.readTree(csrfCliente.getContentAsString());
+        mvc.perform(post("/web/produtos/imagem/upload-url").cookie(cliente, csrfCliente.getCookie("XSRF-TOKEN"))
+                        .header(dadosCliente.get("headerName").asText(), dadosCliente.get("token").asText())
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"content_type\":\"image/png\"}"))
+                .andExpect(status().isForbidden());
+
+        Cookie admin = new Cookie("jwt_token", token);
+        var csrfAdmin = mvc.perform(get("/web/auth/csrf").cookie(admin)).andReturn().getResponse();
+        var dadosAdmin = mapper.readTree(csrfAdmin.getContentAsString());
+        mvc.perform(post("/web/produtos/imagem/upload-url").cookie(admin, csrfAdmin.getCookie("XSRF-TOKEN"))
+                        .header(dadosAdmin.get("headerName").asText(), dadosAdmin.get("token").asText())
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"content_type\":\"image/png\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.key").value(org.hamcrest.Matchers.startsWith("produtos/")));
+
+        // Na API, o mesmo vale para quem não tem PRODUTO_WRITE
+        mvc.perform(post("/produtos/imagem/upload").header("Authorization", "Bearer " + clienteToken)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"content_type\":\"image/png\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void visualizacaoPublicaDeImagemSoAssinaImagensDeProduto() throws Exception {
+        mvc.perform(get("/produtos/imagem/visualizar").param("key", "financeiro/relatorio.pdf"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void adminCriaProdutoEConsultaPedidosNaApi() throws Exception {
         mvc.perform(post("/produtos").header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON).content("""
                 {"nome":"One Piece Volume Teste", "descricao":"Manga para teste de permissoes",
                  "autor":"Eiichiro Oda", "categoria":"AVENTURA", "preco":29.90,
-                 "endereco_imagem":"https://example.com/manga.jpg", "preco_original":29.90, "estoque":10, "altura":20, "largura":14, "profundidade":2, "peso":0.3,
+                 "endereco_imagem":"produtos/3f2b9c1e-8d4a-4b6f-9e2a-1c5d7e9f0a1b/imagem.jpg", "preco_original":29.90, "estoque":10, "altura":20, "largura":14, "profundidade":2, "peso":0.3,
                  "condicao":"NOVO", "funcionario_id":1}
                 """))
                 .andExpect(status().isCreated());
@@ -173,7 +226,7 @@ class PermissoesIntegrationTest {
                 .header(csrfData.get("headerName").asText(), csrfData.get("token").asText())
                 .param("nome", "One Piece Volume Web").param("descricao", "Manga para teste de permissoes")
                 .param("autor", "Eiichiro Oda").param("categoria", "AVENTURA")
-                .param("enderecoImagem", "https://example.com/manga.jpg").param("precoOriginal", "29.90").param("preco", "29.90").param("estoque", "10").param("condicao", "NOVO")
+                .param("enderecoImagem", "produtos/3f2b9c1e-8d4a-4b6f-9e2a-1c5d7e9f0a1b/imagem.jpg").param("precoOriginal", "29.90").param("preco", "29.90").param("estoque", "10").param("condicao", "NOVO")
                 .param("altura", "20").param("largura", "14").param("profundidade", "2").param("peso", "0.3"))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/web/produtos"))
                 .andExpect(flash().attributeExists("successMessage"));

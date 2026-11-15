@@ -20,7 +20,7 @@ class GatewayUploadArquivoConfigTest {
         Duration duracao = Duration.ofMinutes(10);
         URL urlAssinada = new URL("https://exemplo.com/arquivo");
         URL urlDownload = new URL("https://exemplo.com/arquivo?download=assinado");
-        when(s3Template.createSignedPutURL("bucket-teste", "capa.jpg", duracao))
+        when(s3Template.createSignedPutURL("bucket-teste", "capa.jpg", duracao, null, "image/jpeg"))
                 .thenReturn(urlAssinada);
         when(s3Template.createSignedGetURL("bucket-teste", "capa.jpg", duracao))
                 .thenReturn(urlDownload);
@@ -32,7 +32,7 @@ class GatewayUploadArquivoConfigTest {
                 .run(context -> {
                     GatewayArquivo gateway = context.getBean(GatewayArquivo.class);
 
-                    assertThat(gateway.gerarUrlPreAssinadaUpload("capas", "capa.jpg", duracao))
+                    assertThat(gateway.gerarUrlPreAssinadaUpload("capa.jpg", "image/jpeg", duracao))
                             .isEqualTo(urlAssinada);
                     assertThat(gateway.gerarUrlPreAssinadaVisualizacao("capa.jpg", duracao))
                             .isEqualTo(urlDownload);

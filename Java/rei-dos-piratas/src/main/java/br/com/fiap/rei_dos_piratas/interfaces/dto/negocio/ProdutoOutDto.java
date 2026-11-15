@@ -20,5 +20,21 @@ public record ProdutoOutDto(
         BigDecimal largura,
         BigDecimal profundidade,
         BigDecimal peso,
-        CondicaoEnum condicao
-) {}
+        CondicaoEnum condicao,
+        /** URL para exibir a imagem (pré-assinada e temporária); {@code enderecoImagem} guarda só a chave. */
+        String urlImagem
+) {
+    /** Sem a URL de exibição (preenchida depois pelo controller). */
+    public ProdutoOutDto(Long id, String nome, String descricao, String autor, CategoriaEnum categoria,
+                         String enderecoImagem, BigDecimal preco, BigDecimal precoOriginal, int estoque,
+                         BigDecimal altura, BigDecimal largura, BigDecimal profundidade, BigDecimal peso,
+                         CondicaoEnum condicao) {
+        this(id, nome, descricao, autor, categoria, enderecoImagem, preco, precoOriginal, estoque,
+                altura, largura, profundidade, peso, condicao, null);
+    }
+
+    public ProdutoOutDto comUrlImagem(String url) {
+        return new ProdutoOutDto(id, nome, descricao, autor, categoria, enderecoImagem, preco, precoOriginal, estoque,
+                altura, largura, profundidade, peso, condicao, url);
+    }
+}
