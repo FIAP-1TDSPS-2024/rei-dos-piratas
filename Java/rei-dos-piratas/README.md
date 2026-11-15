@@ -53,6 +53,7 @@ As variáveis de ambiente podem ficar num arquivo `.env`. O `compose.yaml` já o
 | Banco | `DB_URL`, `DB_USER`, `DB_PASSWORD`, `FLYWAY_ENABLED` | `FLYWAY_ENABLED=true` aplica as migrations na subida |
 | JWT | `JWT_SECRET`, `JWT_EXPIRATION` | `JWT_SECRET` é obrigatória: use um valor longo e aleatório. Expiração padrão: 900000 ms |
 | Asaas | `COBRANCA_URL`, `COBRANCA_API_KEY` | Sandbox: `https://api-sandbox.asaas.com` |
+| S3 | `S3_BUCKET_NAME_PRODUTOS`, `AWS_REGION` | Bucket das imagens de produto. Sem ele o upload responde `502` ("não configurado"). Credenciais pela cadeia padrão da AWS (IAM role em produção) |
 | ViaCEP | `CEP_URL` | Padrão: `https://viacep.com.br`. Consulta de CEP no cadastro de endereço |
 | Melhor Envio | `ME_URL`, `ME_CLIENT_ID`, `ME_SECRET`, `ME_REDIRECT_URI`, `ME_SERVICE_DEVOLUCAO` | `ME_SERVICE_DEVOLUCAO` é o id do serviço de entrega usado no frete reverso |
 | Parcelamento | `PAGAMENTO_PARCELAMENTO_VALOR_MINIMO`, `PAGAMENTO_PARCELAMENTO_MAX_PARCELAS` | Padrões: `100.00` (abaixo disso, só à vista) e `3` parcelas |
@@ -130,11 +131,20 @@ Os erros seguem o `GlobalExceptionHandler`:
 |---|---|---|---|
 | GET | `/produtos` | público | Lista os produtos (paginado) |
 | GET | `/produtos/{id}` | público | Busca um produto |
-| GET | `/produtos/imagem/visualizar?key={key}` | público | Gera URL pré-assinada temporária para visualizar uma imagem no S3 |
-| POST | `/produtos/imagem/upload` | `PRODUTO_WRITE` | Gera URL pré-assinada e key para o front-end enviar a imagem diretamente ao S3 |
+| GET | `/produtos/imagem/visualizar?key={key}` | público | URL pré-assinada (2 h) para ver uma imagem de produto. Só aceita chaves `produtos/<uuid>/imagem.<png\|jpg\|webp>`: outra key responde `400` |
+| POST | `/produtos/imagem/upload` | `PRODUTO_WRITE` | Corpo `{"content_type": "image/png"}` (PNG, JPEG ou WEBP). Devolve `key` e `url` (PUT, 5 min, presa ao `Content-Type`) para enviar a imagem direto ao S3. Formato não suportado: `400`; S3 indisponível ou bucket não configurado: `502` |
 | POST | `/produtos` | `PRODUTO_WRITE` | Cria um produto |
 | PUT | `/produtos` | `PRODUTO_WRITE` | Atualiza um produto |
 | DELETE | `/produtos/{id}` | `PRODUTO_WRITE` | Remove um produto |
+
+### Imagem do produto (S3)
+
+- O produto guarda só a **chave** do objeto em `endereco_imagem` (`produtos/<uuid>/imagem.<ext>`), nunca a URL. A leitura (`GET /produtos`, `GET /produtos/{id}`) devolve também `url_imagem`, uma URL pré-assinada válida por 2 horas, para exibir a imagem.
+- Fluxo de envio: `POST /produtos/imagem/upload` → `PUT` do arquivo na `url` com o mesmo `Content-Type` → `POST`/`PUT /produtos` com a `key` em `endereco_imagem`.
+- Ao criar o produto, ou ao trocar a imagem, a chave precisa ter o formato acima e o arquivo precisa já estar no bucket. Se não estiver: `400` ("ainda não foi enviada").
+- Produtos antigos com URL completa continuam exibidos como estão (legado); a chave só é exigida quando a imagem é trocada.
+- Se o S3 falhar na leitura, `url_imagem` vem nulo e a vitrine continua funcionando.
+- O bucket precisa de **CORS** liberando `PUT` da origem do site com o header `Content-Type`, senão o navegador bloqueia o envio.
 
 ### Carrinho — `/carrinho` (cliente)
 
@@ -299,7 +309,7 @@ Respostas do `POST /pedidos` com cartão:
   - estornos, com o link de dados bancários do boleto;
   - pedido de devolução.
 - **Funcionário:**
-  - `/web/produtos/novo|editar|excluir`, a gestão de produtos;
+  - `/web/produtos/novo|editar|excluir`, a gestão de produtos. A imagem é escolhida no formulário e enviada direto ao S3 (`assets/produto-imagem.js`: PNG, JPEG ou WEBP até 5 MB; salvar fica bloqueado durante o envio);
   - `/web/pedidos`, o painel de envio (o detalhe mostra pagamento, estornos e cancelamento);
   - `/web/devolucoes`, onde o funcionário aprova, recusa, paga o frete de retorno e conclui com estorno.
 - **Simulador de eventos** (`APP_SIMULADOR_EVENTOS=true`, só funcionário). Fica no detalhe do pedido e da devolução, e simula, pelo mesmo caminho dos webhooks reais:

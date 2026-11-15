@@ -167,6 +167,7 @@ Quando a chamada move dinheiro, ela roda **fora da transação de banco**. Os de
 | Pagamentos | [Asaas](https://docs.asaas.com/) |
 | Frete | [Melhor Envio](https://docs.melhorenvio.com.br/) |
 | CEP | [ViaCEP](https://viacep.com.br/) |
+| Imagens | Amazon S3 (URLs pré-assinadas) |
 | Mobile | App em repositório separado: [rei-dos-piratas-mobile](https://github.com/FIAP-1TDSPS-2024/rei-dos-piratas-mobile) |
 
 ---
