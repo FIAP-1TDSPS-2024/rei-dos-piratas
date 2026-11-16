@@ -195,6 +195,49 @@ class PermissoesIntegrationTest {
     }
 
     @Test
+    void produtosDesativadosEReativacaoSaoSoDeQuemCadastraProduto() throws Exception {
+        mvc.perform(post("/auth/cadastro").contentType(MediaType.APPLICATION_JSON).content("""
+                {"user_name":"cliente_reativa", "nome_completo":"Cliente Reativa", "email":"cliente-reativa@example.com",
+                 "senha":"SenhaSegura123", "data_nascimento":"1990-01-01", "sexo":"M",
+                 "cpf":"39053344705", "celular":"11987654323"}
+                """))
+                .andExpect(status().isCreated());
+        em.flush();
+        em.clear();
+        String clienteToken = mapper.readTree(mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"cliente-reativa@example.com\",\"password\":\"SenhaSegura123\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("token").asText();
+
+        // API: a lista de desativados não é pública como o resto de GET /produtos
+        mvc.perform(get("/produtos/desativados")).andExpect(status().is4xxClientError());
+        mvc.perform(get("/produtos/desativados").header("Authorization", "Bearer " + clienteToken))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/produtos/desativados").header("Authorization", "Bearer " + token))
+                .andExpect(status().is2xxSuccessful());
+        mvc.perform(put("/produtos/999999/reativar").header("Authorization", "Bearer " + clienteToken))
+                .andExpect(status().isForbidden());
+
+        // Web: lista e POST de reativar só para PRODUTO_WRITE (cliente com CSRF válido leva 403 da permissão)
+        Cookie cliente = new Cookie("jwt_token", clienteToken);
+        mvc.perform(get("/web/produtos/desativados").cookie(cliente)).andExpect(status().isForbidden());
+        var csrfCliente = mvc.perform(get("/web/auth/csrf").cookie(cliente)).andReturn().getResponse();
+        var dadosCliente = mapper.readTree(csrfCliente.getContentAsString());
+        mvc.perform(post("/web/produtos/999999/reativar").cookie(cliente, csrfCliente.getCookie("XSRF-TOKEN"))
+                        .header(dadosCliente.get("headerName").asText(), dadosCliente.get("token").asText()))
+                .andExpect(status().isForbidden());
+
+        Cookie admin = new Cookie("jwt_token", token);
+        mvc.perform(get("/web/produtos/desativados").cookie(admin)).andExpect(status().isOk())
+                .andExpect(view().name("produtos-desativados"));
+        var csrfAdmin = mvc.perform(get("/web/auth/csrf").cookie(admin)).andReturn().getResponse();
+        var dadosAdmin = mapper.readTree(csrfAdmin.getContentAsString());
+        mvc.perform(post("/web/produtos/999999/reativar").cookie(admin, csrfAdmin.getCookie("XSRF-TOKEN"))
+                        .header(dadosAdmin.get("headerName").asText(), dadosAdmin.get("token").asText()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/web/produtos/desativados"));
+    }
+
+    @Test
     void visualizacaoPublicaDeImagemSoAssinaImagensDeProduto() throws Exception {
         mvc.perform(get("/produtos/imagem/visualizar").param("key", "financeiro/relatorio.pdf"))
                 .andExpect(status().isBadRequest());

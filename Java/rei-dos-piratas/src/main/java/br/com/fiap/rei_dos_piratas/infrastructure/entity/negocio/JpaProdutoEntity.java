@@ -60,4 +60,7 @@ public class JpaProdutoEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funcionario_id")
     private JpaFuncionarioEntity funcionario;
+
+    @Column(nullable = false)
+    private boolean ativo = true;
 }

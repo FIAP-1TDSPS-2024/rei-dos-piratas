@@ -49,7 +49,7 @@ public class ProdutoDtoMapper {
                 produto.getProfundidade(),
                 produto.getPeso(),
                 produto.getCondicao()
-        );
+        ).comAtivo(produto.isAtivo());
     }
 
     private ProdutoDtoMapper() {}

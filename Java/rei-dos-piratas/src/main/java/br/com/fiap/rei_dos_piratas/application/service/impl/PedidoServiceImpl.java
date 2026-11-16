@@ -823,6 +823,8 @@ public class PedidoServiceImpl implements PedidoService {
         log.debug("Verificando estoque para {} produto(s) do pedido", pedido.getProdutosAdicionados().size());
         pedido.getProdutosAdicionados()
                 .forEach(produto -> {
+                    // Produto desativado não entra em pedido novo (inclusive o que ficou no carrinho)
+                    produto.getProduto().exigirDisponivel();
                     if (produto.getProduto().getEstoque() < produto.getQuantidade()) {
                         log.warn("Estoque insuficiente: produto ID={} '{}' — disponível={}, solicitado={}",
                                 produto.getProduto().getId(), produto.getProduto().getNome(),

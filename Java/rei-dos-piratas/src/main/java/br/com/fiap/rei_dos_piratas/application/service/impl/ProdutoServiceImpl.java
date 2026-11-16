@@ -50,7 +50,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     @Override
     public Page<Produto> findAll(int pageNumber, int pageSize) {
         log.debug("[PRODUTO] Listando todos os produtos - página: {}, tamanho: {}", pageNumber, pageSize);
-        return this.repository.listAll(pageNumber, pageSize);
+        return this.repository.listAtivos(pageNumber, pageSize);
     }
 
 
@@ -72,6 +72,10 @@ public class ProdutoServiceImpl implements ProdutoService {
         log.info("[PRODUTO] Atualizando produto ID={}", produto.getId());
         validar(produto);
         Produto atual = buscarAtual(produto.getId());
+        if (atual != null && !atual.isAtivo()) {
+            // Editar não reativa: o formulário e a API não trazem o campo "ativo"
+            produto.desativar();
+        }
         if (atual == null || !Objects.equals(atual.getEnderecoImagem(), produto.getEnderecoImagem())) {
             exigirImagemEnviada(produto.getEnderecoImagem());
         }
@@ -84,11 +88,29 @@ public class ProdutoServiceImpl implements ProdutoService {
         return produtoAtualizado;
     }
 
+    @Transactional
+    @Override
+    public void reativar(Long id) {
+        Produto produto = findById(id);
+        produto.reativar();
+        this.repository.update(produto);
+        log.info("[PRODUTO] Produto ID={} reativado", id);
+    }
+
+    @Override
+    public Page<Produto> listarDesativados(int pageNumber, int pageSize) {
+        log.debug("[PRODUTO] Listando produtos desativados - página: {}, tamanho: {}", pageNumber, pageSize);
+        return this.repository.listDesativados(pageNumber, pageSize);
+    }
+
+    @Transactional
     @Override
     public void delete(Long id) {
-        log.info("[PRODUTO] Removendo produto ID={}", id);
-        this.repository.delete(id);
-        log.info("[PRODUTO] Produto ID={} removido com sucesso", id);
+        // Não apaga: carrinhos, pedidos e devoluções referenciam o produto
+        Produto produto = findById(id);
+        produto.desativar();
+        this.repository.update(produto);
+        log.info("[PRODUTO] Produto ID={} desativado", id);
     }
 
     @Override

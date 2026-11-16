@@ -35,6 +35,8 @@ public class ProdutoWebForm {
     private Long funcionarioId;
     /** Só para exibir a imagem atual (URL pré-assinada); não volta no POST nem é gravada. */
     private String urlImagem;
+    /** Só para exibir; o "ativo" gravado não muda pelo formulário. */
+    private boolean ativo = true;
 
     public static ProdutoWebForm fromOutDto(ProdutoOutDto dto) {
         if (dto == null) return new ProdutoWebForm();
@@ -54,6 +56,7 @@ public class ProdutoWebForm {
         form.setPeso(dto.peso());
         form.setCondicao(dto.condicao());
         form.setUrlImagem(dto.urlImagem());
+        form.setAtivo(dto.ativo());
         return form;
     }
 

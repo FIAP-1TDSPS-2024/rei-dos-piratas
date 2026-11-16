@@ -1,5 +1,6 @@
 package br.com.fiap.rei_dos_piratas.infrastructure.api_rest;
 
+import static org.mockito.Mockito.verify;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException;
 import br.com.fiap.rei_dos_piratas.domain.exceptions.ArmazenamentoArquivoException;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
@@ -194,6 +195,19 @@ class ProdutoRestControllerTest {
     }
 
     @Test
+    void findById_ProdutoDesativadoVemComAtivoFalse() throws Exception {
+        ProdutoOutDto produto = new ProdutoOutDto(1L, "Produto Teste Número 01", "Descrição", "Autor", CategoriaEnum.AVENTURA,
+                "produtos/3f2b9c1e-8d4a-4b6f-9e2a-1c5d7e9f0a1b/imagem.png", BigDecimal.TEN, BigDecimal.TEN, 1,
+                BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, CondicaoEnum.NOVO)
+                .comAtivo(false);
+        when(produtoController.findById(1L)).thenReturn(produto);
+
+        this.mockMvc.perform(get("/produtos/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ativo", is(false)));
+    }
+
+    @Test
     void create() throws Exception {
         ProdutoInDto produtoIn = new ProdutoInDto(
                 null,
@@ -302,5 +316,25 @@ class ProdutoRestControllerTest {
     void delete() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.delete("/produtos/{id}", 1L))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void reativarResponde204() throws Exception {
+        this.mockMvc.perform(put("/produtos/3/reativar")).andExpect(status().isNoContent());
+
+        verify(produtoController).reativar(3L);
+    }
+
+    @Test
+    void listarDesativadosDevolveAPagina() throws Exception {
+        ProdutoOutDto desativado = new ProdutoOutDto(4L, "Produto Desativado Número 01", "Descrição", "Autor",
+                CategoriaEnum.AVENTURA, null, BigDecimal.TEN, BigDecimal.TEN, 1, BigDecimal.ONE, BigDecimal.ONE,
+                BigDecimal.ONE, BigDecimal.ONE, CondicaoEnum.NOVO).comAtivo(false);
+        when(produtoController.listarDesativados(0, 10)).thenReturn(new Page<>(1, 0, List.of(desativado)));
+
+        this.mockMvc.perform(get("/produtos/desativados"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page_items[0].id", is(4)))
+                .andExpect(jsonPath("$.page_items[0].ativo", is(false)));
     }
 }

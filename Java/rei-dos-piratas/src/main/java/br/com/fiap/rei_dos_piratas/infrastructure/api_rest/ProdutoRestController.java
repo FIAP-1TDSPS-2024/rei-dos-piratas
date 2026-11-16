@@ -102,9 +102,38 @@ public class ProdutoRestController {
         return ResponseEntity.ok(produtoAtualizado);
     }
 
-    @Operation(summary = "Deletar produto", description = "Deleção de um produto na loja, acessível para funcionários")
+    @Operation(summary = "Listar produtos desativados", description = "Produtos tirados da loja, para o funcionário reativar")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Sem conteúdo")
+            @ApiResponse(responseCode = "200", description = "Página de produtos desativados"),
+            @ApiResponse(responseCode = "204", description = "Nenhum produto desativado"),
+            @ApiResponse(responseCode = "403", description = "Sem a permissão PRODUTO_WRITE")
+    })
+    @GetMapping("/desativados")
+    public ResponseEntity<br.com.fiap.rei_dos_piratas.domain.entity.Page<ProdutoOutDto>> listarDesativados(
+            @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber) {
+        br.com.fiap.rei_dos_piratas.domain.entity.Page<ProdutoOutDto> desativados = this.controller.listarDesativados(pageNumber, pageSize);
+        if (desativados.pageItems().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(desativados);
+    }
+
+    @Operation(summary = "Reativar produto", description = "Devolve à loja um produto desativado. Acessível para funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Produto reativado (repetir a chamada não é erro)"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado")
+    })
+    @PutMapping("/{id}/reativar")
+    public ResponseEntity<Void> reativar(@PathVariable("id") Long id) {
+        this.controller.reativar(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Desativar produto", description = "Tira o produto da loja sem apagá-lo: pedidos e devoluções antigos continuam com ele. Acessível para funcionários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Produto desativado (repetir a chamada não é erro)"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {

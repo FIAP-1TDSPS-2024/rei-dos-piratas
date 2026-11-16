@@ -43,6 +43,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     @Override
     public Carrinho adicionarProduto(ItemProdutoPedido itemProdutoPedido) {
         Produto produto = produtoService.findById(itemProdutoPedido.getProduto().getId());
+        produto.exigirDisponivel();
 
         IdentidadeConta usuario = this.usuarioAtual.identidade();
         Cliente cliente = clienteService.findById(usuario.id());

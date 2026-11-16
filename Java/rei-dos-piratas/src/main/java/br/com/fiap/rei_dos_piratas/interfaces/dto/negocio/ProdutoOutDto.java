@@ -22,7 +22,9 @@ public record ProdutoOutDto(
         BigDecimal peso,
         CondicaoEnum condicao,
         /** URL para exibir a imagem (pré-assinada e temporária); {@code enderecoImagem} guarda só a chave. */
-        String urlImagem
+        String urlImagem,
+        /** false = produto desativado ("excluído"): fora das vendas, mas ainda nos pedidos antigos. */
+        boolean ativo
 ) {
     /** Sem a URL de exibição (preenchida depois pelo controller). */
     public ProdutoOutDto(Long id, String nome, String descricao, String autor, CategoriaEnum categoria,
@@ -30,11 +32,16 @@ public record ProdutoOutDto(
                          BigDecimal altura, BigDecimal largura, BigDecimal profundidade, BigDecimal peso,
                          CondicaoEnum condicao) {
         this(id, nome, descricao, autor, categoria, enderecoImagem, preco, precoOriginal, estoque,
-                altura, largura, profundidade, peso, condicao, null);
+                altura, largura, profundidade, peso, condicao, null, true);
     }
 
     public ProdutoOutDto comUrlImagem(String url) {
         return new ProdutoOutDto(id, nome, descricao, autor, categoria, enderecoImagem, preco, precoOriginal, estoque,
-                altura, largura, profundidade, peso, condicao, url);
+                altura, largura, profundidade, peso, condicao, url, ativo);
+    }
+
+    public ProdutoOutDto comAtivo(boolean ativo) {
+        return new ProdutoOutDto(id, nome, descricao, autor, categoria, enderecoImagem, preco, precoOriginal, estoque,
+                altura, largura, profundidade, peso, condicao, urlImagem, ativo);
     }
 }

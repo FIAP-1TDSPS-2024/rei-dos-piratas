@@ -1784,4 +1784,25 @@ class PedidoServiceImplTest {
         // Act & Assert
         assertThatThrownBy(() -> pedidoService.listarEstornos(1L)).isInstanceOf(ResourceNotFoundException.class);
     }
+
+    @Test
+    void fazerPedido_RecusaItemDesativadoSemBaixarEstoque() {
+        // Arrange
+        Cliente cliente = criarCliente();
+        Produto ativo = criarProduto(1L, "Produto Ainda Ativo", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
+        Produto desativado = criarProduto(2L, "Produto Fora de Linha", "Jonas Oliveira", "ACAO", 10, BigDecimal.valueOf(100));
+        desativado.desativar();
+        List<ItemProdutoPedido> itens = new ArrayList<>(List.of(new ItemProdutoPedido(ativo, 1), new ItemProdutoPedido(desativado, 1)));
+        Pedido pedido = new Pedido(null, LocalDate.now(), null, null, null, BigDecimal.valueOf(200), BigDecimal.valueOf(0),
+                StatusEnum.AGUARDANDO_PAGAMENTO, cliente, itens, criarEndereco(cliente), 1L, null, null, null, null, null, null);
+        when(freteService.calcularFreteProdutos(anyString(), any())).thenReturn(criarListaFretes(1L));
+
+        // Act & Assert
+        assertThatThrownBy(() -> pedidoService.fazerPedido(pedido))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessageContaining("Produto Fora de Linha");
+        verify(produtoRepository, never()).update(any(Produto.class));
+        verify(pedidoRepository, never()).create(any(Pedido.class));
+        assertThat(ativo.getEstoque()).isEqualTo(10);
+    }
 }

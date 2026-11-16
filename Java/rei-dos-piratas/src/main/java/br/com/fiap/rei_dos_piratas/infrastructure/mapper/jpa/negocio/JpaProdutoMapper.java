@@ -7,7 +7,7 @@ import br.com.fiap.rei_dos_piratas.infrastructure.mapper.jpa.usuarios.JpaFuncion
 public class JpaProdutoMapper {
 
     public static Produto toEntity(JpaProdutoEntity jpaProdutoEntity) {
-        return new Produto(
+        Produto produto = new Produto(
                 jpaProdutoEntity.getId(),
                 jpaProdutoEntity.getNome(),
                 jpaProdutoEntity.getDescricao(),
@@ -24,6 +24,8 @@ public class JpaProdutoMapper {
                 jpaProdutoEntity.getCondicao(),
                 JpaFuncionarioMapper.toEntity(jpaProdutoEntity.getFuncionario())
         );
+        produto.setAtivo(jpaProdutoEntity.isAtivo());
+        return produto;
     }
 
     public static JpaProdutoEntity toJpaEntity(Produto produto) {
@@ -42,7 +44,8 @@ public class JpaProdutoMapper {
                 produto.getProfundidade(),
                 produto.getPeso(),
                 produto.getCondicao(),
-                JpaFuncionarioMapper.toJpaEntity(produto.getFuncionario())
+                JpaFuncionarioMapper.toJpaEntity(produto.getFuncionario()),
+                produto.isAtivo()
         );
     }
 

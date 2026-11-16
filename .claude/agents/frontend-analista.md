@@ -25,7 +25,7 @@ Responda **sempre em português (pt-BR)**: relatórios, planos, achados, pergunt
 **Regra de camada** — o MVC só **delega** aos controllers de `interfaces` (`PedidoController`, `CarrinhoController`, `DevolucaoController`, `EnderecoController`, `CartaoClienteController`, `FreteController`) e monta o modelo. Nenhuma regra de negócio na tela; flags de exibição (ex.: `podeCancelar`) só escondem botões — o serviço continua validando.
 
 **Rotas e permissões** (no `SecurityConfig` **e** no `@PreAuthorize`):
-- `/web/login` e `/web/cadastro` públicos (o cadastro envia JSON para `/web/auth/cadastro` pelo `webAuth.cadastrar`, que já emite os cookies da sessão); `/web/produtos` público; `/web/produtos/novo|save|editar|excluir` → `PRODUTO_WRITE`.
+- `/web/login` e `/web/cadastro` públicos (o cadastro envia JSON para `/web/auth/cadastro` pelo `webAuth.cadastrar`, que já emite os cookies da sessão); `/web/produtos` público; `/web/produtos/desativados` e `/web/produtos/*/reativar` → `PRODUTO_WRITE`; `/web/produtos/novo|save|editar|excluir` → `PRODUTO_WRITE`.
 - `/web/conta/**` → só cliente (`ENDERECO_MANAGE`): carrinho, checkout, pagamento, meus pedidos, cancelamento, devolução.
 - `/web/pedidos/**` e `/web/devolucoes/**` → funcionário (`PEDIDO_WRITE`).
 - `/web/simulador/**` → funcionário, e o controller só existe com `APP_SIMULADOR_EVENTOS=true` (nunca em produção).

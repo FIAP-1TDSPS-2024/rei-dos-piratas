@@ -46,6 +46,28 @@ public class ProdutoMvcController {
     }
 
 
+    @GetMapping("/desativados")
+    public String desativados(Model model,
+                              @RequestParam(defaultValue = "0") int pageNumber,
+                              @RequestParam(defaultValue = "10") int pageSize) {
+        Page<ProdutoOutDto> page = controller.listarDesativados(pageNumber, pageSize);
+        model.addAttribute("produtos", page.pageItems());
+        model.addAttribute("pageNumber", pageNumber);
+        model.addAttribute("totalPages", page.numberOfPages());
+        return "produtos-desativados";
+    }
+
+    @PostMapping("/{id}/reativar")
+    public String reativar(@PathVariable Long id, RedirectAttributes redirectAttrs) {
+        try {
+            controller.reativar(id);
+            redirectAttrs.addFlashAttribute("successMessage", "Produto reativado. Ele voltou para a loja.");
+        } catch (RuntimeException e) {
+            redirectAttrs.addFlashAttribute("errorMessage", MensagemWeb.de(e));
+        }
+        return "redirect:/web/produtos/desativados";
+    }
+
     @GetMapping("/{id}")
     public String findById(Model model, @PathVariable Long id) {
         ProdutoOutDto produto = controller.findById(id);
@@ -121,10 +143,10 @@ public class ProdutoMvcController {
     public String excluir(@PathVariable Long id, RedirectAttributes redirectAttrs) {
         try {
             controller.delete(id);
-            redirectAttrs.addFlashAttribute("successMessage", "Produto excluído com sucesso.");
+            redirectAttrs.addFlashAttribute("successMessage", "Produto desativado. Os pedidos que já o têm não mudam.");
         } catch (Exception e) {
             log.error("Erro ao excluir produto id={}", id, e);
-            redirectAttrs.addFlashAttribute("errorMessage", "Não foi possível excluir o produto.");
+            redirectAttrs.addFlashAttribute("errorMessage", "Não foi possível desativar o produto.");
         }
         return "redirect:/web/produtos";
     }

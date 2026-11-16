@@ -71,6 +71,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/logout").authenticated()
                         // Consulta de frete
                         .requestMatchers("/frete/**").permitAll()
+                        // Produtos desativados: só quem cadastra produto (antes da leitura pública de /produtos/**)
+                        .requestMatchers(HttpMethod.GET, "/produtos/desativados").hasRole("PRODUTO_WRITE")
                         // Visualização de produtos (API e web)
                         .requestMatchers(HttpMethod.GET, "/produtos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/web/produtos", "/web/produtos/{id:[0-9]+}").permitAll()
@@ -90,7 +92,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/produtos/**").hasAnyRole("PRODUTO_WRITE")
                         .requestMatchers("/web/produtos/novo", "/web/produtos/save",
                                 "/web/produtos/*/editar", "/web/produtos/*/excluir",
-                                "/web/produtos/imagem/**").hasRole("PRODUTO_WRITE")
+                                "/web/produtos/imagem/**", "/web/produtos/desativados",
+                                "/web/produtos/*/reativar").hasRole("PRODUTO_WRITE")
                         // Gerenciamento funcionários
                         .requestMatchers(HttpMethod.PUT, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")
                         .requestMatchers(HttpMethod.POST, "/funcionarios/**").hasRole("FUNCIONARIO_WRITE")

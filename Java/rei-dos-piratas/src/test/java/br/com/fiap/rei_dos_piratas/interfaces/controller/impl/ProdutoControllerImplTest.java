@@ -109,6 +109,15 @@ class ProdutoControllerImplTest {
     }
 
     @Test
+    void findById_InformaQueOProdutoEstaDesativado() {
+        Produto produto = criarProduto(1L);
+        produto.desativar();
+        when(produtoService.findById(1L)).thenReturn(produto);
+
+        assertThat(produtoController.findById(1L).ativo()).isFalse();
+    }
+
+    @Test
     void findAll_PreencheAUrlDeExibicaoDeCadaProduto() {
         when(produtoService.findAll(0, 10)).thenReturn(new Page<>(1, 0, List.of(criarProduto(1L), criarProduto(2L))));
         when(produtoService.urlDaImagem(any())).thenReturn("https://exemplo.com/img?assinatura=2");
@@ -177,5 +186,28 @@ class ProdutoControllerImplTest {
     void delete() {
         produtoController.delete(1L);
         verify(produtoService, times(1)).delete(1L);
+    }
+
+    @Test
+    void reativar_DelegaAoServico() {
+        produtoController.reativar(3L);
+
+        verify(produtoService).reativar(3L);
+    }
+
+    @Test
+    void listarDesativados_ConverteComAUrlDaImagem() {
+        Produto desativado = criarProduto(4L);
+        desativado.desativar();
+        when(produtoService.listarDesativados(0, 10)).thenReturn(new Page<>(1, 0, List.of(desativado)));
+        when(produtoService.urlDaImagem(any())).thenReturn("https://exemplo.com/img?assinatura=3");
+
+        Page<ProdutoOutDto> resultado = produtoController.listarDesativados(0, 10);
+
+        assertThat(resultado.pageItems()).singleElement().satisfies(p -> {
+            assertThat(p.id()).isEqualTo(4L);
+            assertThat(p.ativo()).isFalse();
+            assertThat(p.urlImagem()).isEqualTo("https://exemplo.com/img?assinatura=3");
+        });
     }
 }

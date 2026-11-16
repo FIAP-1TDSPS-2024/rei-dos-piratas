@@ -142,7 +142,7 @@ Ao adicionar configuração nova: use `${VARIAVEL:padrao-seguro}` no properties,
 ## Banco de dados e migrations
 
 - `spring.jpa.hibernate.ddl-auto=validate`: o schema é **somente** Flyway. Toda mudança em entidade JPA precisa de migration correspondente.
-- Nome: `V<próximo número>__descricao_em_snake_case.SQL` (a última é `V41`; confira antes de criar).
+- Nome: `V<próximo número>__descricao_em_snake_case.SQL` (a última é `V43`; confira antes de criar).
 - **Nunca edite uma migration já existente** — crie uma nova. Migrations aplicadas são imutáveis.
 - SQL deve rodar em PostgreSQL **e** em H2 modo PostgreSQL (os testes usam os mesmos scripts).
 - Enums são persistidos como texto (ver `V33__normaliza_enums_textuais`).
@@ -273,6 +273,7 @@ Antes de corrigir, escreva um teste que **reproduz o bug e falha**. Só então c
 - Testes com `@WebMvcTest` renderizando o template real; permissões no `PermissoesIntegrationTest`. Comportamento de página em JS fica em `static/assets/*.js` com teste `node --test` em `src/test/js/` (ex.: `checkout.js`).
 - Endereço: rua, bairro, cidade e estado vêm do CEP (`EnderecoService` consulta o `GatewayCep` ao salvar e sobrescreve o que veio do formulário; no CEP geral valem rua e bairro do cliente). No checkout esses campos são somente leitura e preenchidos por `GET /web/conta/cep/{cep}`.
 - Imagem de produto: o produto guarda só a **chave** do S3 (`ImagemProduto`: `produtos/<uuid>/imagem.<png|jpg|webp>`), nunca a URL. URL de upload (PUT, 5 min, presa ao `Content-Type`) e de visualização (2 h) são geradas pelo `ProdutoService`. Ao criar ou trocar a imagem, o serviço confere que o objeto existe (`GatewayArquivo.existe`). A leitura devolve `url_imagem` assinada. URL completa antiga é legado e é exibida como está. Erros do S3 viram `ArmazenamentoArquivoException` (502); na leitura, só deixam `url_imagem` nula. No formulário web o envio é do `assets/produto-imagem.js` (`POST /web/produtos/imagem/upload-url`, `PRODUTO_WRITE`).
+- Produto não é apagado: "excluir" (`DELETE /produtos/{id}`, botão "Desativar" no painel) chama `Produto.desativar()`, porque carrinhos, pedidos e devoluções têm chave estrangeira para `PRODUTOS`. A listagem (`ProdutoRepository.listAtivos`) só traz ativos; `findById` traz também os inativos. Vendas novas chamam `Produto.exigirDisponivel()` (carrinho e pedido). O `update` preserva o `ativo` gravado. Reativação: `Produto.reativar()`, `PUT /produtos/{id}/reativar` e o painel `/web/produtos/desativados` (`GET /produtos/desativados` e as rotas web são só `PRODUTO_WRITE`; a regra da lista vem antes do `GET /produtos/**` público).
 - Checkout: o bloco de cartão (`fieldset[data-cartao]`) só aparece e só é enviado com pagamento por cartão; bandeiras em `static/assets/bandeiras/` (marcas simples próprias, não os logos oficiais).
 - Login web fora de HTTPS/`localhost` (ex.: VM de teste em `http://<IP>`): defina `AUTH_COOKIE_SECURE=false` (o navegador descarta cookie `Secure` em HTTP). Sem contexto seguro não há `navigator.locks`; o `web-auth.js` usa então um lease no `localStorage` (só id da aba e prazo, nunca tokens) para uma aba renovar por vez. Produção sempre em HTTPS com `AUTH_COOKIE_SECURE=true`.
 - Detalhes nos agentes `frontend-analista` e `frontend-desenvolvedor`.

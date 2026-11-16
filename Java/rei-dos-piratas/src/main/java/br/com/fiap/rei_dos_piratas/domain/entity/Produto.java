@@ -3,7 +3,6 @@ package br.com.fiap.rei_dos_piratas.domain.entity;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -12,7 +11,6 @@ import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Produto {
     Long id;
 
@@ -68,6 +66,17 @@ public class Produto {
 
     private Funcionario funcionario;
 
+    /** Produto "excluído" fica inativo: sai das vendas novas, mas continua nos pedidos e devoluções. */
+    private boolean ativo = true;
+
+    public Produto(Long id, String nome, String descricao, String autor, CategoriaEnum categoria, String enderecoImagem,
+                   BigDecimal preco, BigDecimal precoOriginal, int estoque, BigDecimal altura, BigDecimal largura,
+                   BigDecimal profundidade, BigDecimal peso, CondicaoEnum condicao, Funcionario funcionario) {
+        this(nome, descricao, autor, categoria, enderecoImagem, preco, precoOriginal, estoque, altura, largura,
+                profundidade, peso, condicao, funcionario);
+        this.id = id;
+    }
+
     public Produto(String nome, String descricao, String autor, CategoriaEnum categoria, String enderecoImagem, BigDecimal preco, BigDecimal precoOriginal, int estoque, BigDecimal altura, BigDecimal largura, BigDecimal profundidade, BigDecimal peso, CondicaoEnum condicao, Funcionario funcionario) {
         this.nome = nome;
         this.descricao = descricao;
@@ -87,5 +96,21 @@ public class Produto {
 
     public Produto(Long id) {
         this.id = id;
+    }
+
+    public void desativar() {
+        this.ativo = false;
+    }
+
+    public void reativar() {
+        this.ativo = true;
+    }
+
+    /** Vendas novas (carrinho, pedido) só com produto ativo. */
+    public void exigirDisponivel() {
+        if (!ativo) {
+            throw new br.com.fiap.rei_dos_piratas.domain.exceptions.RegraDeNegocioException(
+                    "O produto " + nome + " não está mais disponível.");
+        }
     }
 }

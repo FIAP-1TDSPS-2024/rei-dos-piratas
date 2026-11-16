@@ -1,5 +1,7 @@
 package br.com.fiap.rei_dos_piratas.application.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import org.mockito.ArgumentCaptor;
 import br.com.fiap.rei_dos_piratas.application.service.ProdutoService;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CategoriaEnum;
 import br.com.fiap.rei_dos_piratas.domain.Enum.CondicaoEnum;
@@ -150,13 +152,13 @@ class ProdutoServiceImplTest {
         List<Produto> produtos = List.of(produto1, produto2, produto3);
         Page<Produto> page = new Page<>(1, 0, produtos);
 
-        when(produtoRepository.listAll(0, 10)).thenReturn(page);
+        when(produtoRepository.listAtivos(0, 10)).thenReturn(page);
 
         // Act
         Page<Produto> resultado = produtoService.findAll(0, 10);
 
         // Assert
-        verify(produtoRepository, times(1)).listAll(0, 10);
+        verify(produtoRepository, times(1)).listAtivos(0, 10);
         assertThat(resultado.pageItems()).hasSize(3);
         assertThat(resultado.pageNumber()).isEqualTo(0);
         assertThat(resultado.numberOfPages()).isEqualTo(1);
@@ -166,13 +168,13 @@ class ProdutoServiceImplTest {
     void findAll_DeveRetornarPaginaVaziaQuandoNaoHouverProdutos() {
         // Arrange
         Page<Produto> pageVazia = new Page<>(0, 0, List.of());
-        when(produtoRepository.listAll(0, 10)).thenReturn(pageVazia);
+        when(produtoRepository.listAtivos(0, 10)).thenReturn(pageVazia);
 
         // Act
         Page<Produto> resultado = produtoService.findAll(0, 10);
 
         // Assert
-        verify(produtoRepository, times(1)).listAll(0, 10);
+        verify(produtoRepository, times(1)).listAtivos(0, 10);
         assertThat(resultado.pageItems()).isEmpty();
         assertThat(resultado.numberOfPages()).isEqualTo(0);
     }
@@ -186,13 +188,13 @@ class ProdutoServiceImplTest {
         List<Produto> produtos = List.of(produto1, produto2);
         Page<Produto> page = new Page<>(5, 1, produtos);
 
-        when(produtoRepository.listAll(1, 2)).thenReturn(page);
+        when(produtoRepository.listAtivos(1, 2)).thenReturn(page);
 
         // Act
         Page<Produto> resultado = produtoService.findAll(1, 2);
 
         // Assert
-        verify(produtoRepository, times(1)).listAll(1, 2);
+        verify(produtoRepository, times(1)).listAtivos(1, 2);
         assertThat(resultado.pageItems()).hasSize(2);
         assertThat(resultado.pageNumber()).isEqualTo(1);
         assertThat(resultado.numberOfPages()).isEqualTo(5);
@@ -365,29 +367,61 @@ class ProdutoServiceImplTest {
     }
 
     @Test
-    void delete_DeveDeletarProduto() {
+    void delete_DesativaOProdutoEmVezDeApagar() {
         // Arrange
-        Long idProduto = 1L;
-        doNothing().when(produtoRepository).delete(idProduto);
+        Produto produto = criarProduto(1L, "Produto Para Desativar", "Autor", "ACAO", 3, BigDecimal.TEN);
+        when(produtoRepository.findById(1L)).thenReturn(produto);
+        when(produtoRepository.update(any(Produto.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // Act
-        produtoService.delete(idProduto);
+        produtoService.delete(1L);
 
         // Assert
-        verify(produtoRepository, times(1)).delete(idProduto);
+        ArgumentCaptor<Produto> gravado = ArgumentCaptor.forClass(Produto.class);
+        verify(produtoRepository).update(gravado.capture());
+        assertThat(gravado.getValue().getId()).isEqualTo(1L);
+        assertThat(gravado.getValue().isAtivo()).isFalse();
     }
 
     @Test
-    void delete_DevePermitirDeletarProdutoComIdDiferente() {
+    void delete_ProdutoInexistenteResponde404() {
         // Arrange
-        Long idProduto = 999L;
-        doNothing().when(produtoRepository).delete(idProduto);
+        when(produtoRepository.findById(999L)).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        assertThatThrownBy(() -> produtoService.delete(999L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("999");
+        verify(produtoRepository, never()).update(any());
+    }
+
+    @Test
+    void delete_ProdutoJaDesativadoNaoEhErro() {
+        // Arrange
+        Produto produto = criarProduto(1L, "Produto Ja Desativado", "Autor", "ACAO", 3, BigDecimal.TEN);
+        produto.desativar();
+        when(produtoRepository.findById(1L)).thenReturn(produto);
+        when(produtoRepository.update(any(Produto.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Act & Assert
+        assertThatCode(() -> produtoService.delete(1L)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void update_NaoReativaProdutoDesativado() {
+        // Arrange: o formulário não tem o campo "ativo", então o produto chega como ativo
+        Produto atual = criarProduto(1L, "Produto Desativado Editado", "Autor", "ACAO", 3, BigDecimal.TEN);
+        atual.desativar();
+        Produto editado = criarProduto(1L, "Produto Desativado Editado", "Autor", "ACAO", 5, BigDecimal.TEN);
+        when(produtoRepository.findById(1L)).thenReturn(atual);
+        when(produtoRepository.update(any(Produto.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // Act
-        produtoService.delete(idProduto);
+        Produto resultado = produtoService.update(editado);
 
         // Assert
-        verify(produtoRepository, times(1)).delete(idProduto);
+        assertThat(resultado.isAtivo()).isFalse();
+        assertThat(resultado.getEstoque()).isEqualTo(5);
     }
 
     @Test
@@ -544,5 +578,40 @@ class ProdutoServiceImplTest {
 
         assertThatThrownBy(() -> produtoService.update(editado)).isInstanceOf(RegraDeNegocioException.class);
         verify(produtoRepository, never()).update(any());
+    }
+
+    @Test
+    void reativar_ReativaEGravaOProduto() {
+        // Arrange
+        Produto produto = criarProduto(1L, "Produto Para Reativar", "Autor", "ACAO", 3, BigDecimal.TEN);
+        produto.desativar();
+        when(produtoRepository.findById(1L)).thenReturn(produto);
+        when(produtoRepository.update(any(Produto.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        produtoService.reativar(1L);
+
+        // Assert
+        ArgumentCaptor<Produto> gravado = ArgumentCaptor.forClass(Produto.class);
+        verify(produtoRepository).update(gravado.capture());
+        assertThat(gravado.getValue().isAtivo()).isTrue();
+    }
+
+    @Test
+    void reativar_ProdutoInexistenteResponde404() {
+        when(produtoRepository.findById(999L)).thenThrow(new NoSuchElementException());
+
+        assertThatThrownBy(() -> produtoService.reativar(999L)).isInstanceOf(ResourceNotFoundException.class);
+        verify(produtoRepository, never()).update(any());
+    }
+
+    @Test
+    void listarDesativados_TrazAPaginaDeDesativadosDoRepositorio() {
+        Produto desativado = criarProduto(5L, "Produto Desativado Listado", "Autor", "ACAO", 1, BigDecimal.TEN);
+        desativado.desativar();
+        Page<Produto> pagina = new Page<>(1, 0, List.of(desativado));
+        when(produtoRepository.listDesativados(0, 10)).thenReturn(pagina);
+
+        assertThat(produtoService.listarDesativados(0, 10).pageItems()).containsExactly(desativado);
     }
 }

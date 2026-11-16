@@ -720,4 +720,44 @@ class CarrinhoServiceImplTest {
         // Assert
         assertThat(carrinho).isSameAs(carrinhoDoCliente99);
     }
+
+    @Test
+    void adicionarProduto_RecusaProdutoDesativado() {
+        // Arrange
+        Produto produto = new Produto(1L);
+        produto.setNome("Produto Fora de Linha");
+        produto.setEstoque(10);
+        produto.desativar();
+        when(produtoService.findById(1L)).thenReturn(produto);
+
+        // Act & Assert
+        assertThatThrownBy(() -> carrinhoService.adicionarProduto(new ItemProdutoPedido(produto, 1)))
+                .isInstanceOf(RegraDeNegocioException.class)
+                .hasMessageContaining("Produto Fora de Linha")
+                .hasMessageContaining("não está mais disponível");
+        verify(carrinhoRepository, never()).update(any());
+    }
+
+    @Test
+    void removerProduto_FuncionaComProdutoDesativado() {
+        // Arrange: o produto foi desativado depois de entrar no carrinho
+        Produto produto = new Produto(1L);
+        produto.setNome("Produto Fora de Linha");
+        produto.desativar();
+        List<ItemProdutoCarrinho> produtosNoCarrinho = new ArrayList<>();
+        produtosNoCarrinho.add(new ItemProdutoCarrinho(1L, produto, 2));
+        Carrinho carrinho = new Carrinho(1L, produtosNoCarrinho);
+        Cliente cliente = new Cliente(1L, "joaosilva", "João Silva", "joao@gmail.com", "SenhaSegura123", true,
+                LocalDate.now(), new Perfil(1L, "CLIENT", "Perfil de cliente", null), LocalDate.of(1990, 5, 15),
+                SexoEnum.M, "52998224725", "11991231234", carrinho);
+        when(produtoService.findById(1L)).thenReturn(produto);
+        when(clienteService.findById(1L)).thenReturn(cliente);
+        when(carrinhoRepository.update(any(Carrinho.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        Carrinho resultado = carrinhoService.removerProduto(new ItemProdutoPedido(produto, 2));
+
+        // Assert
+        assertThat(resultado.getProdutosAdicionados()).isEmpty();
+    }
 }

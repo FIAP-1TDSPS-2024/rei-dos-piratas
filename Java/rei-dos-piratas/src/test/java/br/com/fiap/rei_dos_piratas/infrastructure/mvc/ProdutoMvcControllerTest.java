@@ -159,4 +159,110 @@ class ProdutoMvcControllerTest {
                 .andExpect(redirectedUrl("/web/produtos/novo"))
                 .andExpect(flash().attribute("erroGeral", "A imagem do produto ainda não foi enviada. Selecione a imagem novamente."));
     }
+
+    // ---- Desativação ("excluir") ----
+
+    @Test
+    void detalheDoProdutoOfereceDesativarEmVezDeExcluir() throws Exception {
+        when(controller.findById(7L)).thenReturn(produtoComImagem());
+
+        String pagina = mvc.perform(get("/web/produtos/7").locale(new java.util.Locale("pt", "BR")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertThat(pagina).contains("Desativar").doesNotContain(">Excluir<").doesNotContain("não pode ser desfeita");
+    }
+
+    @Test
+    @WithMockUser(roles = "ENDERECO_MANAGE")
+    void produtoDesativadoApareceComoIndisponivelESemCompra() throws Exception {
+        when(controller.findById(7L)).thenReturn(produtoComImagem().comAtivo(false));
+
+        String pagina = mvc.perform(get("/web/produtos/7"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertThat(pagina).contains("Produto indisponível").doesNotContain("/web/conta/carrinho/adicionar");
+    }
+
+    @Test
+    @WithMockUser(roles = "ENDERECO_MANAGE")
+    void produtoAtivoContinuaComCompra() throws Exception {
+        when(controller.findById(7L)).thenReturn(produtoComImagem());
+
+        String pagina = mvc.perform(get("/web/produtos/7"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertThat(pagina).contains("/web/conta/carrinho/adicionar").doesNotContain("Produto indisponível");
+    }
+
+    @Test
+    void desativarAvisaQueOProdutoFoiDesativado() throws Exception {
+        mvc.perform(post("/web/produtos/7/excluir"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/web/produtos"))
+                .andExpect(flash().attribute("successMessage", "Produto desativado. Os pedidos que já o têm não mudam."));
+    }
+
+    // ---- Reativação ----
+
+    @Test
+    void listaDeDesativadosMostraOsProdutosComBotaoReativar() throws Exception {
+        when(controller.listarDesativados(0, 10)).thenReturn(new Page<>(1, 0, List.of(produtoComImagem().comAtivo(false))));
+
+        String pagina = mvc.perform(get("/web/produtos/desativados"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("produtos-desativados"))
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(pagina).contains("One Piece Volume 100", "/web/produtos/7/reativar", "Reativar");
+    }
+
+    @Test
+    void listaDeDesativadosVaziaAvisaQueNaoHaNenhum() throws Exception {
+        when(controller.listarDesativados(0, 10)).thenReturn(new Page<>(0, 0, List.of()));
+
+        String pagina = mvc.perform(get("/web/produtos/desativados"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertThat(pagina).contains("Nenhum produto desativado");
+    }
+
+    @Test
+    void reativarVoltaParaOsDesativadosComAviso() throws Exception {
+        mvc.perform(post("/web/produtos/7/reativar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/web/produtos/desativados"))
+                .andExpect(flash().attribute("successMessage", "Produto reativado. Ele voltou para a loja."));
+
+        org.mockito.Mockito.verify(controller).reativar(7L);
+    }
+
+    @Test
+    void reativarProdutoInexistenteAvisaOErro() throws Exception {
+        org.mockito.Mockito.doThrow(new br.com.fiap.rei_dos_piratas.domain.exceptions.ResourceNotFoundException(
+                "Não foi possível encontrar um produto com o id 99")).when(controller).reativar(99L);
+
+        mvc.perform(post("/web/produtos/99/reativar"))
+                .andExpect(redirectedUrl("/web/produtos/desativados"))
+                .andExpect(flash().attribute("errorMessage", "Não foi possível encontrar um produto com o id 99"));
+    }
+
+    @Test
+    void detalheDeProdutoDesativadoOfereceReativarAoFuncionario() throws Exception {
+        when(controller.findById(7L)).thenReturn(produtoComImagem().comAtivo(false));
+
+        String pagina = mvc.perform(get("/web/produtos/7").locale(new java.util.Locale("pt", "BR")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertThat(pagina).contains("/web/produtos/7/reativar").doesNotContain("id=\"btnExcluir\"");
+    }
+
+    @Test
+    void vitrineMostraOLinkDosDesativadosAoFuncionario() throws Exception {
+        when(controller.findAll(0, 10)).thenReturn(new Page<>(1, 0, List.of(produtoComImagem())));
+
+        String pagina = mvc.perform(get("/web/produtos"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertThat(pagina).contains("/web/produtos/desativados");
+    }
 }

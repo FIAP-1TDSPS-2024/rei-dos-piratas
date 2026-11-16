@@ -68,6 +68,18 @@ public class ProdutoControllerImpl implements ProdutoController {
         return paraDto(produtoAtualizado);
     }
 
+    @Override
+    public void reativar(Long id) {
+        this.service.reativar(id);
+    }
+
+    @Override
+    public Page<ProdutoOutDto> listarDesativados(int pageNumber, int pageSize) {
+        Page<Produto> desativados = this.service.listarDesativados(pageNumber, pageSize);
+        return new Page<>(desativados.numberOfPages(), desativados.pageNumber(),
+                desativados.pageItems().stream().map(this::paraDto).toList());
+    }
+
     /** DTO com a URL de exibição da imagem (o produto guarda só a chave). */
     private ProdutoOutDto paraDto(Produto produto) {
         return ProdutoDtoMapper.toDto(produto).comUrlImagem(this.service.urlDaImagem(produto.getEnderecoImagem()));

@@ -22,13 +22,21 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
     }
 
     @Override
-    public Page<Produto> listAll(int pageNumber, int pageSize) {
-        log.debug("[REPO-PRODUTO] Listando todos os produtos - página: {}, tamanho: {}", pageNumber, pageSize);
+    public Page<Produto> listAtivos(int pageNumber, int pageSize) {
+        log.debug("[REPO-PRODUTO] Listando produtos ativos - página: {}, tamanho: {}", pageNumber, pageSize);
         return PageMapper.fromFrameworkPage(
-                this.repository.findAll(Pageable.ofSize(pageSize).withPage(pageNumber))
+                this.repository.findAllByAtivoTrue(Pageable.ofSize(pageSize).withPage(pageNumber))
                         .map(JpaProdutoMapper::toEntity));
     }
 
+
+    @Override
+    public Page<Produto> listDesativados(int pageNumber, int pageSize) {
+        log.debug("[REPO-PRODUTO] Listando produtos desativados - página: {}, tamanho: {}", pageNumber, pageSize);
+        return PageMapper.fromFrameworkPage(
+                this.repository.findAllByAtivoFalse(Pageable.ofSize(pageSize).withPage(pageNumber))
+                        .map(JpaProdutoMapper::toEntity));
+    }
 
     @Override
     public Produto findById(Long id) {
@@ -61,10 +69,4 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
         }
     }
 
-    @Override
-    public void delete(Long id) {
-        log.info("[REPO-PRODUTO] Removendo produto ID={}", id);
-        this.repository.deleteById(id);
-        log.info("[REPO-PRODUTO] Produto ID={} removido com sucesso", id);
-    }
 }

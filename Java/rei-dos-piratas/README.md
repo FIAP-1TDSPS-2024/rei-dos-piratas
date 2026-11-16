@@ -129,13 +129,21 @@ Os erros seguem o `GlobalExceptionHandler`:
 
 | Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| GET | `/produtos` | público | Lista os produtos (paginado) |
+| GET | `/produtos` | público | Lista os produtos **ativos** (paginado) |
 | GET | `/produtos/{id}` | público | Busca um produto |
 | GET | `/produtos/imagem/visualizar?key={key}` | público | URL pré-assinada (2 h) para ver uma imagem de produto. Só aceita chaves `produtos/<uuid>/imagem.<png\|jpg\|webp>`: outra key responde `400` |
 | POST | `/produtos/imagem/upload` | `PRODUTO_WRITE` | Corpo `{"content_type": "image/png"}` (PNG, JPEG ou WEBP). Devolve `key` e `url` (PUT, 5 min, presa ao `Content-Type`) para enviar a imagem direto ao S3. Formato não suportado: `400`; S3 indisponível ou bucket não configurado: `502` |
 | POST | `/produtos` | `PRODUTO_WRITE` | Cria um produto |
 | PUT | `/produtos` | `PRODUTO_WRITE` | Atualiza um produto |
-| DELETE | `/produtos/{id}` | `PRODUTO_WRITE` | Remove um produto |
+| GET | `/produtos/desativados` | `PRODUTO_WRITE` | Lista os produtos desativados (paginado; `204` se não houver) |
+| PUT | `/produtos/{id}/reativar` | `PRODUTO_WRITE` | Devolve o produto à loja (`204`; repetir não é erro; id inexistente: `404`) |
+| DELETE | `/produtos/{id}` | `PRODUTO_WRITE` | **Desativa** o produto (não apaga): sai da listagem e das vendas novas, mas continua nos pedidos, carrinhos e devoluções. Repetir não é erro; id inexistente: `404` |
+
+### Produto desativado
+
+- O JSON do produto traz `ativo`. `GET /produtos/{id}` continua devolvendo produto desativado (com `ativo: false`), porque pedidos e devoluções antigos o exibem.
+- Adicionar ao carrinho ou fazer pedido com produto desativado responde `400` ("O produto … não está mais disponível."). Isso vale também para o item que já estava no carrinho antes da desativação. Remover do carrinho continua funcionando.
+- Editar um produto desativado não o reativa. Para reativar: `PUT /produtos/{id}/reativar` ou, no painel, "Produtos desativados" (`/web/produtos/desativados`) → "Reativar". O detalhe de um produto desativado também mostra "Reativar" ao funcionário.
 
 ### Imagem do produto (S3)
 
@@ -309,6 +317,7 @@ Respostas do `POST /pedidos` com cartão:
   - estornos, com o link de dados bancários do boleto;
   - pedido de devolução.
 - **Funcionário:**
+  - `/web/produtos/desativados`, os produtos desativados, com o botão "Reativar";
   - `/web/produtos/novo|editar|excluir`, a gestão de produtos. A imagem é escolhida no formulário e enviada direto ao S3 (`assets/produto-imagem.js`: PNG, JPEG ou WEBP até 5 MB; salvar fica bloqueado durante o envio);
   - `/web/pedidos`, o painel de envio (o detalhe mostra pagamento, estornos e cancelamento);
   - `/web/devolucoes`, onde o funcionário aprova, recusa, paga o frete de retorno e conclui com estorno.
